@@ -2,7 +2,7 @@
 
 # Mock PG connection for unit tests
 class MockPgConnection
-  def exec_params(sql, params = [])
+  def exec_params(_sql, _params = [])
     []
   end
 
