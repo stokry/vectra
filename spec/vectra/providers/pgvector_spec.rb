@@ -63,7 +63,7 @@ RSpec.describe Vectra::Providers::Pgvector do
   def expect_sql_matching(pattern)
     matching = executed_queries.find { |q| q[:sql] =~ pattern }
     expect(matching).not_to be_nil,
-           "Expected SQL matching #{pattern.inspect}, got: #{executed_queries.map { |q| q[:sql] }}"
+                            "Expected SQL matching #{pattern.inspect}, got: #{executed_queries.map { |q| q[:sql] }}"
     matching
   end
 
@@ -284,9 +284,9 @@ RSpec.describe Vectra::Providers::Pgvector do
   describe "#list_indexes" do
     let(:mock_result_handlers) do
       {
-        /information_schema\.columns/ => ->(_sql, _params) do
+        /information_schema\.columns/ => lambda { |_sql, _params|
           [{ "table_name" => "documents" }, { "table_name" => "embeddings" }]
-        end,
+        },
         /pg_attribute/ => ->(_sql, _params) { [{ "data_type" => "vector(384)" }] },
         /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=cosine" }] }
       }
