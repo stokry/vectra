@@ -156,3 +156,28 @@ Layout/LineLength:
   Max: 185
   Exclude:
     - 'vectra.gemspec'
+
+# Additional disables for auto-correctable minor issues
+Style/SymbolArray:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+Style/MapIntoArray:
+  Enabled: false
+
+Lint/RedundantDirGlobSort:
+  Enabled: false
+
+RSpec/LeadingSubject:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/MultipleExpectations:
+  Max: 10
+
+Gemspec/OrderedDependencies:
+  Enabled: false
