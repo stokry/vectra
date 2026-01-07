@@ -1,15 +1,23 @@
 # frozen_string_literal: true
 
-# Stub PG module for testing without actual pg gem connection
-unless defined?(PG)
-  module PG
-    # Stub connection class for mocking
-    class Connection
-      def exec_params(*); end
-      def quote_ident(*); end
-      def escape_literal(*); end
-    end
+# Mock PG connection for unit tests
+class MockPgConnection
+  def exec_params(sql, params = [])
+    []
+  end
 
+  def quote_ident(name)
+    "\"#{name}\""
+  end
+
+  def escape_literal(str)
+    "'#{str}'"
+  end
+end
+
+# Stub PG error classes if pg gem is not loaded
+unless defined?(PG::Error)
+  module PG
     class Error < StandardError; end
     class UndefinedTable < Error; end
     class InvalidPassword < Error; end
@@ -27,17 +35,19 @@ RSpec.describe Vectra::Providers::Pgvector do
     cfg
   end
 
-  let(:provider) { described_class.new(config) }
+  let(:mock_connection) { MockPgConnection.new }
 
-  let(:mock_connection) do
-    instance_double(PG::Connection).tap do |conn|
-      allow(conn).to receive(:quote_ident) { |name| "\"#{name}\"" }
-      allow(conn).to receive(:escape_literal) { |str| "'#{str}'" }
-    end
+  let(:provider) do
+    prov = described_class.new(config)
+    # Inject mock connection to avoid loading real pg gem
+    prov.instance_variable_set(:@connection, mock_connection)
+    prov
   end
 
   before do
-    allow(PG).to receive(:connect).and_return(mock_connection)
+    allow(mock_connection).to receive(:exec_params).and_call_original
+    allow(mock_connection).to receive(:quote_ident).and_call_original
+    allow(mock_connection).to receive(:escape_literal).and_call_original
   end
 
   describe "#provider_name" do
