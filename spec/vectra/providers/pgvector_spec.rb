@@ -1,15 +1,23 @@
 # frozen_string_literal: true
 
 # Stub PG module for testing without actual pg gem connection
-module PG
-  class Connection; end
-  class Error < StandardError; end
-  class UndefinedTable < Error; end
-  class InvalidPassword < Error; end
-  class ConnectionBad < Error; end
-  class UniqueViolation < Error; end
-  class CheckViolation < Error; end
-end unless defined?(PG)
+unless defined?(PG)
+  module PG
+    # Stub connection class for mocking
+    class Connection
+      def exec_params(*); end
+      def quote_ident(*); end
+      def escape_literal(*); end
+    end
+
+    class Error < StandardError; end
+    class UndefinedTable < Error; end
+    class InvalidPassword < Error; end
+    class ConnectionBad < Error; end
+    class UniqueViolation < Error; end
+    class CheckViolation < Error; end
+  end
+end
 
 RSpec.describe Vectra::Providers::Pgvector do
   let(:config) do
