@@ -1,7 +1,7 @@
 # Vectra
 
 [![Gem Version](https://badge.fury.io/rb/vectra.svg)](https://badge.fury.io/rb/vectra)
-[![CI](https://github.com/yourusername/vectra/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/vectra/actions)
+[![CI](https://github.com/stokry/vectra/actions/workflows/ci.yml/badge.svg)](https://github.com/stokry/vectra/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Vectra** is a unified Ruby client for vector databases. Write once, switch providers seamlessly.
@@ -360,7 +360,7 @@ bundle exec rake docs
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/yourusername/vectra.
+Bug reports and pull requests are welcome on GitHub at https://github.com/stokry/vectra.
 
 1. Fork it
 2. Create your feature branch (`git checkout -b feature/my-new-feature`)

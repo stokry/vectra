@@ -5,18 +5,18 @@ require_relative "lib/vectra/version"
 Gem::Specification.new do |spec|
   spec.name = "vectra"
   spec.version = Vectra::VERSION
-  spec.authors = ["Your Name"]
-  spec.email = ["your.email@example.com"]
+  spec.authors = ["Mijo Kristo"]
+  spec.email = ["mijo@mijokristo.com"]
 
   spec.summary = "Unified Ruby client for vector databases"
   spec.description = "Vectra provides a unified interface to work with multiple vector database providers including Pinecone, Qdrant, and Weaviate. Write once, switch providers easily."
-  spec.homepage = "https://github.com/yourusername/vectra"
+  spec.homepage = "https://github.com/stokry/vectra"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/yourusername/vectra"
-  spec.metadata["changelog_uri"] = "https://github.com/yourusername/vectra/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/stokry/vectra"
+  spec.metadata["changelog_uri"] = "https://github.com/stokry/vectra/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(__dir__) do
