@@ -155,14 +155,16 @@ RSpec.describe Vectra::Providers::Pgvector do
     it "includes namespace in WHERE clause when provided" do
       provider.query(index: "test_index", vector: query_vector, namespace: "prod")
 
-      query = expect_sql_matching(/SELECT.*FROM/)
+      # Use more specific pattern to avoid matching SELECT EXISTS
+      query = expect_sql_matching(/SELECT id,.*score.*FROM/)
       expect(query[:sql]).to include("namespace = 'prod'")
     end
 
     it "includes metadata filter in WHERE clause" do
       provider.query(index: "test_index", vector: query_vector, filter: { category: "tech" })
 
-      query = expect_sql_matching(/SELECT.*FROM/)
+      # Use more specific pattern to avoid matching SELECT EXISTS
+      query = expect_sql_matching(/SELECT id,.*score.*FROM/)
       expect(query[:sql]).to include("metadata->>'category' = 'tech'")
     end
   end
@@ -352,13 +354,15 @@ RSpec.describe Vectra::Providers::Pgvector do
     let(:mock_result_handlers) do
       {
         /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
-        /SELECT COUNT\(\*\) FROM/ => ->(_sql, _params) { [{ "count" => "1500" }] },
+        # GROUP BY must come BEFORE plain COUNT - both queries contain COUNT(*)
         /GROUP BY namespace/ => lambda { |_sql, _params|
           [
             { "namespace" => "", "count" => "1000" },
             { "namespace" => "prod", "count" => "500" }
           ]
         },
+        # Plain COUNT query (without GROUP BY)
+        /SELECT COUNT\(\*\) as count FROM/ => ->(_sql, _params) { [{ "count" => "1500" }] },
         /pg_attribute/ => ->(_sql, _params) { [{ "data_type" => "vector(512)" }] },
         /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=cosine" }] }
       }
@@ -376,7 +380,7 @@ RSpec.describe Vectra::Providers::Pgvector do
     it "queries COUNT and GROUP BY for namespace breakdown" do
       provider.stats(index: "test_index")
 
-      expect_sql_matching(/SELECT COUNT\(\*\)/)
+      expect_sql_matching(/SELECT COUNT\(\*\) as count/)
       expect_sql_matching(/GROUP BY namespace/)
     end
   end
