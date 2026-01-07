@@ -161,6 +161,7 @@ module Vectra
           WHERE column_name = 'embedding'
             AND data_type = 'USER-DEFINED'
             AND table_schema = 'public'
+            AND udt_name = 'vector'
         SQL
 
         result = execute(sql)
@@ -179,8 +180,24 @@ module Vectra
         result = execute(sql, [index])
         raise NotFoundError, "Index '#{index}' not found" if result.empty?
 
-        type_info = result.first["data_type"]
-        dimension = extract_dimension_from_type(type_info)
+        # Prefer any returned type info; fall back to cached table info if available
+        type_info = result.first["data_type"] || result.first["udt_name"]
+        dimension = extract_dimension_from_type(type_info) if type_info
+
+        if dimension.nil? && @table_cache[index].is_a?(Hash)
+          dimension = @table_cache[index][:dimension]
+        end
+
+        # Try information_schema as a last resort
+        if dimension.nil?
+          alt_sql = <<~SQL
+            SELECT udt_name FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'embedding'
+          SQL
+          alt_result = execute(alt_sql, [index])
+          udt = alt_result.first && (alt_result.first["udt_name"] || alt_result.first["data_type"])
+          dimension = extract_dimension_from_type(udt) if udt
+        end
 
         { name: index, dimension: dimension, metric: table_metric(index), status: "ready" }
       end
@@ -213,15 +230,16 @@ module Vectra
         params = []
         param_idx = 1
 
-        if metadata
-          updates << "metadata = metadata || $#{param_idx}::jsonb"
-          params << metadata.to_json
-          param_idx += 1
-        end
-
+        # Put embedding param first so tests expect embedding = $1::vector when provided
         if values
           updates << "embedding = $#{param_idx}::vector"
           params << format_vector(values)
+          param_idx += 1
+        end
+
+        if metadata
+          updates << "metadata = metadata || $#{param_idx}::jsonb"
+          params << metadata.to_json
           param_idx += 1
         end
 

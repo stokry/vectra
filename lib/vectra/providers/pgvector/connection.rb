@@ -58,9 +58,11 @@ module Vectra
         def handle_pg_error(error)
           case error
           when PG::UndefinedTable
-            raise NotFoundError, error.message
-          when PG::InvalidPassword, PG::ConnectionBad
-            raise AuthenticationError, error.message
+            raise NotFoundError, "not found"
+          when PG::InvalidPassword
+            raise AuthenticationError, "authentication failed"
+          when PG::ConnectionBad
+            raise ConnectionError, "connection failed"
           when PG::UniqueViolation, PG::CheckViolation
             raise ValidationError, error.message
           else
