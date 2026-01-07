@@ -16,19 +16,21 @@ rescue LoadError
 end
 
 RSpec.describe Vectra::Providers::Pgvector do
-  # Mock connection that records all SQL calls for verification
+  # Storage for executed queries - accessible to all tests
   let(:executed_queries) { [] }
 
+  # Smart mock connection that records ALL queries and returns appropriate results
   let(:mock_connection) do
     queries = executed_queries
+    result_handlers = mock_result_handlers
+
     Class.new do
       define_method(:exec_params) do |sql, params = []|
         queries << { sql: sql, params: params }
-        @next_result || []
-      end
 
-      define_method(:set_next_result) do |result|
-        @next_result = result
+        # Find matching handler based on SQL pattern
+        handler = result_handlers.find { |pattern, _| sql =~ pattern }
+        handler ? handler[1].call(sql, params) : []
       end
 
       def quote_ident(name)
@@ -40,6 +42,9 @@ RSpec.describe Vectra::Providers::Pgvector do
       end
     end.new
   end
+
+  # Default handlers - can be overridden in individual test contexts
+  let(:mock_result_handlers) { {} }
 
   let(:config) do
     cfg = Vectra::Configuration.new
@@ -57,7 +62,8 @@ RSpec.describe Vectra::Providers::Pgvector do
   # Helper to verify SQL was executed with expected pattern
   def expect_sql_matching(pattern)
     matching = executed_queries.find { |q| q[:sql] =~ pattern }
-    expect(matching).not_to be_nil, "Expected SQL matching #{pattern.inspect}, got: #{executed_queries.map { |q| q[:sql] }}"
+    expect(matching).not_to be_nil,
+           "Expected SQL matching #{pattern.inspect}, got: #{executed_queries.map { |q| q[:sql] }}"
     matching
   end
 
@@ -75,8 +81,11 @@ RSpec.describe Vectra::Providers::Pgvector do
       ]
     end
 
-    before do
-      mock_connection.set_next_result([{ "exists" => true }])
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /INSERT INTO/ => ->(_sql, _params) { [] }
+      }
     end
 
     it "upserts vectors and returns count" do
@@ -111,17 +120,12 @@ RSpec.describe Vectra::Providers::Pgvector do
       ]
     end
 
-    before do
-      # First call returns table exists, subsequent calls return query results
-      call_count = 0
-      allow(mock_connection).to receive(:exec_params) do |_sql, _params|
-        call_count += 1
-        case call_count
-        when 1 then [{ "exists" => true }]
-        when 2 then [{ "comment" => "vectra:metric=cosine" }]
-        else mock_results
-        end
-      end
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=cosine" }] },
+        /SELECT.*FROM/ => ->(_sql, _params) { mock_results }
+      }
     end
 
     it "returns QueryResult with correct structure" do
@@ -170,12 +174,11 @@ RSpec.describe Vectra::Providers::Pgvector do
       ]
     end
 
-    before do
-      call_count = 0
-      allow(mock_connection).to receive(:exec_params) do |_sql, _params|
-        call_count += 1
-        call_count == 1 ? [{ "exists" => true }] : mock_results
-      end
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /SELECT id, embedding, metadata/ => ->(_sql, _params) { mock_results }
+      }
     end
 
     it "fetches vectors by IDs and returns Hash with Vector objects" do
@@ -196,8 +199,11 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "#update" do
-    before do
-      mock_connection.set_next_result([{ "exists" => true }])
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /UPDATE/ => ->(_sql, _params) { [] }
+      }
     end
 
     it "updates metadata and returns success" do
@@ -235,8 +241,11 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "#delete" do
-    before do
-      mock_connection.set_next_result([{ "exists" => true }])
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /DELETE FROM/ => ->(_sql, _params) { [] }
+      }
     end
 
     it "deletes by IDs using WHERE IN clause" do
@@ -271,16 +280,14 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "#list_indexes" do
-    before do
-      call_count = 0
-      allow(mock_connection).to receive(:exec_params) do |_sql, _params|
-        call_count += 1
-        case call_count
-        when 1 then [{ "table_name" => "documents" }, { "table_name" => "embeddings" }]
-        when 2, 4 then [{ "data_type" => "vector(384)" }]
-        else [{ "comment" => "vectra:metric=cosine" }]
-        end
-      end
+    let(:mock_result_handlers) do
+      {
+        /information_schema\.columns/ => ->(_sql, _params) do
+          [{ "table_name" => "documents" }, { "table_name" => "embeddings" }]
+        end,
+        /pg_attribute/ => ->(_sql, _params) { [{ "data_type" => "vector(384)" }] },
+        /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=cosine" }] }
+      }
     end
 
     it "returns array of indexes with metadata" do
@@ -303,58 +310,58 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "#describe_index" do
-    before do
-      call_count = 0
-      allow(mock_connection).to receive(:exec_params) do |_sql, params|
-        call_count += 1
-        if params == ["missing"]
-          []
-        elsif call_count == 1
-          [{ "data_type" => "vector(768)" }]
-        else
-          [{ "comment" => "vectra:metric=euclidean" }]
-        end
+    context "when index exists" do
+      let(:mock_result_handlers) do
+        {
+          /pg_attribute/ => ->(_sql, _params) { [{ "data_type" => "vector(768)" }] },
+          /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=euclidean" }] }
+        }
+      end
+
+      it "returns complete index details" do
+        result = provider.describe_index(index: "test_index")
+
+        expect(result[:name]).to eq("test_index")
+        expect(result[:dimension]).to eq(768)
+        expect(result[:metric]).to eq("euclidean")
+        expect(result[:status]).to eq("ready")
+      end
+
+      it "extracts dimension from vector type definition" do
+        result = provider.describe_index(index: "test_index")
+
+        expect(result[:dimension]).to eq(768)
       end
     end
 
-    it "returns complete index details" do
-      result = provider.describe_index(index: "test_index")
+    context "when index does not exist" do
+      let(:mock_result_handlers) do
+        {
+          /pg_attribute/ => ->(_sql, _params) { [] }
+        }
+      end
 
-      expect(result[:name]).to eq("test_index")
-      expect(result[:dimension]).to eq(768)
-      expect(result[:metric]).to eq("euclidean")
-      expect(result[:status]).to eq("ready")
-    end
-
-    it "extracts dimension from vector type definition" do
-      result = provider.describe_index(index: "test_index")
-
-      expect(result[:dimension]).to eq(768)
-    end
-
-    it "raises NotFoundError when table does not exist" do
-      expect { provider.describe_index(index: "missing") }
-        .to raise_error(Vectra::NotFoundError, /not found/)
+      it "raises NotFoundError" do
+        expect { provider.describe_index(index: "missing") }
+          .to raise_error(Vectra::NotFoundError, /not found/)
+      end
     end
   end
 
   describe "#stats" do
-    before do
-      call_count = 0
-      allow(mock_connection).to receive(:exec_params) do |sql, _params|
-        call_count += 1
-        case sql
-        when /SELECT EXISTS/ then [{ "exists" => true }]
-        when /SELECT COUNT\(\*\) FROM/ then [{ "count" => "1500" }]
-        when /GROUP BY namespace/
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /SELECT COUNT\(\*\) FROM/ => ->(_sql, _params) { [{ "count" => "1500" }] },
+        /GROUP BY namespace/ => lambda { |_sql, _params|
           [
             { "namespace" => "", "count" => "1000" },
             { "namespace" => "prod", "count" => "500" }
           ]
-        when /pg_attribute/ then [{ "data_type" => "vector(512)" }]
-        else [{ "comment" => "vectra:metric=cosine" }]
-        end
-      end
+        },
+        /pg_attribute/ => ->(_sql, _params) { [{ "data_type" => "vector(512)" }] },
+        /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=cosine" }] }
+      }
     end
 
     it "returns comprehensive statistics" do
@@ -375,16 +382,14 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "#create_index" do
-    before do
-      call_count = 0
-      allow(mock_connection).to receive(:exec_params) do |_sql, _params|
-        call_count += 1
-        if call_count >= 4 # describe_index calls
-          call_count == 4 ? [{ "data_type" => "vector(384)" }] : [{ "comment" => "vectra:metric=cosine" }]
-        else
-          []
-        end
-      end
+    let(:mock_result_handlers) do
+      {
+        /CREATE TABLE/ => ->(_sql, _params) { [] },
+        /CREATE INDEX/ => ->(_sql, _params) { [] },
+        /COMMENT ON TABLE/ => ->(_sql, _params) { [] },
+        /pg_attribute/ => ->(_sql, _params) { [{ "data_type" => "vector(384)" }] },
+        /obj_description/ => ->(_sql, _params) { [{ "comment" => "vectra:metric=cosine" }] }
+      }
     end
 
     it "creates table with correct schema" do
@@ -421,8 +426,10 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "#delete_index" do
-    before do
-      mock_connection.set_next_result([])
+    let(:mock_result_handlers) do
+      {
+        /DROP TABLE/ => ->(_sql, _params) { [] }
+      }
     end
 
     it "drops the table with CASCADE" do
@@ -436,36 +443,45 @@ RSpec.describe Vectra::Providers::Pgvector do
   end
 
   describe "error handling" do
-    it "translates PG::UndefinedTable to Vectra::NotFoundError" do
+    before do
       allow(mock_connection).to receive(:exec_params)
-        .and_raise(PG::UndefinedTable.new("relation does not exist"))
-
-      expect { provider.list_indexes }
-        .to raise_error(Vectra::NotFoundError, /not found/i)
+        .and_raise(error_to_raise)
     end
 
-    it "translates PG::InvalidPassword to Vectra::AuthenticationError" do
-      allow(mock_connection).to receive(:exec_params)
-        .and_raise(PG::InvalidPassword.new("password authentication failed"))
+    context "with PG::UndefinedTable" do
+      let(:error_to_raise) { PG::UndefinedTable.new("relation does not exist") }
 
-      expect { provider.list_indexes }
-        .to raise_error(Vectra::AuthenticationError, /authentication/i)
+      it "translates to Vectra::NotFoundError" do
+        expect { provider.list_indexes }
+          .to raise_error(Vectra::NotFoundError, /not found/i)
+      end
     end
 
-    it "translates PG::ConnectionBad to Vectra::ConnectionError" do
-      allow(mock_connection).to receive(:exec_params)
-        .and_raise(PG::ConnectionBad.new("could not connect"))
+    context "with PG::InvalidPassword" do
+      let(:error_to_raise) { PG::InvalidPassword.new("password authentication failed") }
 
-      expect { provider.list_indexes }
-        .to raise_error(Vectra::ConnectionError)
+      it "translates to Vectra::AuthenticationError" do
+        expect { provider.list_indexes }
+          .to raise_error(Vectra::AuthenticationError, /authentication/i)
+      end
     end
 
-    it "translates PG::UniqueViolation to Vectra::ValidationError" do
-      allow(mock_connection).to receive(:exec_params)
-        .and_raise(PG::UniqueViolation.new("duplicate key value"))
+    context "with PG::ConnectionBad" do
+      let(:error_to_raise) { PG::ConnectionBad.new("could not connect") }
 
-      expect { provider.list_indexes }
-        .to raise_error(Vectra::ValidationError)
+      it "translates to Vectra::ConnectionError" do
+        expect { provider.list_indexes }
+          .to raise_error(Vectra::ConnectionError)
+      end
+    end
+
+    context "with PG::UniqueViolation" do
+      let(:error_to_raise) { PG::UniqueViolation.new("duplicate key value") }
+
+      it "translates to Vectra::ValidationError" do
+        expect { provider.list_indexes }
+          .to raise_error(Vectra::ValidationError)
+      end
     end
   end
 
@@ -480,21 +496,25 @@ RSpec.describe Vectra::Providers::Pgvector do
     it "accepts PostgreSQL connection URL format" do
       config.host = "postgres://user:pass@localhost:5432/mydb"
 
-      provider = described_class.new(config)
-      expect(provider.provider_name).to eq(:pgvector)
+      new_provider = described_class.new(config)
+      expect(new_provider.provider_name).to eq(:pgvector)
     end
 
     it "accepts simple hostname format" do
       config.host = "localhost"
 
-      provider = described_class.new(config)
-      expect(provider.provider_name).to eq(:pgvector)
+      new_provider = described_class.new(config)
+      expect(new_provider.provider_name).to eq(:pgvector)
     end
   end
 
   describe "SQL injection prevention" do
-    before do
-      mock_connection.set_next_result([{ "exists" => true }])
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /DELETE FROM/ => ->(_sql, _params) { [] },
+        /INSERT INTO/ => ->(_sql, _params) { [] }
+      }
     end
 
     it "uses parameterized queries for user input" do
