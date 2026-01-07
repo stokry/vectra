@@ -3,7 +3,7 @@
 require_relative "lib/vectra/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "vectra"
+  spec.name = "vectra-client"
   spec.version = Vectra::VERSION
   spec.authors = ["Mijo Kristo"]
   spec.email = ["mijo@mijokristo.com"]
