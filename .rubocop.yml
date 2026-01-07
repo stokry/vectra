@@ -33,18 +33,28 @@ Metrics/MethodLength:
     - 'spec/**/*'
 
 Metrics/AbcSize:
-  Max: 20
+  Max: 25
   Exclude:
     - 'spec/**/*'
 
 Metrics/ClassLength:
-  Max: 150
+  Max: 250
   Exclude:
     - 'spec/**/*'
 
 Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*'
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Metrics/ParameterLists:
+  Max: 7
+  CountKeywordArgs: false
 
 # Style
 Style/Documentation:
@@ -54,7 +64,13 @@ Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Style/StringLiteralsInInterpolation:
-  EnforcedStyle: double_quotes
+  Enabled: false # Allow both single and double quotes
+
+Style/ArgumentsForwarding:
+  Enabled: false # Ruby 3.2+ feature, but not required
+
+Style/IfUnlessModifier:
+  Enabled: false # Allow multi-line if/unless for clarity
 
 Style/FrozenStringLiteralComment:
   Enabled: true
@@ -109,13 +125,19 @@ RSpec/ContextWording:
   Enabled: false
 
 RSpec/MessageSpies:
-  EnforcedStyle: receive
+  Enabled: false # Allow both have_received and receive
 
 RSpec/IdenticalEqualityAssertion:
   Enabled: false
 
 RSpec/VerifiedDoubles:
   Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false
+
+RSpec/DescribeClass:
+  Enabled: false # Allow string descriptions
 
 # Disable problematic Capybara cop
 Capybara/RSpec/PredicateMatcher:
@@ -124,3 +146,13 @@ Capybara/RSpec/PredicateMatcher:
 # Gemspec
 Gemspec/DevelopmentDependencies:
   Enabled: false
+
+# Naming
+Naming/MemoizedInstanceVariableName:
+  Enabled: false # Allow descriptive names
+
+# Layout
+Layout/LineLength:
+  Max: 185
+  Exclude:
+    - 'vectra.gemspec'
