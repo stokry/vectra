@@ -217,7 +217,7 @@ module Vectra
 
         # Parse dimension from type like "vector(384)"
         type_info = result.first["data_type"]
-        dimension = type_info.match(/vector\((\d+)\)/)&.captures&.first&.to_i
+        dimension = extract_dimension_from_type(type_info)
 
         {
           name: index,
@@ -258,6 +258,12 @@ module Vectra
         }
       end
 
+      INDEX_OPS = {
+        "cosine" => "vector_cosine_ops",
+        "euclidean" => "vector_l2_ops",
+        "inner_product" => "vector_ip_ops"
+      }.freeze
+
       # Create a new index (table with vector column)
       #
       # @param name [String] table name
@@ -266,49 +272,11 @@ module Vectra
       # @return [Hash] created index info
       def create_index(name:, dimension:, metric: DEFAULT_METRIC)
         validate_metric!(metric)
-
-        # Ensure pgvector extension exists
-        execute("CREATE EXTENSION IF NOT EXISTS vector")
-
-        # Create table
-        sql = <<~SQL
-          CREATE TABLE IF NOT EXISTS #{quote_ident(name)} (
-            id TEXT PRIMARY KEY,
-            embedding vector(#{dimension.to_i}),
-            metadata JSONB DEFAULT '{}',
-            namespace TEXT DEFAULT '',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )
-        SQL
-        execute(sql)
-
-        # Create index for fast similarity search
-        index_op = case metric
-                   when "cosine" then "vector_cosine_ops"
-                   when "euclidean" then "vector_l2_ops"
-                   when "inner_product" then "vector_ip_ops"
-                   end
-
-        idx_name = "#{name}_embedding_idx"
-        idx_sql = <<~SQL
-          CREATE INDEX IF NOT EXISTS #{quote_ident(idx_name)}
-          ON #{quote_ident(name)}
-          USING ivfflat (embedding #{index_op})
-          WITH (lists = 100)
-        SQL
-
-        begin
-          execute(idx_sql)
-        rescue PG::Error => e
-          # IVFFlat requires data; will be created on first insert
-          log_debug("Index creation deferred: #{e.message}")
-        end
-
-        # Store metric in comment for later retrieval
-        execute("COMMENT ON TABLE #{quote_ident(name)} IS #{escape_literal("vectra:metric=#{metric}")}")
+        create_table_with_vector(name, dimension)
+        create_ivfflat_index(name, metric)
+        store_metric_comment(name, metric)
 
         @table_cache[name] = { dimension: dimension, metric: metric }
-
         log_debug("Created index #{name}")
         describe_index(index: name)
       end
@@ -441,7 +409,8 @@ module Vectra
         SQL
 
         result = execute(sql, [index])
-        exists = result.first["exists"] == "t" || result.first["exists"] == true
+        exists_value = result.first["exists"]
+        exists = [true, "t"].include?(exists_value)
 
         raise NotFoundError, "Index '#{index}' not found" unless exists
 
@@ -473,6 +442,52 @@ module Vectra
         raise ValidationError, "Invalid metric '#{metric}'. Supported: #{DISTANCE_FUNCTIONS.keys.join(', ')}"
       end
 
+      # Extract dimension from vector type string like "vector(384)"
+      def extract_dimension_from_type(type_info)
+        match = type_info.match(/vector\((\d+)\)/)
+        return nil unless match
+
+        match.captures.first.to_i
+      end
+
+      # Create table with vector column
+      def create_table_with_vector(name, dimension)
+        execute("CREATE EXTENSION IF NOT EXISTS vector")
+
+        sql = <<~SQL
+          CREATE TABLE IF NOT EXISTS #{quote_ident(name)} (
+            id TEXT PRIMARY KEY,
+            embedding vector(#{dimension.to_i}),
+            metadata JSONB DEFAULT '{}',
+            namespace TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        SQL
+        execute(sql)
+      end
+
+      # Create IVFFlat index for similarity search
+      def create_ivfflat_index(name, metric)
+        index_op = INDEX_OPS[metric]
+        idx_name = "#{name}_embedding_idx"
+        idx_sql = <<~SQL
+          CREATE INDEX IF NOT EXISTS #{quote_ident(idx_name)}
+          ON #{quote_ident(name)}
+          USING ivfflat (embedding #{index_op})
+          WITH (lists = 100)
+        SQL
+
+        execute(idx_sql)
+      rescue PG::Error => e
+        # IVFFlat requires data; will be created on first insert
+        log_debug("Index creation deferred: #{e.message}")
+      end
+
+      # Store metric in table comment
+      def store_metric_comment(name, metric)
+        execute("COMMENT ON TABLE #{quote_ident(name)} IS #{escape_literal("vectra:metric=#{metric}")}")
+      end
+
       # Upsert a single vector
       def upsert_single_vector(index, vec, namespace)
         sql = <<~SQL
@@ -484,12 +499,13 @@ module Vectra
             namespace = EXCLUDED.namespace
         SQL
 
-        execute(sql, [
+        params = [
           vec[:id],
           format_vector(vec[:values]),
           (vec[:metadata] || {}).to_json,
           namespace
-        ])
+        ]
+        execute(sql, params)
       end
 
       # Build SQL for vector similarity query
@@ -505,11 +521,9 @@ module Vectra
         where_clauses = []
         where_clauses << "namespace = #{escape_literal(namespace)}" if namespace
 
-        if filter
-          filter.each do |key, value|
-            json_path = "metadata->>#{escape_literal(key.to_s)}"
-            where_clauses << "#{json_path} = #{escape_literal(value.to_s)}"
-          end
+        filter&.each do |key, value|
+          json_path = "metadata->>#{escape_literal(key.to_s)}"
+          where_clauses << "#{json_path} = #{escape_literal(value.to_s)}"
         end
 
         sql += " WHERE #{where_clauses.join(' AND ')}" if where_clauses.any?

@@ -54,12 +54,15 @@ RSpec.describe Vectra::Providers::Pgvector do
     end
 
     it "includes namespace when provided" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/INSERT INTO/, array_including("my-namespace"))
-        .twice
         .and_return([])
 
       provider.upsert(index: "test_index", vectors: vectors, namespace: "my-namespace")
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/INSERT INTO/, array_including("my-namespace"))
+        .twice
     end
   end
 
@@ -103,19 +106,25 @@ RSpec.describe Vectra::Providers::Pgvector do
     end
 
     it "filters by namespace" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/WHERE.*namespace = 'prod'/, [])
         .and_return(mock_results)
 
       provider.query(index: "test_index", vector: query_vector, namespace: "prod")
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/WHERE.*namespace = 'prod'/, [])
     end
 
     it "applies metadata filter" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/metadata->>'category' = 'test'/, [])
         .and_return(mock_results)
 
       provider.query(index: "test_index", vector: query_vector, filter: { category: "test" })
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/metadata->>'category' = 'test'/, [])
     end
   end
 
@@ -167,11 +176,14 @@ RSpec.describe Vectra::Providers::Pgvector do
     end
 
     it "updates values" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/embedding = \$1::vector/, anything)
         .and_return([])
 
       provider.update(index: "test_index", id: "vec1", values: [0.1, 0.2])
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/embedding = \$1::vector/, anything)
     end
   end
 
@@ -193,19 +205,25 @@ RSpec.describe Vectra::Providers::Pgvector do
     end
 
     it "deletes all when specified" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/DELETE FROM "test_index"$/, [])
         .and_return([])
 
       provider.delete(index: "test_index", delete_all: true)
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/DELETE FROM "test_index"$/, [])
     end
 
     it "deletes by filter" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/metadata->>\$1 = \$2/, ["category", "old"])
         .and_return([])
 
       provider.delete(index: "test_index", filter: { category: "old" })
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/metadata->>\$1 = \$2/, ["category", "old"])
     end
   end
 
@@ -274,10 +292,7 @@ RSpec.describe Vectra::Providers::Pgvector do
 
       allow(mock_connection).to receive(:exec_params)
         .with(/GROUP BY namespace/, [])
-        .and_return([
-          { "namespace" => "", "count" => "800" },
-          { "namespace" => "prod", "count" => "200" }
-        ])
+        .and_return([{ "namespace" => "", "count" => "800" }, { "namespace" => "prod", "count" => "200" }])
 
       allow(mock_connection).to receive(:exec_params)
         .with(/pg_attribute/, ["test_index"])
@@ -311,27 +326,36 @@ RSpec.describe Vectra::Providers::Pgvector do
     end
 
     it "creates table with vector column" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/CREATE TABLE IF NOT EXISTS.*vector\(384\)/, [])
         .and_return([])
 
       provider.create_index(name: "new_index", dimension: 384)
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/CREATE TABLE IF NOT EXISTS.*vector\(384\)/, [])
     end
 
     it "creates IVFFlat index" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/CREATE INDEX.*USING ivfflat/, [])
         .and_return([])
 
       provider.create_index(name: "new_index", dimension: 384)
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/CREATE INDEX.*USING ivfflat/, [])
     end
 
     it "stores metric in table comment" do
-      expect(mock_connection).to receive(:exec_params)
+      allow(mock_connection).to receive(:exec_params)
         .with(/COMMENT ON TABLE.*vectra:metric=euclidean/, [])
         .and_return([])
 
       provider.create_index(name: "new_index", dimension: 384, metric: "euclidean")
+
+      expect(mock_connection).to have_received(:exec_params)
+        .with(/COMMENT ON TABLE.*vectra:metric=euclidean/, [])
     end
   end
 
