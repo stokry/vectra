@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-01-07
+
+### Added
+
+- **pgvector provider** - Full PostgreSQL with pgvector extension support:
+  - Vector upsert, query, fetch, update, delete operations
+  - Index (table) management with automatic schema creation
+  - Multiple similarity metrics: cosine, euclidean, inner product
+  - Namespace support via namespace column
+  - Metadata filtering with JSONB
+  - IVFFlat index creation for fast similarity search
+- `Vectra.pgvector` convenience method for creating pgvector clients
+- Comprehensive unit and integration tests for pgvector provider
+
+### Changed
+
+- Updated gemspec description to include pgvector
+- Added `pg` gem as development dependency
+
+### Provider Support
+
+- ✅ Pinecone - Fully implemented
+- ✅ pgvector (PostgreSQL) - Fully implemented
+- 🚧 Qdrant - Stub implementation (planned for v0.2.0)
+- 🚧 Weaviate - Stub implementation (planned for v0.3.0)
+
 ## [0.1.0] - 2024-XX-XX
 
 ### Added
@@ -37,12 +63,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Result statistics
 - Full RSpec test suite
 - YARD documentation
-
-### Provider Support
-
-- ✅ Pinecone - Fully implemented
-- 🚧 Qdrant - Stub implementation (planned for v0.2.0)
-- 🚧 Weaviate - Stub implementation (planned for v0.3.0)
 
 ## Planned
 

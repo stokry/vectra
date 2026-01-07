@@ -264,6 +264,8 @@ module Vectra
         Providers::Qdrant.new(config)
       when :weaviate
         Providers::Weaviate.new(config)
+      when :pgvector
+        Providers::Pgvector.new(config)
       else
         raise UnsupportedProviderError, "Provider '#{config.provider}' is not supported"
       end

@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ["mijo@mijokristo.com"]
 
   spec.summary = "Unified Ruby client for vector databases"
-  spec.description = "Vectra provides a unified interface to work with multiple vector database providers including Pinecone, Qdrant, and Weaviate. Write once, switch providers easily."
+  spec.description = "Vectra provides a unified interface to work with multiple vector database providers including Pinecone, Qdrant, Weaviate, and PostgreSQL with pgvector. Write once, switch providers easily."
   spec.homepage = "https://github.com/stokry/vectra"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
@@ -34,7 +34,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faraday", "~> 2.0"
   spec.add_dependency "faraday-retry", "~> 2.0"
 
+  # Optional runtime dependencies (required for specific providers)
+  # For pgvector provider: gem 'pg', '~> 1.5'
+
   # Development dependencies
+  spec.add_development_dependency "pg", "~> 1.5"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.12"
   spec.add_development_dependency "webmock", "~> 3.19"

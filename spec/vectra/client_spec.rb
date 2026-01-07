@@ -387,5 +387,19 @@ RSpec.describe Vectra::Client do
         expect(client.config.provider).to eq(:weaviate)
       end
     end
+
+    describe "Vectra.pgvector" do
+      it "creates a pgvector client with connection URL" do
+        client = Vectra.pgvector(connection_url: "postgres://user:pass@localhost/db")
+        expect(client.config.provider).to eq(:pgvector)
+        expect(client.config.host).to eq("postgres://user:pass@localhost/db")
+      end
+
+      it "creates a pgvector client with host and password" do
+        client = Vectra.pgvector(host: "localhost", password: "secret")
+        expect(client.config.provider).to eq(:pgvector)
+        expect(client.config.api_key).to eq("secret")
+      end
+    end
   end
 end

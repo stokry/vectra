@@ -23,6 +23,7 @@
 | Provider | Status | Version |
 |----------|--------|---------|
 | [Pinecone](https://pinecone.io) | ✅ Fully Supported | v0.1.0 |
+| [PostgreSQL + pgvector](https://github.com/pgvector/pgvector) | ✅ Fully Supported | v0.1.1 |
 | [Qdrant](https://qdrant.tech) | 🚧 Planned | v0.2.0 |
 | [Weaviate](https://weaviate.io) | 🚧 Planned | v0.3.0 |
 
@@ -44,6 +45,14 @@ Or install it yourself:
 
 ```bash
 gem install vectra
+```
+
+### Provider-Specific Dependencies
+
+For **pgvector** support, add the `pg` gem:
+
+```ruby
+gem 'pg', '~> 1.5'
 ```
 
 ## Quick Start
@@ -71,6 +80,11 @@ Or use per-client configuration:
 client = Vectra.pinecone(
   api_key: ENV['PINECONE_API_KEY'],
   environment: 'us-east-1'
+)
+
+# Shortcut for pgvector (PostgreSQL)
+client = Vectra.pgvector(
+  connection_url: 'postgres://user:password@localhost/mydb'
 )
 
 # Generic client with options
@@ -204,7 +218,9 @@ stats = client.stats(index: 'my-index')
 puts stats[:total_vector_count]
 ```
 
-### Namespaces (Pinecone)
+### Namespaces
+
+Namespaces allow you to partition vectors within an index:
 
 ```ruby
 # Upsert to a namespace
@@ -223,19 +239,73 @@ client.query(
 )
 ```
 
+### pgvector (PostgreSQL)
+
+pgvector uses PostgreSQL tables as indexes. Each "index" is a table with a vector column.
+
+#### Setup PostgreSQL with pgvector
+
+```bash
+# Using Docker
+docker run -d --name pgvector \
+  -e POSTGRES_PASSWORD=password \
+  -p 5432:5432 \
+  pgvector/pgvector:pg16
+```
+
+#### Create an Index (Table)
+
+```ruby
+client = Vectra.pgvector(connection_url: 'postgres://postgres:password@localhost/postgres')
+
+# Create a new index with cosine similarity
+client.provider.create_index(
+  name: 'documents',
+  dimension: 384,
+  metric: 'cosine'  # or 'euclidean', 'inner_product'
+)
+```
+
+#### Supported Metrics
+
+| Metric | Description | pgvector Operator |
+|--------|-------------|-------------------|
+| `cosine` | Cosine similarity (default) | `<=>` |
+| `euclidean` | Euclidean distance | `<->` |
+| `inner_product` | Inner product / dot product | `<#>` |
+
+#### Table Structure
+
+Vectra creates tables with the following structure:
+
+```sql
+CREATE TABLE documents (
+  id TEXT PRIMARY KEY,
+  embedding vector(384),
+  metadata JSONB DEFAULT '{}',
+  namespace TEXT DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- IVFFlat index for fast similarity search
+CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops);
+```
+
 ## Configuration Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `provider` | Vector database provider (`:pinecone`, `:qdrant`, `:weaviate`) | Required |
-| `api_key` | API key for authentication | Required |
+| `provider` | Vector database provider (`:pinecone`, `:pgvector`, `:qdrant`, `:weaviate`) | Required |
+| `api_key` | API key for authentication (password for pgvector) | Required* |
 | `environment` | Environment/region (Pinecone) | - |
-| `host` | Direct host URL | - |
+| `host` | Direct host URL or PostgreSQL connection URL | - |
 | `timeout` | Request timeout in seconds | 30 |
 | `open_timeout` | Connection timeout in seconds | 10 |
 | `max_retries` | Maximum retry attempts | 3 |
 | `retry_delay` | Initial retry delay in seconds | 1 |
 | `logger` | Logger instance for debugging | nil |
+
+*For pgvector, `api_key` is used as the PostgreSQL password.
 
 ## Error Handling
 
@@ -338,12 +408,18 @@ bundle exec rake docs
 
 ## Roadmap
 
-### v0.1.0 (Current)
+### v0.1.0
 - ✅ Pinecone provider
 - ✅ Basic CRUD operations
 - ✅ Configuration system
 - ✅ Error handling with retries
 - ✅ Comprehensive tests
+
+### v0.1.1 (Current)
+- ✅ pgvector (PostgreSQL) provider
+- ✅ Multiple similarity metrics (cosine, euclidean, inner product)
+- ✅ Namespace support for pgvector
+- ✅ IVFFlat index creation
 
 ### v0.2.0
 - 🚧 Qdrant provider

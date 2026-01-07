@@ -11,7 +11,7 @@ module Vectra
   #   end
   #
   class Configuration
-    SUPPORTED_PROVIDERS = %i[pinecone qdrant weaviate].freeze
+    SUPPORTED_PROVIDERS = %i[pinecone qdrant weaviate pgvector].freeze
 
     attr_accessor :api_key, :environment, :host, :timeout, :open_timeout,
                   :max_retries, :retry_delay, :logger
@@ -109,6 +109,8 @@ module Vectra
         validate_qdrant!
       when :weaviate
         validate_weaviate!
+      when :pgvector
+        validate_pgvector!
       end
     end
 
@@ -129,6 +131,12 @@ module Vectra
       return unless host.nil?
 
       raise ConfigurationError, "Weaviate requires 'host' to be configured"
+    end
+
+    def validate_pgvector!
+      return unless host.nil?
+
+      raise ConfigurationError, "pgvector requires 'host' (connection URL or hostname) to be configured"
     end
   end
 

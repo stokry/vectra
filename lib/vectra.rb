@@ -9,6 +9,7 @@ require_relative "vectra/providers/base"
 require_relative "vectra/providers/pinecone"
 require_relative "vectra/providers/qdrant"
 require_relative "vectra/providers/weaviate"
+require_relative "vectra/providers/pgvector"
 require_relative "vectra/client"
 
 # Vectra - Unified Ruby client for vector databases
@@ -102,6 +103,29 @@ module Vectra
         provider: :weaviate,
         api_key: api_key,
         host: host,
+        **options
+      )
+    end
+
+    # Shortcut to create a pgvector client
+    #
+    # @param connection_url [String] PostgreSQL connection URL (postgres://user:pass@host/db)
+    # @param host [String] PostgreSQL host (alternative to connection_url)
+    # @param password [String] PostgreSQL password (used with host)
+    # @param options [Hash] additional options
+    # @return [Client]
+    #
+    # @example With connection URL
+    #   Vectra.pgvector(connection_url: "postgres://user:pass@localhost/mydb")
+    #
+    # @example With host and password
+    #   Vectra.pgvector(host: "localhost", password: "secret")
+    #
+    def pgvector(connection_url: nil, host: nil, password: nil, **options)
+      Client.new(
+        provider: :pgvector,
+        api_key: password,
+        host: connection_url || host,
         **options
       )
     end

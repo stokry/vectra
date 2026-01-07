@@ -41,3 +41,17 @@ RSpec.shared_context "with weaviate configuration" do
     end
   end
 end
+
+RSpec.shared_context "with pgvector configuration" do
+  let(:api_key) { "test-password" }
+  let(:host) { "postgres://postgres:test@localhost/vectra_test" }
+  let(:index_name) { "test_vectors" }
+
+  before do
+    Vectra.configure do |config|
+      config.provider = :pgvector
+      config.api_key = api_key
+      config.host = host
+    end
+  end
+end
