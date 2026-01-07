@@ -29,12 +29,14 @@ RSpec.describe Vectra::Client do
     end
 
     it "validates configuration on initialize" do
+      Vectra.reset_configuration!
       expect do
         described_class.new(provider: :pinecone, api_key: nil)
       end.to raise_error(Vectra::ConfigurationError)
     end
 
     it "builds the appropriate provider" do
+      client # trigger lazy evaluation
       expect(Vectra::Providers::Pinecone).to have_received(:new)
     end
   end

@@ -13,7 +13,7 @@ RSpec.describe Vectra::QueryResult do
 
   describe "#initialize" do
     it "creates result with matches" do
-      expect(result.matches).to have(3).items
+      expect(result.matches.size).to eq(3)
       expect(result.namespace).to eq("test")
     end
 
