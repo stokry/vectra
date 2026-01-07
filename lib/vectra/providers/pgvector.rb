@@ -147,6 +147,9 @@ module Vectra
         elsif filter
           sql, params = build_filter_delete_sql(index, filter, namespace)
           execute(sql, params)
+        elsif namespace
+          # Delete all vectors in the specified namespace when only namespace provided
+          delete_all_vectors(index, namespace)
         end
 
         log_debug("Deleted vectors from #{index}")
