@@ -2,9 +2,11 @@
 
 RSpec.describe "Pinecone Integration", :vcr do
   # Skip integration tests in CI when credentials are not available
+  # rubocop:disable RSpec/BeforeAfterAll
   before(:all) do
     skip "Pinecone API key not configured" unless ENV["PINECONE_API_KEY"]
   end
+  # rubocop:enable RSpec/BeforeAfterAll
 
   let(:api_key) { ENV.fetch("PINECONE_API_KEY") }
   let(:environment) { ENV.fetch("PINECONE_ENVIRONMENT", "us-east-1") }
