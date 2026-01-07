@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.describe "Pinecone Integration", :vcr do
-  let(:api_key) { ENV.fetch("PINECONE_API_KEY", "test-api-key") }
+  # Skip integration tests in CI when credentials are not available
+  before(:all) do
+    skip "Pinecone API key not configured" unless ENV["PINECONE_API_KEY"]
+  end
+
+  let(:api_key) { ENV.fetch("PINECONE_API_KEY") }
   let(:environment) { ENV.fetch("PINECONE_ENVIRONMENT", "us-east-1") }
   let(:index_name) { "vectra-test-index" }
 
