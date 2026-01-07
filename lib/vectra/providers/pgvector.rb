@@ -140,16 +140,13 @@ module Vectra
       def delete(index:, ids: nil, namespace: nil, filter: nil, delete_all: false)
         ensure_table_exists!(index)
 
-        if delete_all
+        if delete_all || (namespace && ids.nil? && filter.nil?)
           delete_all_vectors(index, namespace)
         elsif ids
           delete_by_ids(index, ids, namespace)
         elsif filter
           sql, params = build_filter_delete_sql(index, filter, namespace)
           execute(sql, params)
-        elsif namespace
-          # Delete all vectors in the specified namespace when only namespace provided
-          delete_all_vectors(index, namespace)
         end
 
         log_debug("Deleted vectors from #{index}")
@@ -183,26 +180,29 @@ module Vectra
         result = execute(sql, [index])
         raise NotFoundError, "Index '#{index}' not found" if result.empty?
 
-        # Prefer any returned type info; fall back to cached table info if available
-        type_info = result.first["data_type"] || result.first["udt_name"]
-        dimension = extract_dimension_from_type(type_info) if type_info
-
-        if dimension.nil? && @table_cache[index].is_a?(Hash)
-          dimension = @table_cache[index][:dimension]
-        end
-
-        # Try information_schema as a last resort
-        if dimension.nil?
-          alt_sql = <<~SQL
-            SELECT udt_name FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'embedding'
-          SQL
-          alt_result = execute(alt_sql, [index])
-          udt = alt_result.first && (alt_result.first["udt_name"] || alt_result.first["data_type"])
-          dimension = extract_dimension_from_type(udt) if udt
-        end
+        dimension = resolve_index_dimension(index, result)
 
         { name: index, dimension: dimension, metric: table_metric(index), status: "ready" }
+      end
+
+      # Resolve vector dimension for an index from various sources
+      def resolve_index_dimension(index, pg_attribute_result)
+        type_info = pg_attribute_result.first["data_type"] || pg_attribute_result.first["udt_name"]
+        dim = extract_dimension_from_type(type_info) if type_info
+
+        return dim if dim
+
+        if @table_cache[index].is_a?(Hash)
+          return @table_cache[index][:dimension]
+        end
+
+        alt_sql = <<~SQL
+          SELECT udt_name, data_type FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'embedding'
+        SQL
+        alt_result = execute(alt_sql, [index])
+        udt = alt_result.first && (alt_result.first["udt_name"] || alt_result.first["data_type"])
+        extract_dimension_from_type(udt) if udt
       end
 
       # @see Base#stats
