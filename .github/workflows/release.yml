@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Changelog
-        uses: github-changelog-generator/github-changelog-generator-action@v2.4
+        uses: decathlon/release-notes-generator-action@v1.4.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           output: CHANGELOG.md
