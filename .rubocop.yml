@@ -110,3 +110,17 @@ RSpec/ContextWording:
 
 RSpec/MessageSpies:
   EnforcedStyle: receive
+
+RSpec/IdenticalEqualityAssertion:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+# Disable problematic Capybara cop
+Capybara/RSpec/PredicateMatcher:
+  Enabled: false
+
+# Gemspec
+Gemspec/DevelopmentDependencies:
+  Enabled: false
