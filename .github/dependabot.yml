@@ -1,0 +1,57 @@
+version: 2
+updates:
+  # Maintain dependencies for Bundler (Ruby)
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Zagreb"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "stokry"
+    assignees:
+      - "stokry"
+    labels:
+      - "dependencies"
+      - "ruby"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Group all patch and minor updates together
+    groups:
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore major version updates for these (require manual review)
+    ignore:
+      - dependency-name: "faraday"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "rspec"
+        update-types: ["version-update:semver-major"]
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Zagreb"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "stokry"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

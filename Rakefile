@@ -26,3 +26,9 @@ task :docs do
   require "yard"
   YARD::CLI::Yardoc.run("--output-dir", "doc", "lib/**/*.rb", "-", "README.md", "CHANGELOG.md")
 end
+
+desc "Generate CHANGELOG.md"
+task :changelog do
+  puts "Generating CHANGELOG.md..."
+  system("github_changelog_generator") || puts("Install with: gem install github_changelog_generator")
+end

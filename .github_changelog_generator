@@ -1,0 +1,14 @@
+user=stokry
+project=vectra
+future-release=0.2.0
+since-tag=v0.1.0
+unreleased=true
+unreleased-label=**Unreleased**
+header-label=# Changelog
+enhancement-label=**Enhancements:**
+bugs-label=**Bug Fixes:**
+issues-label=**Closed Issues:**
+pr-label=**Merged Pull Requests:**
+configure-sections={"documentation":{"prefix":"**Documentation:**","labels":["documentation","docs"]},"tests":{"prefix":"**Tests:**","labels":["test","tests"]},"refactoring":{"prefix":"**Refactoring:**","labels":["refactor","refactoring"]}}
+exclude-labels=duplicate,question,invalid,wontfix,skip-changelog
+add-sections={"security":{"prefix":"**Security:**","labels":["security"]}}
