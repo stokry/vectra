@@ -5,6 +5,7 @@ require_relative "vectra/errors"
 require_relative "vectra/configuration"
 require_relative "vectra/vector"
 require_relative "vectra/query_result"
+require_relative "vectra/instrumentation"
 require_relative "vectra/providers/base"
 require_relative "vectra/providers/pinecone"
 require_relative "vectra/providers/qdrant"
@@ -53,6 +54,14 @@ require_relative "vectra/client"
 #
 module Vectra
   class << self
+    # Register an instrumentation handler
+    #
+    # @yield [event] The instrumentation event
+    # @see Instrumentation.on_operation
+    def on_operation(&block)
+      Instrumentation.on_operation(&block)
+    end
+
     # Create a new client with the given options
     #
     # @param options [Hash] client options

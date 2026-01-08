@@ -14,7 +14,8 @@ module Vectra
     SUPPORTED_PROVIDERS = %i[pinecone qdrant weaviate pgvector].freeze
 
     attr_accessor :api_key, :environment, :host, :timeout, :open_timeout,
-                  :max_retries, :retry_delay, :logger
+                  :max_retries, :retry_delay, :logger, :pool_size, :pool_timeout,
+                  :batch_size, :instrumentation
 
     attr_reader :provider
 
@@ -28,6 +29,10 @@ module Vectra
       @max_retries = 3
       @retry_delay = 1
       @logger = nil
+      @pool_size = 5
+      @pool_timeout = 5
+      @batch_size = 100
+      @instrumentation = false
     end
 
     # Set the provider
