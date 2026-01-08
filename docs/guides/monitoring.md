@@ -353,6 +353,51 @@ SELECT percentage(count(*), WHERE error IS NOT NULL) FROM VectraOperation TIMESE
 SELECT max(duration) FROM VectraOperation FACET operation WHERE duration > 1
 ```
 
+### Sentry
+
+```ruby
+# config/initializers/vectra_sentry.rb
+require 'vectra/instrumentation/sentry'
+
+Vectra.configure do |config|
+  config.instrumentation = true
+end
+
+# Setup with options
+Vectra::Instrumentation::Sentry.setup!(
+  capture_all_errors: false,        # Only capture failures
+  fingerprint_by_operation: true    # Group errors by operation
+)
+
+# Features:
+# - Breadcrumbs for all operations
+# - Error context with provider/operation/index
+# - Custom fingerprinting for error grouping
+# - Severity levels based on error type
+```
+
+### Honeybadger
+
+```ruby
+# config/initializers/vectra_honeybadger.rb
+require 'vectra/instrumentation/honeybadger'
+
+Vectra.configure do |config|
+  config.instrumentation = true
+end
+
+Vectra::Instrumentation::Honeybadger.setup!(
+  notify_on_rate_limit: false,   # Don't spam on rate limits
+  notify_on_validation: false    # Don't spam on validation errors
+)
+
+# Features:
+# - Breadcrumbs for operation tracing
+# - Context with vectra metadata
+# - Severity tags (critical, high, medium, low)
+# - Custom fingerprinting
+```
+
 ### OpenTelemetry
 
 ```ruby
@@ -484,6 +529,86 @@ receivers:
         title: '{{ .GroupLabels.alertname }}'
         text: '{{ .Annotations.description }}'
         color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+```
+
+## Circuit Breaker Pattern
+
+Prevent cascading failures with built-in circuit breaker:
+
+```ruby
+# Create circuit breaker for provider
+breaker = Vectra::CircuitBreaker.new(
+  name: "pinecone",
+  failure_threshold: 5,    # Open after 5 failures
+  success_threshold: 3,    # Close after 3 successes in half-open
+  recovery_timeout: 30     # Try half-open after 30 seconds
+)
+
+# Use with operations
+result = breaker.call do
+  client.query(index: "my-index", vector: vec, top_k: 10)
+end
+
+# With fallback
+result = breaker.call(fallback: -> { cached_results }) do
+  client.query(...)
+end
+```
+
+### Circuit States
+
+| State | Description | Behavior |
+|-------|-------------|----------|
+| `closed` | Normal operation | Requests pass through |
+| `open` | Failing | Requests fail immediately (or use fallback) |
+| `half_open` | Testing recovery | Limited requests allowed |
+
+### Per-Provider Circuits
+
+```ruby
+# Register circuits for each provider
+Vectra::CircuitBreakerRegistry.register(:pinecone, failure_threshold: 3)
+Vectra::CircuitBreakerRegistry.register(:qdrant, failure_threshold: 5)
+
+# Use registered circuit
+Vectra::CircuitBreakerRegistry[:pinecone].call do
+  pinecone_client.query(...)
+end
+
+# Get all circuit stats
+Vectra::CircuitBreakerRegistry.stats
+# => { pinecone: { state: :closed, ... }, qdrant: { state: :open, ... } }
+
+# Reset all circuits
+Vectra::CircuitBreakerRegistry.reset_all!
+```
+
+### Circuit Breaker Metrics
+
+```ruby
+# Add to Prometheus metrics
+Vectra::Instrumentation.on_operation do |event|
+  circuit = Vectra::CircuitBreakerRegistry[event.provider]
+  next unless circuit
+
+  CIRCUIT_STATE.set(
+    circuit.open? ? 1 : 0,
+    labels: { provider: event.provider.to_s }
+  )
+end
+```
+
+### Circuit Breaker Alerts
+
+```yaml
+# prometheus-alerts.yml
+- alert: VectraCircuitOpen
+  expr: vectra_circuit_state == 1
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Circuit breaker open for {{ $labels.provider }}"
 ```
 
 ## Health Check Endpoint
