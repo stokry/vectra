@@ -172,7 +172,13 @@ module Vectra
       return false if conn.nil?
       return true unless conn.respond_to?(:status)
 
-      conn.status == PG::CONNECTION_OK
+      # For PG connections, check status. Otherwise assume healthy.
+      if defined?(PG::CONNECTION_OK)
+        conn.status == PG::CONNECTION_OK
+      else
+        # If PG not loaded, assume connection is healthy if it exists
+        true
+      end
     rescue StandardError
       false
     end
