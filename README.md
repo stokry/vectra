@@ -24,7 +24,7 @@
 |----------|--------|---------|
 | [Pinecone](https://pinecone.io) | ✅ Fully Supported | v0.1.0 |
 | [PostgreSQL + pgvector](https://github.com/pgvector/pgvector) | ✅ Fully Supported | v0.1.1 |
-| [Qdrant](https://qdrant.tech) | 🚧 Planned | v0.2.0 |
+| [Qdrant](https://qdrant.tech) | ✅ Fully Supported | v0.2.1 |
 | [Weaviate](https://weaviate.io) | 🚧 Planned | v0.3.0 |
 
 ## Installation
@@ -85,6 +85,12 @@ client = Vectra.pinecone(
 # Shortcut for pgvector (PostgreSQL)
 client = Vectra.pgvector(
   connection_url: 'postgres://user:password@localhost/mydb'
+)
+
+# Shortcut for Qdrant
+client = Vectra.qdrant(
+  host: 'http://localhost:6333',        # Local Qdrant
+  api_key: ENV['QDRANT_API_KEY']        # Optional for local instances
 )
 
 # Generic client with options
@@ -421,10 +427,10 @@ bundle exec rake docs
 - ✅ Namespace support for pgvector
 - ✅ IVFFlat index creation
 
-### v0.2.0
-- 🚧 Qdrant provider
-- 🚧 Enhanced error handling
-- 🚧 Connection pooling
+### v0.2.1
+- ✅ Qdrant provider (fully implemented)
+- ✅ Enhanced error handling
+- ✅ Improved retry middleware
 
 ### v0.3.0
 - 🚧 Weaviate provider

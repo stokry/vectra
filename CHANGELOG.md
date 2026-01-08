@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-01-08
+
+### Added
+
+- **Qdrant Provider** - Full Qdrant vector database support:
+  - Vector upsert, query, fetch, update, delete operations
+  - Collection management (create, list, describe, delete)
+  - Multiple similarity metrics: cosine, euclidean, dot product
+  - Namespace support via payload filtering
+  - Advanced metadata filtering with Qdrant operators ($eq, $ne, $gt, $gte, $lt, $lte, $in, $nin)
+  - Automatic point ID hashing for string IDs
+  - Support for both local and cloud Qdrant instances
+  - Optional API key authentication for local deployments
+
+### Improved
+
+- Enhanced error handling with `Faraday::RetriableResponse` support
+- Configuration now allows optional API key for Qdrant and pgvector (local instances)
+- Better retry middleware integration across all providers
+
+### Provider Support
+
+- ✅ Pinecone - Fully implemented
+- ✅ pgvector (PostgreSQL) - Fully implemented
+- ✅ Qdrant - Fully implemented
+- 🚧 Weaviate - Stub implementation (planned for v0.3.0)
+
 ## [0.2.0] - 2025-01-08
 
 ### Added
@@ -49,13 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated gemspec description to include pgvector
 - Added `pg` gem as development dependency
 
-### Provider Support
-
-- ✅ Pinecone - Fully implemented
-- ✅ pgvector (PostgreSQL) - Fully implemented
-- 🚧 Qdrant - Stub implementation (planned for v0.2.0)
-- 🚧 Weaviate - Stub implementation (planned for v0.3.0)
-
 ## [0.1.0] - 2024-XX-XX
 
 ### Added
@@ -88,13 +108,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - YARD documentation
 
 ## Planned
-
-### [0.2.0]
-
-- Qdrant provider implementation
-- Enhanced error messages
-- Connection pooling
-- Improved retry strategies
 
 ### [0.3.0]
 

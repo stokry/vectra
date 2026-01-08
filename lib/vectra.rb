@@ -90,11 +90,18 @@ module Vectra
 
     # Shortcut to create a Qdrant client
     #
-    # @param api_key [String] Qdrant API key
     # @param host [String] Qdrant host URL
+    # @param api_key [String, nil] Qdrant API key (optional for local instances)
     # @param options [Hash] additional options
     # @return [Client]
-    def qdrant(api_key:, host:, **options)
+    #
+    # @example Local Qdrant (no API key)
+    #   Vectra.qdrant(host: "http://localhost:6333")
+    #
+    # @example Qdrant Cloud
+    #   Vectra.qdrant(host: "https://your-cluster.qdrant.io", api_key: ENV["QDRANT_API_KEY"])
+    #
+    def qdrant(host:, api_key: nil, **options)
       Client.new(
         provider: :qdrant,
         api_key: api_key,
