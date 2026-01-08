@@ -117,7 +117,7 @@ module Vectra
 
         # Fetch IDs in batches (this is provider-specific)
         # For now, we return what we can
-        break if offset > 0 # Only one iteration for basic implementation
+        break if offset.positive? # Only one iteration for basic implementation
 
         offset += batch_size
         count = total
@@ -138,8 +138,8 @@ module Vectra
       @metadata = metadata
     end
 
-    def each(&block)
-      enumerator.each(&block)
+    def each(&)
+      enumerator.each(&)
     end
 
     def take(n)

@@ -35,14 +35,19 @@ RSpec.describe Vectra::Cache do
   describe "#fetch" do
     it "returns cached value if present" do
       cache.set("key", "cached")
-      result = cache.fetch("key") { "computed" }
+      result = cache.fetch("key") { "computed_value" }
       expect(result).to eq("cached")
     end
 
     it "computes and caches value if missing" do
-      result = cache.fetch("key") { "computed" }
-      expect(result).to eq("computed")
-      expect(cache.get("key")).to eq("computed")
+      computed = false
+      result = cache.fetch("key") do
+        computed = true
+        "computed_value"
+      end
+      expect(result).to eq("computed_value")
+      expect(computed).to be true
+      expect(cache.get("key")).to eq("computed_value")
     end
   end
 

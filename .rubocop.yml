@@ -14,9 +14,11 @@ AllCops:
 
 # Layout
 Layout/LineLength:
-  Max: 120
+  Max: 185
   AllowedPatterns:
     - '\A\s*#' # Allow long comment lines
+  Exclude:
+    - 'vectra.gemspec'
 
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
@@ -28,7 +30,7 @@ Metrics/BlockLength:
     - 'vectra.gemspec'
     - 'Rakefile'
     - 'benchmarks/**/*'
-  ExcludedMethods:
+  AllowedMethods:
     - 'included'
     - 'class_methods'
 
@@ -82,10 +84,10 @@ Style/FrozenStringLiteralComment:
   EnforcedStyle: always
 
 Style/SymbolArray:
-  EnforcedStyle: brackets
+  Enabled: false
 
 Style/WordArray:
-  EnforcedStyle: brackets
+  Enabled: false
 
 Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: no_comma
@@ -96,6 +98,9 @@ Style/TrailingCommaInHashLiteral:
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: no_comma
 
+Style/MapIntoArray:
+  Enabled: false
+
 # Naming
 Naming/MethodParameterName:
   AllowedNames:
@@ -103,6 +108,13 @@ Naming/MethodParameterName:
     - to
     - db
     - io
+    - n
+
+Naming/PredicatePrefix:
+  Enabled: false # Allow has_vector DSL method
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false # Allow descriptive names
 
 # Lint
 Lint/MissingSuper:
@@ -111,12 +123,15 @@ Lint/MissingSuper:
 Lint/ScriptPermission:
   Enabled: false
 
+Lint/RedundantDirGlobSort:
+  Enabled: false
+
 # RSpec specific
 RSpec/ExampleLength:
-  Max: 15
+  Max: 25
 
 RSpec/MultipleExpectations:
-  Max: 5
+  Max: 10
 
 RSpec/MultipleMemoizedHelpers:
   Max: 10
@@ -125,9 +140,7 @@ RSpec/NestedGroups:
   Max: 5
 
 RSpec/DescribeClass:
-  Enabled: true
-  Exclude:
-    - 'spec/integration/**/*'
+  Enabled: false
 
 RSpec/ContextWording:
   Enabled: false
@@ -144,48 +157,8 @@ RSpec/VerifiedDoubles:
 RSpec/MultipleDescribes:
   Enabled: false
 
-RSpec/DescribeClass:
-  Enabled: false # Allow string descriptions
-
-# Disable problematic Capybara cop
-Capybara/RSpec/PredicateMatcher:
-  Enabled: false
-
-# Gemspec
-Gemspec/DevelopmentDependencies:
-  Enabled: false
-
-# Naming
-Naming/MemoizedInstanceVariableName:
-  Enabled: false # Allow descriptive names
-
-# Layout
-Layout/LineLength:
-  Max: 185
-  Exclude:
-    - 'vectra.gemspec'
-
-# Additional disables for auto-correctable minor issues
-Style/SymbolArray:
-  Enabled: false
-
-Style/WordArray:
-  Enabled: false
-
-Style/MapIntoArray:
-  Enabled: false
-
-Lint/RedundantDirGlobSort:
-  Enabled: false
-
 RSpec/LeadingSubject:
   Enabled: false
-
-RSpec/ExampleLength:
-  Max: 25
-
-RSpec/MultipleExpectations:
-  Max: 10
 
 RSpec/NamedSubject:
   Enabled: false
@@ -196,8 +169,9 @@ RSpec/SubjectStub:
 RSpec/DescribedClass:
   Enabled: false
 
-Naming/PredicateName:
-  Enabled: false  # Allow has_vector DSL method
+# Gemspec
+Gemspec/DevelopmentDependencies:
+  Enabled: false
 
 Gemspec/OrderedDependencies:
   Enabled: false

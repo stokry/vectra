@@ -146,7 +146,7 @@ module Vectra
       # Remove oldest entries (at least 10% of max_size to avoid frequent evictions)
       entries_to_remove = [(max_size * 0.2).ceil, 1].max
       oldest = @timestamps.sort_by { |_, v| v }.first(entries_to_remove)
-      oldest.each { |key, _| delete_entry(key) }
+      oldest.each_key { |key| delete_entry(key) }
     end
   end
 
@@ -174,8 +174,10 @@ module Vectra
     #
     # @see Client#query
     def query(index:, vector:, top_k: 10, namespace: nil, filter: nil, **options)
-      return client.query(index: index, vector: vector, top_k: top_k,
-                          namespace: namespace, filter: filter, **options) unless @cache_queries
+      unless @cache_queries
+        return client.query(index: index, vector: vector, top_k: top_k,
+                            namespace: namespace, filter: filter, **options)
+      end
 
       key = query_cache_key(index, vector, top_k, namespace, filter)
       cache.fetch(key) do

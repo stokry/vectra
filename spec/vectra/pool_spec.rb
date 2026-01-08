@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe Vectra::Pool do
-  let(:mock_connection) { double("Connection", close: nil, status: 0) } # rubocop:disable RSpec/VerifiedDoubles
+  let(:mock_connection) { double("Connection", close: nil, status: 0) } # rubocop:disable RSpec/VerifiedDoubles -- generic connection mock
   let(:pool) { described_class.new(size: 3, timeout: 1) { mock_connection } }
 
   after do
@@ -50,7 +50,7 @@ RSpec.describe Vectra::Pool do
     end
 
     it "returns connection to pool after block" do
-      pool.with_connection { |_c| }
+      pool.with_connection { |_c| :ok }
       expect(pool.stats[:checked_out]).to eq(0)
     end
 

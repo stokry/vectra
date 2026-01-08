@@ -55,7 +55,9 @@ RSpec.describe Vectra::Batch do
       call_count = 0
       allow(client).to receive(:upsert) do
         call_count += 1
+
         raise StandardError, "Test error" if call_count == 2
+
         { upserted_count: 3 }
       end
 

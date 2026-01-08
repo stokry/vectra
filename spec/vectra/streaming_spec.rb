@@ -13,8 +13,7 @@ RSpec.describe Vectra::Streaming do
   let(:mock_result) do
     result = instance_double(Vectra::QueryResult)
     allow(result).to receive(:each).and_yield(mock_match)
-    allow(result).to receive(:empty?).and_return(false)
-    allow(result).to receive(:size).and_return(1)
+    allow(result).to receive_messages(empty?: false, size: 1)
     result
   end
 
@@ -78,7 +77,7 @@ RSpec.describe Vectra::Streaming do
         index: "test",
         vector: [0.1, 0.2, 0.3],
         total: 5
-      ) { |_m| }
+      ) { |_m| :processed }
 
       expect(count).to be_positive
     end
@@ -107,7 +106,7 @@ RSpec.describe Vectra::Streaming do
     end
 
     it "returns total count when block given" do
-      count = streaming.scan_all(index: "test") { |_v| }
+      count = streaming.scan_all(index: "test") { |_v| :scanned }
       expect(count).to eq(100)
     end
   end

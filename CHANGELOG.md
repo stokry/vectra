@@ -154,16 +154,14 @@ New configuration options:
 
 ## Planned
 
-### [0.3.0]
+### [0.4.0]
 
 - Weaviate provider implementation
-- Batch operation improvements
-- Performance optimizations
-- Async operations support
+- Additional similarity metrics
+- Vector quantization support
 
 ### [1.0.0]
 
-- Rails integration
-- ActiveRecord-like DSL for vector models
 - Background job integration (Sidekiq, GoodJob)
 - Production-ready with full documentation
+- Performance monitoring dashboard

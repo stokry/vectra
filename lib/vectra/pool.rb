@@ -162,7 +162,7 @@ module Vectra
     #
     # @return [Boolean]
     def pool_healthy?
-      !@shutdown && @pool.size + @checked_out.value > 0
+      !@shutdown && (@pool.size + @checked_out.value).positive?
     end
 
     private
