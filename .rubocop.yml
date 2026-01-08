@@ -194,7 +194,7 @@ RSpec/SubjectStub:
   Enabled: false
 
 RSpec/DescribedClass:
-  SkipBlocks: true
+  Enabled: false
 
 Naming/PredicateName:
   Enabled: false  # Allow has_vector DSL method
