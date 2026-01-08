@@ -113,6 +113,16 @@ RSpec.describe Vectra::Instrumentation do
   end
 
   describe Vectra::Instrumentation::Event do
+    before do
+      Vectra::Instrumentation.clear_handlers!
+      Vectra.configuration.instrumentation = false
+    end
+
+    after do
+      Vectra::Instrumentation.clear_handlers!
+      Vectra.configuration.instrumentation = false
+    end
+
     let(:event) do
       described_class.new(
         operation: :query,
