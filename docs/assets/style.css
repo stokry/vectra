@@ -493,18 +493,22 @@ code {
    Documentation Layout (Sidebar + Content)
    ============================================ */
 .tma-docs-layout {
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
   display: flex;
   min-height: 100vh;
   padding-top: var(--tma-header-height);
+  padding-left: var(--tma-spacing-xl);
+  padding-right: var(--tma-spacing-xl);
 }
 
 .tma-sidebar {
-  position: fixed;
+  position: sticky;
   top: var(--tma-header-height);
-  left: 0;
   width: var(--tma-sidebar-width);
+  min-width: var(--tma-sidebar-width);
   height: calc(100vh - var(--tma-header-height));
-  background: var(--tma-color-bg-secondary);
+  background: var(--tma-color-bg-primary);
   border-right: 1px solid var(--tma-color-border);
   padding: var(--tma-spacing-md) var(--tma-spacing-sm);
   overflow-y: auto;
@@ -565,11 +569,10 @@ code {
 }
 
 .tma-docs-content {
-  margin-left: var(--tma-sidebar-width);
   flex: 1;
   padding: var(--tma-spacing-xl) var(--tma-spacing-2xl);
-  max-width: calc(100% - var(--tma-sidebar-width));
   min-height: calc(100vh - var(--tma-header-height));
+  max-width: 100%;
 }
 
 /* ============================================
@@ -725,14 +728,17 @@ code {
    Responsive Design
    ============================================ */
 @media (max-width: 1024px) {
+  .tma-docs-layout {
+    padding-left: var(--tma-spacing-md);
+    padding-right: var(--tma-spacing-md);
+  }
+  
   .tma-sidebar {
     display: none;
   }
   
   .tma-docs-content {
-    margin-left: 0;
     padding: var(--tma-spacing-lg);
-    max-width: 100%;
   }
 }
 
