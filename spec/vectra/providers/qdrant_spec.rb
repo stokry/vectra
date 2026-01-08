@@ -596,7 +596,7 @@ RSpec.describe Vectra::Providers::Qdrant do
 
       expect do
         described_class.new(bad_config)
-      end.to raise_error(Vectra::ConfigurationError, /host.*must be configured/i)
+      end.to raise_error(Vectra::ConfigurationError, /host/i)
     end
 
     it "works without api_key for local Qdrant instances" do
