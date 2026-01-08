@@ -101,15 +101,25 @@ module Vectra
       validate_index!(index)
       validate_query_vector!(vector)
 
-      provider.query(
+      result = nil
+      Instrumentation.instrument(
+        operation: :query,
+        provider: provider_name,
         index: index,
-        vector: vector,
-        top_k: top_k,
-        namespace: namespace,
-        filter: filter,
-        include_values: include_values,
-        include_metadata: include_metadata
-      )
+        metadata: { top_k: top_k }
+      ) do
+        result = provider.query(
+          index: index,
+          vector: vector,
+          top_k: top_k,
+          namespace: namespace,
+          filter: filter,
+          include_values: include_values,
+          include_metadata: include_metadata
+        )
+      end
+
+      result
     end
 
     # Fetch vectors by IDs
@@ -127,7 +137,14 @@ module Vectra
       validate_index!(index)
       validate_ids!(ids)
 
-      provider.fetch(index: index, ids: ids, namespace: namespace)
+      Instrumentation.instrument(
+        operation: :fetch,
+        provider: provider_name,
+        index: index,
+        metadata: { id_count: ids.size }
+      ) do
+        provider.fetch(index: index, ids: ids, namespace: namespace)
+      end
     end
 
     # Update a vector's metadata or values
@@ -152,13 +169,20 @@ module Vectra
 
       raise ValidationError, "Must provide metadata or values to update" if metadata.nil? && values.nil?
 
-      provider.update(
+      Instrumentation.instrument(
+        operation: :update,
+        provider: provider_name,
         index: index,
-        id: id,
-        metadata: metadata,
-        values: values,
-        namespace: namespace
-      )
+        metadata: { has_metadata: !metadata.nil?, has_values: !values.nil? }
+      ) do
+        provider.update(
+          index: index,
+          id: id,
+          metadata: metadata,
+          values: values,
+          namespace: namespace
+        )
+      end
     end
 
     # Delete vectors
@@ -186,13 +210,20 @@ module Vectra
         raise ValidationError, "Must provide ids, filter, or delete_all"
       end
 
-      provider.delete(
+      Instrumentation.instrument(
+        operation: :delete,
+        provider: provider_name,
         index: index,
-        ids: ids,
-        namespace: namespace,
-        filter: filter,
-        delete_all: delete_all
-      )
+        metadata: { id_count: ids&.size, delete_all: delete_all, has_filter: !filter.nil? }
+      ) do
+        provider.delete(
+          index: index,
+          ids: ids,
+          namespace: namespace,
+          filter: filter,
+          delete_all: delete_all
+        )
+      end
     end
 
     # List all indexes
