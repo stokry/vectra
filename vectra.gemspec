@@ -34,10 +34,15 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faraday", "~> 2.0"
   spec.add_dependency "faraday-retry", "~> 2.0"
 
-  # Optional runtime dependencies (required for specific providers)
+  # Optional runtime dependencies (required for specific features)
+  # For ActiveRecord integration: gem 'activerecord', '>= 6.0'
   # For pgvector provider: gem 'pg', '~> 1.5'
+  # For connection pooling: gem 'connection_pool', '~> 2.4'
+  # For Datadog instrumentation: gem 'dogstatsd-ruby'
 
   # Development dependencies
+  spec.add_development_dependency "activerecord", ">= 6.0"
+  spec.add_development_dependency "sqlite3", "~> 1.4"  # For AR tests
   spec.add_development_dependency "pg", "~> 1.5"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.12"

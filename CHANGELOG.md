@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-01-08
+
+### Added
+
+- **Instrumentation & Monitoring** - Track all vector operations with New Relic, Datadog, or custom handlers
+- **ActiveRecord Integration** - `has_vector` DSL for seamless Rails model integration with automatic indexing
+- **Rails Generator** - `rails generate vectra:install` for quick setup
+- **Automatic Retry Logic** - Exponential backoff with jitter for transient database errors
+- **Performance Benchmarks** - Measure batch operations and connection pooling performance
+- **Comprehensive Documentation** - USAGE_EXAMPLES.md, IMPLEMENTATION_GUIDE.md with 10+ real-world examples
+
+### Improved
+
+- All Client methods now instrumented (upsert, query, fetch, update, delete)
+- pgvector Connection module includes retry logic with smart error detection
+- Configuration expanded with instrumentation, pool_size, batch_size, max_retries options
+
+### Documentation
+
+- Added USAGE_EXAMPLES.md with e-commerce search, RAG chatbot, duplicate detection examples
+- Added IMPLEMENTATION_GUIDE.md for developers implementing new features
+- Added NEW_FEATURES_v0.2.0.md with migration guide
+
 ## [0.1.1] - 2025-01-07
 
 ### Added
