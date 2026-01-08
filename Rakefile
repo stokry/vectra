@@ -32,3 +32,15 @@ task :changelog do
   puts "Generating CHANGELOG.md..."
   system("github_changelog_generator") || puts("Install with: gem install github_changelog_generator")
 end
+
+desc "Bump version to VERSION"
+task :bump_version, [:version] do |t, args|
+  version = args[:version]
+  raise "Version required: rake bump_version[1.2.3]" unless version
+
+  version_file = "lib/vectra/version.rb"
+  content = File.read(version_file)
+  new_content = content.gsub(/VERSION = "[^"]+"/, "VERSION = \"#{version}\"")
+  File.write(version_file, new_content)
+  puts "Version bumped to #{version}"
+end
