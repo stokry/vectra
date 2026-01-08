@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "vectra/instrumentation/new_relic"
 
 # Mock New Relic Agent
 module NewRelic
