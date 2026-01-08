@@ -58,7 +58,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic API key sanitization
   - Global audit logging support
 
-## [0.3.0] - 2025-01-08
+## [v0.3.1](https://github.com/stokry/vectra/tree/v0.3.1) (2026-01-08)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.3.0...v0.3.1)
+
+## [v0.3.0](https://github.com/stokry/vectra/tree/v0.3.0) (2026-01-08)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.2.2...v0.3.0)
 
 ### Added
 
@@ -103,7 +109,13 @@ New configuration options:
 
 - Added `concurrent-ruby ~> 1.2` for thread-safe operations
 
-## [0.2.1] - 2025-01-08
+## [v0.2.2](https://github.com/stokry/vectra/tree/v0.2.2) (2026-01-08)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.2.1...v0.2.2)
+
+## [v0.2.1](https://github.com/stokry/vectra/tree/v0.2.1) (2026-01-08)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.2.0...v0.2.1)
 
 ### Added
 
@@ -128,9 +140,11 @@ New configuration options:
 - ✅ Pinecone - Fully implemented
 - ✅ pgvector (PostgreSQL) - Fully implemented
 - ✅ Qdrant - Fully implemented
-- 🚧 Weaviate - Stub implementation (planned for v0.3.0)
+- 🚧 Weaviate - Stub implementation (planned for v0.4.0)
 
-## [0.2.0] - 2025-01-08
+## [v0.2.0](https://github.com/stokry/vectra/tree/v0.2.0) (2026-01-08)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.1.3...v0.2.0)
 
 ### Added
 
@@ -153,7 +167,13 @@ New configuration options:
 - Added IMPLEMENTATION_GUIDE.md for developers implementing new features
 - Added NEW_FEATURES_v0.2.0.md with migration guide
 
-## [0.1.1] - 2025-01-07
+## [v0.1.3](https://github.com/stokry/vectra/tree/v0.1.3) (2026-01-07)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.1.1...v0.1.3)
+
+## [v0.1.1](https://github.com/stokry/vectra/tree/v0.1.1) (2026-01-07)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/0ab2ea7b42d7fbf0b540b24889cc2b24254fef2e...v0.1.1)
 
 ### Added
 
@@ -171,37 +191,6 @@ New configuration options:
 
 - Updated gemspec description to include pgvector
 - Added `pg` gem as development dependency
-
-## [0.1.0] - 2024-XX-XX
-
-### Added
-
-- Initial release
-- Pinecone provider with full support for:
-  - Vector upsert, query, fetch, update, delete operations
-  - Index management (list, describe, create, delete)
-  - Namespace support
-  - Metadata filtering
-- Configuration system with global and per-client options
-- Automatic retry logic with exponential backoff
-- Comprehensive error handling with specific error classes:
-  - `AuthenticationError` - API key issues
-  - `RateLimitError` - Rate limiting with retry-after
-  - `NotFoundError` - Resource not found
-  - `ValidationError` - Invalid request parameters
-  - `ServerError` - Server-side errors
-  - `ConnectionError` - Network issues
-  - `TimeoutError` - Request timeouts
-- `Vector` class for vector representation with:
-  - Cosine similarity calculation
-  - Euclidean distance calculation
-  - Metadata support
-- `QueryResult` class with Enumerable support:
-  - Score filtering
-  - Easy iteration
-  - Result statistics
-- Full RSpec test suite
-- YARD documentation
 
 ## Planned
 
