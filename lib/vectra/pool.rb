@@ -158,14 +158,24 @@ module Vectra
       }
     end
 
-    # Check if pool is healthy
+    # Check if pool is healthy (public method)
     #
     # @return [Boolean]
-    def healthy?
+    def pool_healthy?
       !@shutdown && @pool.size + @checked_out.value > 0
     end
 
     private
+
+    # Internal health check for individual connections
+    def healthy?(conn)
+      return false if conn.nil?
+      return true unless conn.respond_to?(:status)
+
+      conn.status == PG::CONNECTION_OK
+    rescue StandardError
+      false
+    end
 
     def create_connection
       @factory.call
@@ -178,15 +188,6 @@ module Vectra
       conn.close if conn.respond_to?(:close)
     rescue StandardError => e
       Vectra.configuration.logger&.warn("Pool: Error closing connection: #{e.message}")
-    end
-
-    def healthy?(conn)
-      return false if conn.nil?
-      return true unless conn.respond_to?(:status)
-
-      conn.status == PG::CONNECTION_OK
-    rescue StandardError
-      false
     end
   end
 

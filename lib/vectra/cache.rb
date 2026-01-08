@@ -140,10 +140,11 @@ module Vectra
     end
 
     def evict_if_needed
+      # Evict when at or above max_size to make room for new entry
       return if @store.size < max_size
 
-      # Remove oldest entries
-      entries_to_remove = (@store.size - max_size) + (@max_size * 0.1).to_i
+      # Remove oldest entries (at least 10% of max_size to avoid frequent evictions)
+      entries_to_remove = [(max_size * 0.2).ceil, 1].max
       oldest = @timestamps.sort_by { |_, v| v }.first(entries_to_remove)
       oldest.each { |key, _| delete_entry(key) }
     end

@@ -114,15 +114,15 @@ RSpec.describe Vectra::Pool do
     end
   end
 
-  describe "#healthy?" do
+  describe "#pool_healthy?" do
     it "returns true for active pool" do
       pool.warmup(1)
-      expect(pool.healthy?).to be true
+      expect(pool.pool_healthy?).to be true
     end
 
     it "returns false after shutdown" do
       pool.shutdown
-      expect(pool.healthy?).to be false
+      expect(pool.pool_healthy?).to be false
     end
   end
 

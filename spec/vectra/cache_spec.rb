@@ -93,11 +93,16 @@ RSpec.describe Vectra::Cache do
   end
 
   describe "eviction" do
-    it "evicts oldest entries when max_size exceeded" do
-      6.times { |i| cache.set("key#{i}", "value#{i}") }
+    let(:large_cache) { described_class.new(ttl: 300, max_size: 3) }
 
-      stats = cache.stats
-      expect(stats[:size]).to be <= 5
+    it "evicts oldest entries when max_size exceeded" do
+      # Add entries with small delays to ensure different timestamps
+      4.times do |i|
+        large_cache.set("key#{i}", "value#{i}")
+      end
+
+      stats = large_cache.stats
+      expect(stats[:size]).to be <= 3
     end
   end
 end
