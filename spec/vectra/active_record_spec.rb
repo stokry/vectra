@@ -197,8 +197,11 @@ RSpec.describe Vectra::ActiveRecord do
     end
 
     it "loads ActiveRecord objects by default" do
+      # Create a proper mock that simulates Enumerable behavior
       allow(mock_query_result).to receive(:above_score).and_return(mock_query_result)
-      allow(mock_query_result).to receive(:map).and_yield(mock_results[0]).and_yield(mock_results[1])
+      allow(mock_query_result).to receive(:map) do |&block|
+        mock_results.map(&block)
+      end
 
       expect(mock_client).to receive(:query).and_return(mock_query_result)
 
@@ -209,17 +212,18 @@ RSpec.describe Vectra::ActiveRecord do
     end
 
     it "adds vector_score to loaded records" do
-      record1 = test_model_class.find(1)
-      record2 = test_model_class.find(2)
-
+      # Create a proper mock that simulates Enumerable behavior
       allow(mock_query_result).to receive(:above_score).and_return(mock_query_result)
-      allow(mock_query_result).to receive(:map).and_yield(mock_results[0]).and_yield(mock_results[1]).and_return([record1, record2])
-      allow(test_model_class).to receive(:where).and_return(test_model_class.where(id: [1, 2]))
+      allow(mock_query_result).to receive(:map) do |&block|
+        mock_results.map(&block)
+      end
 
       expect(mock_client).to receive(:query).and_return(mock_query_result)
 
       records = test_model_class.vector_search(query_vector)
-      expect(records.first).to respond_to(:vector_score)
+      loaded_record = records.compact.first
+      expect(loaded_record).to respond_to(:vector_score)
+      expect(loaded_record.vector_score).to eq(0.95)
     end
   end
 
@@ -229,8 +233,7 @@ RSpec.describe Vectra::ActiveRecord do
     it "searches using record's vector" do
       expect(test_model_class).to receive(:_vectra_search).with(
         test_vector,
-        limit: 10,
-        filter: {}
+        limit: 10
       ).and_return([])
 
       test_model_class.similar_to(record)
