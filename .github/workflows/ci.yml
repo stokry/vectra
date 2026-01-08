@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    # Run benchmarks weekly on Sunday at midnight
+    - cron: '0 0 * * 0'
 
 jobs:
   test:
@@ -94,3 +97,57 @@ jobs:
             echo "Warning: Some methods are undocumented"
             exit 0
           fi
+
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    # Only run benchmarks on main branch and weekly schedule
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vectra_benchmark
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            echo "Waiting for postgres..."
+            sleep 1
+          done
+
+      - name: Run benchmarks
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost/vectra_benchmark
+        run: |
+          echo "Running batch operations benchmark..."
+          bundle exec ruby benchmarks/batch_operations_benchmark.rb || true
+          echo ""
+          echo "Running connection pooling benchmark..."
+          bundle exec ruby benchmarks/connection_pooling_benchmark.rb || true
+
+      - name: Store benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmarks/results/
+          if-no-files-found: ignore

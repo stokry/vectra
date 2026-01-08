@@ -15,7 +15,8 @@ module Vectra
 
     attr_accessor :api_key, :environment, :host, :timeout, :open_timeout,
                   :max_retries, :retry_delay, :logger, :pool_size, :pool_timeout,
-                  :batch_size, :instrumentation
+                  :batch_size, :instrumentation, :cache_enabled, :cache_ttl,
+                  :cache_max_size, :async_concurrency
 
     attr_reader :provider
 
@@ -33,6 +34,10 @@ module Vectra
       @pool_timeout = 5
       @batch_size = 100
       @instrumentation = false
+      @cache_enabled = false
+      @cache_ttl = 300
+      @cache_max_size = 1000
+      @async_concurrency = 4
     end
 
     # Set the provider

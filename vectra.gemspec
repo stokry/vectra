@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   # Runtime dependencies
   spec.add_dependency "faraday", "~> 2.0"
   spec.add_dependency "faraday-retry", "~> 2.0"
+  spec.add_dependency "concurrent-ruby", "~> 1.2"
 
   # Optional runtime dependencies (required for specific features)
   # For ActiveRecord integration: gem 'activerecord', '>= 6.0'

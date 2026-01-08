@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-01-08
+
+### Added
+
+- **Async Batch Operations** (`Vectra::Batch`)
+  - Concurrent batch upsert with configurable worker count
+  - Automatic chunking of large vector sets
+  - Async delete and fetch operations
+  - Error aggregation and partial success handling
+
+- **Streaming Results** (`Vectra::Streaming`)
+  - Lazy enumeration for large query result sets
+  - Memory-efficient processing with automatic pagination
+  - `query_each` and `query_stream` methods
+  - Duplicate detection across pages
+
+- **Caching Layer** (`Vectra::Cache` and `Vectra::CachedClient`)
+  - In-memory LRU cache with configurable TTL
+  - Transparent caching for query and fetch operations
+  - Index-level cache invalidation
+  - Thread-safe with mutex synchronization
+
+- **Connection Pool with Warmup** (`Vectra::Pool`)
+  - Configurable pool size and checkout timeout
+  - Connection warmup at startup
+  - Health checking and automatic reconnection
+  - Pool statistics and monitoring
+
+- **CI Benchmark Integration**
+  - Weekly scheduled benchmark runs
+  - PostgreSQL (pgvector) integration in CI
+  - Benchmark result artifact storage
+
+### Configuration
+
+New configuration options:
+- `cache_enabled` - Enable/disable caching (default: false)
+- `cache_ttl` - Cache time-to-live in seconds (default: 300)
+- `cache_max_size` - Maximum cache entries (default: 1000)
+- `async_concurrency` - Concurrent workers for batch ops (default: 4)
+
+### Dependencies
+
+- Added `concurrent-ruby ~> 1.2` for thread-safe operations
+
 ## [0.2.1] - 2025-01-08
 
 ### Added
