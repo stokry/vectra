@@ -145,8 +145,8 @@ module Vectra
 
       # Remove oldest entries (at least 10% of max_size to avoid frequent evictions)
       entries_to_remove = [(max_size * 0.2).ceil, 1].max
-      oldest = @timestamps.sort_by { |_, v| v }.first(entries_to_remove)
-      oldest.each_key { |key| delete_entry(key) }
+      oldest_keys = @timestamps.sort_by { |_, v| v }.first(entries_to_remove).map(&:first)
+      oldest_keys.each { |key| delete_entry(key) }
     end
   end
 
