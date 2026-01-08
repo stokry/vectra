@@ -318,3 +318,4 @@ RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
     end
   end
 end
+# rubocop:enable RSpec/FilePath, RSpec/SpecFilePathFormat
