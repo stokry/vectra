@@ -611,54 +611,181 @@ end
     summary: "Circuit breaker open for {{ $labels.provider }}"
 ```
 
-## Health Check Endpoint
+## Health Check
+
+Built-in health check functionality:
+
+```ruby
+# Basic health check
+client = Vectra::Client.new(provider: :pinecone, ...)
+result = client.health_check
+
+if result.healthy?
+  puts "Provider is healthy! Latency: #{result.latency_ms}ms"
+else
+  puts "Error: #{result.error_message}"
+end
+
+# Quick boolean check
+client.healthy?  # => true/false
+
+# Detailed health check with stats
+result = client.health_check(
+  index: "my-index",
+  include_stats: true
+)
+
+puts result.to_json
+# => {
+#   "healthy": true,
+#   "provider": "pinecone",
+#   "latency_ms": 45.2,
+#   "indexes_available": 3,
+#   "index": "my-index",
+#   "stats": { "vector_count": 1000, "dimension": 384 },
+#   "pool": { "available": 5, "checked_out": 2 }
+# }
+```
+
+### Aggregate Health Check
+
+Check multiple providers at once:
+
+```ruby
+checker = Vectra::AggregateHealthCheck.new(
+  primary: pinecone_client,
+  backup: qdrant_client,
+  local: pgvector_client
+)
+
+result = checker.check_all
+# => {
+#   overall_healthy: true,
+#   healthy_count: 3,
+#   total_count: 3,
+#   results: { ... }
+# }
+
+# Quick checks
+checker.all_healthy?   # => true/false
+checker.any_healthy?    # => true/false
+```
+
+### Health Check Endpoint (Rails)
 
 ```ruby
 # app/controllers/health_controller.rb
 class HealthController < ApplicationController
   def vectra
     client = Vectra::Client.new
+    result = client.health_check(include_stats: true)
     
-    # Check provider connectivity
-    start = Time.now
-    stats = client.stats(index: "health-check")
-    latency = Time.now - start
-
-    render json: {
-      status: "healthy",
-      provider: client.provider_name,
-      latency_ms: (latency * 1000).round(2),
-      pool_stats: client.provider.respond_to?(:pool_stats) ? client.provider.pool_stats : nil
-    }
-  rescue StandardError => e
-    render json: {
-      status: "unhealthy",
-      error: e.class.name,
-      message: e.message
-    }, status: :service_unavailable
+    render json: result.to_h, status: result.healthy? ? :ok : :service_unavailable
   end
 end
 ```
 
-## Logging Best Practices
+## Structured JSON Logging
+
+Built-in JSON logger for machine-readable logs:
 
 ```ruby
-# config/initializers/vectra_logging.rb
-Vectra.configure do |config|
-  config.logger = Rails.logger
+# Setup JSON logging
+require 'vectra/logging'
+
+Vectra::Logging.setup!(
+  output: "log/vectra.json.log",
+  app: "my-service",
+  env: Rails.env
+)
+
+# All operations automatically logged as JSON:
+# {
+#   "timestamp": "2025-01-08T12:00:00.123Z",
+#   "level": "info",
+#   "logger": "vectra",
+#   "message": "vectra.query",
+#   "provider": "pinecone",
+#   "operation": "query",
+#   "index": "embeddings",
+#   "duration_ms": 45.2,
+#   "success": true,
+#   "result_count": 10
+# }
+```
+
+### Custom Logging
+
+```ruby
+# Log custom events
+Vectra::Logging.log(:info, "Custom event", custom_key: "value")
+
+# Use with standard Logger
+logger = Logger.new(STDOUT)
+logger.formatter = Vectra::JsonFormatter.new(service: "vectra-api")
+```
+
+### Log Levels
+
+- `debug` - Detailed debugging information
+- `info` - Successful operations
+- `warn` - Warnings (rate limits, retries)
+- `error` - Failed operations
+- `fatal` - Critical errors (auth failures)
+
+## Rate Limiting
+
+Proactive rate limiting to prevent API rate limit errors:
+
+```ruby
+# Create rate limiter (token bucket algorithm)
+limiter = Vectra::RateLimiter.new(
+  requests_per_second: 10,
+  burst_size: 20
+)
+
+# Use with operations
+limiter.acquire do
+  client.query(index: "my-index", vector: vec, top_k: 10)
 end
 
-# Structured logging handler
-Vectra::Instrumentation.register(:logger) do |event|
-  Rails.logger.info({
-    event: "vectra.#{event[:operation]}",
-    provider: event[:provider],
-    index: event[:index],
-    duration_ms: event[:duration] ? (event[:duration] * 1000).round(2) : nil,
-    vector_count: event.dig(:metadata, :vector_count),
-    error: event[:error]&.class&.name
-  }.compact.to_json)
-end
+# Or wrap entire client
+rate_limited_client = Vectra::RateLimitedClient.new(
+  client,
+  requests_per_second: 100,
+  burst_size: 200
+)
+
+# All operations automatically rate limited
+rate_limited_client.query(...)
+rate_limited_client.upsert(...)
+```
+
+### Per-Provider Rate Limits
+
+```ruby
+# Configure rate limits per provider
+Vectra::RateLimiterRegistry.configure(:pinecone, requests_per_second: 100)
+Vectra::RateLimiterRegistry.configure(:qdrant, requests_per_second: 50)
+
+# Use in operations
+limiter = Vectra::RateLimiterRegistry[:pinecone]
+limiter.acquire { client.query(...) }
+
+# Get stats
+Vectra::RateLimiterRegistry.stats
+```
+
+### Rate Limiter Stats
+
+```ruby
+stats = limiter.stats
+# => {
+#   requests_per_second: 10,
+#   burst_size: 20,
+#   available_tokens: 15.5,
+#   time_until_token: 0.05
+# }
 ```
 
 ## Quick Reference
@@ -671,6 +798,7 @@ end
 | `vectra_vectors_processed_total` | Vectors processed | - |
 | `vectra_cache_hits_total` | Cache hits | < 50% hit ratio |
 | `vectra_pool_connections` | Pool connections | 0 available |
+| `vectra_rate_limit_tokens` | Available rate limit tokens | < 10% capacity |
 
 ## Monitoring Cost Optimization
 

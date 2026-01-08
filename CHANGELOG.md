@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Proactive Rate Limiting** (`Vectra::RateLimiter`)
+  - Token bucket algorithm for smooth rate limiting
+  - Burst support for handling traffic spikes
+  - Per-provider rate limiter registry
+  - `RateLimitedClient` wrapper for automatic throttling
+  - Prevents API rate limit errors before they occur
+
+- **Structured JSON Logging** (`Vectra::JsonLogger`)
+  - Machine-readable JSON log format
+  - Automatic operation logging via instrumentation
+  - Custom metadata support
+  - Integration with standard Ruby Logger via `JsonFormatter`
+  - Log levels: debug, info, warn, error, fatal
+
+- **Health Check Functionality** (`Vectra::HealthCheck`)
+  - Built-in `client.health_check` method
+  - Connectivity and latency testing
+  - Optional index statistics inclusion
+  - Pool health checking for pgvector
+  - `AggregateHealthCheck` for multi-provider setups
+  - JSON-serializable results
+
+- **Error Tracking Integrations**
+  - Sentry adapter with breadcrumbs, context, and fingerprinting
+  - Honeybadger adapter with severity tags and configurable notifications
+  - Automatic error context and grouping
+
+- **Circuit Breaker Pattern** (`Vectra::CircuitBreaker`)
+  - Three-state circuit (closed, open, half-open)
+  - Automatic failover with fallback support
+  - Per-provider circuit registry
+  - Thread-safe implementation
+  - Configurable failure/success thresholds
+
 ## [0.3.0] - 2025-01-08
 
 ### Added
