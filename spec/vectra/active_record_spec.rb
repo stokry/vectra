@@ -64,6 +64,9 @@ RSpec.describe Vectra::ActiveRecord do
   before do
     # Mock the client
     allow(test_model_class).to receive(:vectra_client).and_return(mock_client)
+    # Allow auto-indexing callbacks to work (upsert/delete are called automatically)
+    allow(mock_client).to receive(:upsert)
+    allow(mock_client).to receive(:delete)
   end
 
   after do
