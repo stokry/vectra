@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "vectra/instrumentation/datadog"
 
-# Mock Datadog StatsD
+# Mock Datadog StatsD - must be defined BEFORE loading the instrumentation module
+# and we need to pretend the gem is already loaded
 module Datadog
   class Statsd
     attr_reader :host, :port, :namespace
@@ -21,6 +21,11 @@ module Datadog
     def gauge(metric, value, tags: []); end
   end
 end
+
+# Pretend the datadog/statsd gem is already loaded so require doesn't fail
+$LOADED_FEATURES << "datadog/statsd.rb"
+
+require "vectra/instrumentation/datadog"
 
 RSpec.describe Vectra::Instrumentation::Datadog do
   let(:mock_statsd) { instance_double(Datadog::Statsd) }

@@ -52,8 +52,8 @@ RSpec.describe Vectra::ActiveRecord do
                   auto_index: true,
                   metadata_fields: [:title, :category]
 
-      # Serialize embedding as JSON
-      serialize :embedding, Array
+      # Serialize embedding as JSON (Rails 8+ syntax)
+      serialize :embedding, coder: JSON
     end
   end
 
@@ -118,7 +118,7 @@ RSpec.describe Vectra::ActiveRecord do
         self.table_name = "test_documents"
         include Vectra::ActiveRecord
         has_vector :embedding, dimension: 3, auto_index: false
-        serialize :embedding, Array
+        serialize :embedding, coder: JSON
       end
 
       callbacks = model_class._save_callbacks.map(&:filter)

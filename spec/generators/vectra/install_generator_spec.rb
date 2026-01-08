@@ -5,7 +5,10 @@ require "spec_helper"
 # Mock Rails for generator testing (must be defined before loading the generator)
 # This needs to be set up before requiring the generator file
 module Rails
-  VERSION = Struct.new(:major, :minor).new(7, 0) unless defined?(VERSION)
+  module VERSION
+    MAJOR = 7
+    MINOR = 0
+  end unless defined?(VERSION)
 
   module Generators
     class Base
@@ -55,6 +58,8 @@ RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
   end
 
   def run_generator(args = [], options = {})
+    # Default to pgvector provider like the real generator does
+    options = { provider: "pgvector" }.merge(options)
     generator_class = Vectra::Generators::InstallGenerator
     generator = generator_class.new(args, options, destination_root: destination_root)
 
@@ -230,12 +235,24 @@ RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
     end
 
     it "handles different Rails versions" do
-      stub_const("Rails::VERSION::MAJOR", 6)
-      stub_const("Rails::VERSION::MINOR", 1)
+      # Temporarily redefine Rails::VERSION constants
+      old_major = Rails::VERSION::MAJOR
+      old_minor = Rails::VERSION::MINOR
+
+      Rails::VERSION.send(:remove_const, :MAJOR)
+      Rails::VERSION.send(:remove_const, :MINOR)
+      Rails::VERSION.const_set(:MAJOR, 6)
+      Rails::VERSION.const_set(:MINOR, 1)
 
       generator = run_generator
 
       expect(generator.send(:migration_version)).to eq("[6.1]")
+
+      # Restore original values
+      Rails::VERSION.send(:remove_const, :MAJOR)
+      Rails::VERSION.send(:remove_const, :MINOR)
+      Rails::VERSION.const_set(:MAJOR, old_major)
+      Rails::VERSION.const_set(:MINOR, old_minor)
     end
   end
 
