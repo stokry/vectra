@@ -58,6 +58,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic API key sanitization
   - Global audit logging support
 
+## [v0.3.2](https://github.com/stokry/vectra/tree/v0.3.2) (2026-01-08)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.3.1...v0.3.2)
+
+### Fixed
+
+- Audit log keyword parameter ordering and optional fields now align with linting and usage expectations.
+- Credential rotation utilities use symbol procs and string interpolation while keeping the existing `switch_to_secondary` API.
+
 ## [v0.3.1](https://github.com/stokry/vectra/tree/v0.3.1) (2026-01-08)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.3.0...v0.3.1)
