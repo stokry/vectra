@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'connection_pool'
+require "connection_pool"
 
 module Vectra
   # Retry helper for transient errors

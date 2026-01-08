@@ -19,7 +19,7 @@ RSpec.describe Vectra::Instrumentation do
       described_class.on_operation { |_event| handler_called = true }
 
       Vectra.configuration.instrumentation = true
-      described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
+      described_class.instrument(operation: :test, provider: :pgvector, index: "test") { "result" }
 
       expect(handler_called).to be true
     end
@@ -30,7 +30,7 @@ RSpec.describe Vectra::Instrumentation do
       described_class.on_operation { |_event| calls << :second }
 
       Vectra.configuration.instrumentation = true
-      described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
+      described_class.instrument(operation: :test, provider: :pgvector, index: "test") { "result" }
 
       expect(calls).to eq([:first, :second])
     end
@@ -97,7 +97,7 @@ RSpec.describe Vectra::Instrumentation do
         handler_called = false
         described_class.on_operation { |_event| handler_called = true }
 
-        described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
+        described_class.instrument(operation: :test, provider: :pgvector, index: "test") { "result" }
 
         expect(handler_called).to be false
       end
@@ -170,7 +170,7 @@ RSpec.describe Vectra::Instrumentation do
       Vectra.configuration.instrumentation = true
 
       expect do
-        described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
+        described_class.instrument(operation: :test, provider: :pgvector, index: "test") { "result" }
       end.not_to raise_error
 
       expect(calls).to eq([:second])

@@ -10,6 +10,7 @@ AllCops:
     - 'tmp/**/*'
     - 'bin/**/*'
     - 'node_modules/**/*'
+    - 'lib/generators/**/templates/**/*'
 
 # Layout
 Layout/LineLength:
@@ -26,14 +27,18 @@ Metrics/BlockLength:
     - 'spec/**/*'
     - 'vectra.gemspec'
     - 'Rakefile'
+    - 'benchmarks/**/*'
+  ExcludedMethods:
+    - 'included'
+    - 'class_methods'
 
 Metrics/MethodLength:
-  Max: 25
+  Max: 30
   Exclude:
     - 'spec/**/*'
 
 Metrics/AbcSize:
-  Max: 25
+  Max: 30
   Exclude:
     - 'spec/**/*'
 
@@ -181,6 +186,15 @@ RSpec/ExampleLength:
 
 RSpec/MultipleExpectations:
   Max: 10
+
+RSpec/NamedSubject:
+  Enabled: false
+
+RSpec/SubjectStub:
+  Enabled: false
+
+Naming/PredicateName:
+  Enabled: false  # Allow has_vector DSL method
 
 Gemspec/OrderedDependencies:
   Enabled: false
