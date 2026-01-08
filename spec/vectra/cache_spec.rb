@@ -35,7 +35,9 @@ RSpec.describe Vectra::Cache do
   describe "#fetch" do
     it "returns cached value if present" do
       cache.set("key", "cached")
-      result = cache.fetch("key") { "computed_value" }
+      # rubocop:disable Style/RedundantFetchBlock -- testing custom Cache#fetch, not Hash#fetch
+      result = cache.fetch("key") { "this_should_not_be_returned" }
+      # rubocop:enable Style/RedundantFetchBlock
       expect(result).to eq("cached")
     end
 
