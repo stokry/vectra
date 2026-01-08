@@ -27,10 +27,12 @@ RSpec.describe Vectra::HealthCheck do
   describe "#health_check" do
     context "when provider is healthy" do
       before do
-        allow(mock_provider).to receive(:list_indexes).and_return([
-          { name: "index-1" },
-          { name: "index-2" }
-        ])
+        allow(mock_provider).to receive_messages(
+          list_indexes: [
+            { name: "index-1" },
+            { name: "index-2" }
+          ]
+        )
       end
 
       it "returns healthy result" do
@@ -71,11 +73,13 @@ RSpec.describe Vectra::HealthCheck do
 
     context "with include_stats" do
       before do
-        allow(mock_provider).to receive(:list_indexes).and_return([{ name: "my-index" }])
-        allow(mock_provider).to receive(:stats).and_return({
-          total_vector_count: 1000,
-          dimension: 384
-        })
+        allow(mock_provider).to receive_messages(
+          list_indexes: [{ name: "my-index" }],
+          stats: {
+            total_vector_count: 1000,
+            dimension: 384
+          }
+        )
       end
 
       it "includes index stats" do
@@ -87,7 +91,7 @@ RSpec.describe Vectra::HealthCheck do
     end
 
     context "with pool stats" do
-      let(:pgvector_provider) { double("PgvectorProvider") } # rubocop:disable RSpec/VerifiedDoubles
+      let(:pgvector_provider) { double("PgvectorProvider") }
 
       let(:pgvector_client) do
         client = Vectra::Client.allocate
@@ -97,14 +101,16 @@ RSpec.describe Vectra::HealthCheck do
       end
 
       before do
-        allow(pgvector_provider).to receive(:provider_name).and_return(:pgvector)
-        allow(pgvector_provider).to receive(:list_indexes).and_return([])
         allow(pgvector_provider).to receive(:respond_to?).with(:pool_stats).and_return(true)
-        allow(pgvector_provider).to receive(:pool_stats).and_return({
-          available: 5,
-          checked_out: 2,
-          size: 10
-        })
+        allow(pgvector_provider).to receive_messages(
+          provider_name: :pgvector,
+          list_indexes: [],
+          pool_stats: {
+            available: 5,
+            checked_out: 2,
+            size: 10
+          }
+        )
       end
 
       it "includes pool stats" do

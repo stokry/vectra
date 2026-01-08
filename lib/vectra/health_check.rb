@@ -29,46 +29,16 @@ module Vectra
     def health_check(index: nil, include_stats: false, timeout: 5)
       start_time = Time.now
 
-      begin
-        # Try to list indexes as basic connectivity check
-        indexes = with_timeout(timeout) { list_indexes }
-        index_name = index || indexes.first&.dig(:name)
+      indexes = with_timeout(timeout) { list_indexes }
+      index_name = index || indexes.first&.dig(:name)
 
-        result = {
-          healthy: true,
-          provider: provider_name,
-          latency_ms: ((Time.now - start_time) * 1000).round(2),
-          indexes_available: indexes.size,
-          checked_at: Time.now.utc.iso8601
-        }
+      result = base_result(start_time, indexes)
+      add_index_stats(result, index_name, include_stats, timeout)
+      add_pool_stats(result)
 
-        # Get index stats if requested and index available
-        if include_stats && index_name
-          stats = with_timeout(timeout) { stats(index: index_name) }
-          result[:index] = index_name
-          result[:stats] = {
-            vector_count: stats[:total_vector_count],
-            dimension: stats[:dimension]
-          }.compact
-        end
-
-        # Check pool health for pooled providers
-        if provider.respond_to?(:pool_stats)
-          pool = provider.pool_stats
-          result[:pool] = pool unless pool[:status] == "not_initialized"
-        end
-
-        HealthCheckResult.new(**result)
-      rescue StandardError => e
-        HealthCheckResult.new(
-          healthy: false,
-          provider: provider_name,
-          latency_ms: ((Time.now - start_time) * 1000).round(2),
-          error: e.class.name,
-          error_message: e.message,
-          checked_at: Time.now.utc.iso8601
-        )
-      end
+      HealthCheckResult.new(**result)
+    rescue StandardError => e
+      failure_result(start_time, e)
     end
 
     # Quick health check - just tests connectivity
@@ -81,10 +51,57 @@ module Vectra
 
     private
 
-    def with_timeout(seconds)
-      Timeout.timeout(seconds) { yield }
+    def with_timeout(seconds, &)
+      Timeout.timeout(seconds, &)
     rescue Timeout::Error
       raise Vectra::TimeoutError, "Health check timed out after #{seconds}s"
+    end
+
+    def base_result(start_time, indexes)
+      {
+        healthy: true,
+        provider: provider_name,
+        latency_ms: latency_since(start_time),
+        indexes_available: indexes.size,
+        checked_at: current_time_iso
+      }
+    end
+
+    def add_index_stats(result, index_name, include_stats, timeout)
+      return unless include_stats && index_name
+
+      stats = with_timeout(timeout) { stats(index: index_name) }
+      result[:index] = index_name
+      result[:stats] = {
+        vector_count: stats[:total_vector_count],
+        dimension: stats[:dimension]
+      }.compact
+    end
+
+    def add_pool_stats(result)
+      return unless provider.respond_to?(:pool_stats)
+
+      pool = provider.pool_stats
+      result[:pool] = pool unless pool[:status] == "not_initialized"
+    end
+
+    def failure_result(start_time, error)
+      HealthCheckResult.new(
+        healthy: false,
+        provider: provider_name,
+        latency_ms: latency_since(start_time),
+        error: error.class.name,
+        error_message: error.message,
+        checked_at: current_time_iso
+      )
+    end
+
+    def latency_since(start_time)
+      ((Time.now - start_time) * 1000).round(2)
+    end
+
+    def current_time_iso
+      Time.now.utc.iso8601
     end
   end
 
@@ -227,7 +244,7 @@ module Vectra
         Thread.new { [name, client.health_check(timeout: timeout)] }
       end
 
-      threads.to_h { |t| t.value }
+      threads.to_h(&:value)
     end
 
     def check_sequential(timeout)
