@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 
 gem "jekyll", "~> 4.4"
-gem "minima", "~> 2.5"
 gem "jekyll-feed", "~> 0.12"
-gem "jekyll-sitemap"
 gem "jekyll-seo-tag"
+gem "jekyll-sitemap"
+gem "minima", "~> 2.5"
 gem "webrick", "~> 1.8"
