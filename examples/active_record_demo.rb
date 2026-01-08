@@ -5,9 +5,9 @@
 #
 # Usage: ruby examples/active_record_demo.rb
 
-require 'bundler/setup'
-require 'active_record'
-require 'vectra'
+require "bundler/setup"
+require "active_record"
+require "vectra"
 
 puts "=" * 80
 puts "VECTRA ACTIVERECORD INTEGRATION DEMO"
@@ -16,30 +16,30 @@ puts
 
 # Setup database connection
 ActiveRecord::Base.establish_connection(
-  adapter: 'postgresql',
-  database: ENV.fetch('DATABASE_NAME', 'vectra_demo'),
-  host: ENV.fetch('DATABASE_HOST', 'localhost'),
-  username: ENV.fetch('DATABASE_USER', 'postgres'),
-  password: ENV.fetch('DATABASE_PASSWORD', 'password')
+  adapter: "postgresql",
+  database: ENV.fetch("DATABASE_NAME", "vectra_demo"),
+  host: ENV.fetch("DATABASE_HOST", "localhost"),
+  username: ENV.fetch("DATABASE_USER", "postgres"),
+  password: ENV.fetch("DATABASE_PASSWORD", "password")
 )
 
 # Configure Vectra
 Vectra.configure do |config|
   config.provider = :pgvector
-  config.host = ENV.fetch('DATABASE_URL', 'postgres://postgres:password@localhost/vectra_demo')
+  config.host = ENV.fetch("DATABASE_URL", "postgres://postgres:password@localhost/vectra_demo")
 end
 
 # Create documents table if not exists
 ActiveRecord::Schema.define do
-  unless ActiveRecord::Base.connection.table_exists?('documents')
-    enable_extension 'vector'
+  unless ActiveRecord::Base.connection.table_exists?("documents")
+    enable_extension "vector"
 
     create_table :documents do |t|
       t.string :title
       t.text :content
       t.string :category
       t.string :status
-      t.column :embedding, :vector, limit: 3  # 3-dimensional for demo
+      t.column :embedding, :vector, limit: 3 # 3-dimensional for demo
       t.timestamps
     end
   end
@@ -52,7 +52,7 @@ class Document < ActiveRecord::Base
   has_vector :embedding,
              dimension: 3,
              provider: :pgvector,
-             index: 'documents',
+             index: "documents",
              auto_index: true,
              metadata_fields: [:title, :category, :status]
 
@@ -78,16 +78,16 @@ end
 puts "Creating vector index..."
 begin
   Vectra::Client.new.provider.create_index(
-    name: 'documents',
+    name: "documents",
     dimension: 3,
-    metric: 'cosine'
+    metric: "cosine"
   )
   puts "✅ Index created\n"
-rescue => e
+rescue StandardError => e
   puts "⚠️  Index might already exist: #{e.message}\n"
 end
 
-puts "\n" + "=" * 80
+puts "\n#{"=" * 80}"
 puts "TESTING ACTIVERECORD INTEGRATION"
 puts "=" * 80
 puts
@@ -99,28 +99,28 @@ Document.delete_all
 puts "1. Creating documents (auto-indexes on save)...\n"
 
 doc1 = Document.create!(
-  title: 'Getting Started Guide',
-  content: 'This guide will help you get started with our platform.',
-  category: 'tutorial',
-  status: 'published'
+  title: "Getting Started Guide",
+  content: "This guide will help you get started with our platform.",
+  category: "tutorial",
+  status: "published"
 )
 puts "   Created: #{doc1.title} (ID: #{doc1.id})"
 puts "   Embedding: #{doc1.embedding.map { |v| v.round(3) }}"
 puts "   ✅ Automatically indexed in Vectra\n\n"
 
 doc2 = Document.create!(
-  title: 'Advanced Features',
-  content: 'Learn about advanced features and best practices.',
-  category: 'tutorial',
-  status: 'published'
+  title: "Advanced Features",
+  content: "Learn about advanced features and best practices.",
+  category: "tutorial",
+  status: "published"
 )
 puts "   Created: #{doc2.title} (ID: #{doc2.id})\n\n"
 
 doc3 = Document.create!(
-  title: 'API Reference',
-  content: 'Complete API documentation for developers.',
-  category: 'reference',
-  status: 'published'
+  title: "API Reference",
+  content: "Complete API documentation for developers.",
+  category: "reference",
+  status: "published"
 )
 puts "   Created: #{doc3.title} (ID: #{doc3.id})\n\n"
 
@@ -148,7 +148,7 @@ puts "3. Vector search with metadata filter...\n"
 results = Document.vector_search(
   query_embedding,
   limit: 10,
-  filter: { category: 'tutorial' }
+  filter: { category: "tutorial" }
 )
 
 puts "   Filter: category='tutorial'"
@@ -171,7 +171,7 @@ puts
 # Test 5: Update triggers re-indexing
 puts "5. Update document (triggers re-indexing)...\n"
 
-doc1.update!(content: 'Updated content about getting started.')
+doc1.update!(content: "Updated content about getting started.")
 puts "   Updated: #{doc1.title}"
 puts "   New embedding: #{doc1.embedding.map { |v| v.round(3) }}"
 puts "   ✅ Automatically re-indexed\n\n"
@@ -180,12 +180,12 @@ puts "   ✅ Automatically re-indexed\n\n"
 puts "6. Manual index control...\n"
 
 doc4 = Document.new(
-  title: 'Draft Article',
-  content: 'This is a draft article.',
-  category: 'blog',
-  status: 'draft'
+  title: "Draft Article",
+  content: "This is a draft article.",
+  category: "blog",
+  status: "draft"
 )
-doc4.save!(validate: false)  # Skip auto-index
+doc4.save!(validate: false) # Skip auto-index
 
 puts "   Created without auto-index: #{doc4.title}"
 puts "   Manually indexing..."

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'connection_pool'
+
 module Vectra
   # Retry helper for transient errors
   #
@@ -15,14 +17,14 @@ module Vectra
   module Retry
     # Errors that should be retried
     RETRYABLE_PG_ERRORS = [
-      'PG::ConnectionBad',
-      'PG::UnableToSend',
-      'PG::AdminShutdown',
-      'PG::CrashShutdown',
-      'PG::CannotConnectNow',
-      'PG::TooManyConnections',
-      'PG::SerializationFailure',
-      'PG::DeadlockDetected'
+      "PG::ConnectionBad",
+      "PG::UnableToSend",
+      "PG::AdminShutdown",
+      "PG::CrashShutdown",
+      "PG::CannotConnectNow",
+      "PG::TooManyConnections",
+      "PG::SerializationFailure",
+      "PG::DeadlockDetected"
     ].freeze
 
     # Execute block with retry logic
@@ -52,7 +54,7 @@ module Vectra
 
         begin
           return block.call
-        rescue => e
+        rescue StandardError => e
           last_error = e
 
           # Don't retry if not retryable or out of attempts
@@ -91,13 +93,13 @@ module Vectra
       return true if RETRYABLE_PG_ERRORS.include?(error_class)
 
       # Check if it's a connection pool timeout
-      return true if error.class.name == 'ConnectionPool::TimeoutError'
+      return true if error.instance_of?(::ConnectionPool::TimeoutError)
 
       # Check message for specific patterns
       error_message = error.message.downcase
-      error_message.include?('timeout') ||
-        error_message.include?('connection') ||
-        error_message.include?('temporary')
+      error_message.include?("timeout") ||
+        error_message.include?("connection") ||
+        error_message.include?("temporary")
     end
 
     # Calculate exponential backoff delay

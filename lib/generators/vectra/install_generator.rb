@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails/generators/base'
+require "rails/generators/base"
 
 module Vectra
   module Generators
@@ -12,29 +12,29 @@ module Vectra
     #   rails generate vectra:install --provider=pgvector --database-url=postgres://localhost/mydb
     #
     class InstallGenerator < Rails::Generators::Base
-      source_root File.expand_path('templates', __dir__)
+      source_root File.expand_path("templates", __dir__)
 
-      class_option :provider, type: :string, default: 'pgvector',
-                              desc: 'Vector database provider (pinecone, pgvector, qdrant, weaviate)'
+      class_option :provider, type: :string, default: "pgvector",
+                              desc: "Vector database provider (pinecone, pgvector, qdrant, weaviate)"
       class_option :database_url, type: :string, default: nil,
-                                  desc: 'PostgreSQL connection URL (for pgvector)'
+                                  desc: "PostgreSQL connection URL (for pgvector)"
       class_option :api_key, type: :string, default: nil,
-                             desc: 'API key for the provider'
+                             desc: "API key for the provider"
       class_option :instrumentation, type: :boolean, default: false,
-                                     desc: 'Enable instrumentation'
+                                     desc: "Enable instrumentation"
 
       def create_initializer_file
-        template 'vectra.rb', 'config/initializers/vectra.rb'
+        template "vectra.rb", "config/initializers/vectra.rb"
       end
 
       def create_migration
-        return unless options[:provider] == 'pgvector'
+        return unless options[:provider] == "pgvector"
 
-        generate "migration", "EnablePgvectorExtension"
+        generate :migration, "EnablePgvectorExtension"
 
         migration_template(
-          'enable_pgvector_extension.rb',
-          'db/migrate/enable_pgvector_extension.rb',
+          "enable_pgvector_extension.rb",
+          "db/migrate/enable_pgvector_extension.rb",
           migration_version: migration_version
         )
       end
@@ -49,21 +49,21 @@ module Vectra
         say "\n"
 
         case options[:provider]
-        when 'pinecone'
+        when "pinecone"
           show_pinecone_instructions
-        when 'pgvector'
+        when "pgvector"
           show_pgvector_instructions
-        when 'qdrant'
+        when "qdrant"
           show_qdrant_instructions
-        when 'weaviate'
+        when "weaviate"
           show_weaviate_instructions
         end
 
-        if options[:instrumentation]
-          say "\n"
-          say "  📊 Instrumentation is enabled!", :green
-          say "     Add New Relic or Datadog setup to config/initializers/vectra.rb"
-        end
+        return unless options[:instrumentation]
+
+        say "\n"
+        say "  📊 Instrumentation is enabled!", :green
+        say "     Add New Relic or Datadog setup to config/initializers/vectra.rb"
       end
 
       private

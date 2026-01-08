@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'vectra'
-require 'benchmark'
+require "bundler/setup"
+require "vectra"
+require "benchmark"
 
 # Benchmark for connection pooling under concurrent load
 #
@@ -14,14 +14,14 @@ puts "VECTRA CONNECTION POOLING BENCHMARK"
 puts "=" * 80
 puts
 
-DB_URL = ENV.fetch('DATABASE_URL', 'postgres://postgres:password@localhost/vectra_benchmark')
+DB_URL = ENV.fetch("DATABASE_URL", "postgres://postgres:password@localhost/vectra_benchmark")
 DIMENSION = 384
-THREAD_COUNTS = [1, 2, 5, 10, 20]
+THREAD_COUNTS = [1, 2, 5, 10, 20].freeze
 OPERATIONS_PER_THREAD = 50
 
 # Test different pool sizes
 [5, 10, 20].each do |pool_size|
-  puts "\n" + "=" * 80
+  puts "\n#{"=" * 80}"
   puts "Pool Size: #{pool_size}"
   puts "=" * 80
 
@@ -33,8 +33,8 @@ OPERATIONS_PER_THREAD = 50
 
   # Create test index
   begin
-    client.provider.create_index(name: 'benchmark_pool', dimension: DIMENSION)
-  rescue => e
+    client.provider.create_index(name: "benchmark_pool", dimension: DIMENSION)
+  rescue StandardError
     # Already exists
   end
 
@@ -46,20 +46,20 @@ OPERATIONS_PER_THREAD = 50
       metadata: { index: i }
     }
   end
-  client.upsert(index: 'benchmark_pool', vectors: vectors)
+  client.upsert(index: "benchmark_pool", vectors: vectors)
 
   THREAD_COUNTS.each do |thread_count|
     # Skip if threads > pool size (will timeout)
     next if thread_count > pool_size + 5
 
     total_time = Benchmark.realtime do
-      threads = thread_count.times.map do |thread_idx|
+      threads = thread_count.times.map do |_thread_idx|
         Thread.new do
           query_vector = Array.new(DIMENSION) { rand }
 
           OPERATIONS_PER_THREAD.times do
             client.query(
-              index: 'benchmark_pool',
+              index: "benchmark_pool",
               vector: query_vector,
               top_k: 10
             )

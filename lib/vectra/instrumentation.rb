@@ -89,7 +89,7 @@ module Vectra
 
         begin
           result = yield
-        rescue => e
+        rescue StandardError => e
           error = e
           raise
         ensure
@@ -133,7 +133,7 @@ module Vectra
       def notify_handlers(event)
         handlers.each do |handler|
           handler.call(event)
-        rescue => e
+        rescue StandardError => e
           # Don't let instrumentation errors crash the app
           warn "Vectra instrumentation handler error: #{e.message}"
         end

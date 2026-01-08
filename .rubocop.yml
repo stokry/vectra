@@ -103,6 +103,9 @@ Naming/MethodParameterName:
 Lint/MissingSuper:
   Enabled: false # Allow classes without super calls
 
+Lint/ScriptPermission:
+  Enabled: false
+
 # RSpec specific
 RSpec/ExampleLength:
   Max: 15

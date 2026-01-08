@@ -29,8 +29,8 @@ module Vectra
         # @param port [Integer] DogStatsD port
         # @param namespace [String] Metric namespace
         # @return [void]
-        def setup!(host: 'localhost', port: 8125, namespace: 'vectra')
-          require 'datadog/statsd'
+        def setup!(host: "localhost", port: 8125, namespace: "vectra")
+          require "datadog/statsd"
 
           @statsd = ::Datadog::Statsd.new(host, port, namespace: namespace)
 
@@ -55,26 +55,26 @@ module Vectra
           ]
 
           # Record timing
-          statsd.timing('operation.duration', event.duration, tags: tags)
+          statsd.timing("operation.duration", event.duration, tags: tags)
 
           # Record count
-          statsd.increment('operation.count', tags: tags)
+          statsd.increment("operation.count", tags: tags)
 
           # Record result count if available
           if event.metadata[:result_count]
-            statsd.gauge('operation.results', event.metadata[:result_count], tags: tags)
+            statsd.gauge("operation.results", event.metadata[:result_count], tags: tags)
           end
 
           # Record vector count if available
           if event.metadata[:vector_count]
-            statsd.gauge('operation.vectors', event.metadata[:vector_count], tags: tags)
+            statsd.gauge("operation.vectors", event.metadata[:vector_count], tags: tags)
           end
 
           # Record errors
-          if event.failure?
-            error_tags = tags + ["error_type:#{event.error.class.name}"]
-            statsd.increment('operation.error', tags: error_tags)
-          end
+          return unless event.failure?
+
+          error_tags = tags + ["error_type:#{event.error.class.name}"]
+          statsd.increment("operation.error", tags: error_tags)
         end
       end
     end

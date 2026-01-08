@@ -60,9 +60,9 @@ module Vectra
             vectra_duration: event.duration
           )
 
-          if event.failure?
-            ::NewRelic::Agent.notice_error(event.error)
-          end
+          return unless event.failure?
+
+          ::NewRelic::Agent.notice_error(event.error)
         end
       end
     end

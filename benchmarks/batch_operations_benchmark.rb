@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'vectra'
-require 'benchmark'
+require "bundler/setup"
+require "vectra"
+require "benchmark"
 
 # Benchmark for batch operations
 #
@@ -15,7 +15,7 @@ puts "=" * 80
 puts
 
 # Setup
-DB_URL = ENV.fetch('DATABASE_URL', 'postgres://postgres:password@localhost/vectra_benchmark')
+DB_URL = ENV.fetch("DATABASE_URL", "postgres://postgres:password@localhost/vectra_benchmark")
 DIMENSION = 384
 ITERATIONS = 5
 
@@ -24,15 +24,15 @@ client = Vectra.pgvector(connection_url: DB_URL)
 # Create test index
 puts "Creating test index..."
 begin
-  client.provider.delete_index(name: 'benchmark_test')
+  client.provider.delete_index(name: "benchmark_test")
 rescue Vectra::NotFoundError
   # Index doesn't exist, that's fine
 end
 
 client.provider.create_index(
-  name: 'benchmark_test',
+  name: "benchmark_test",
   dimension: DIMENSION,
-  metric: 'cosine'
+  metric: "cosine"
 )
 
 # Generate test vectors
@@ -64,7 +64,7 @@ puts "-" * 80
     times = []
     ITERATIONS.times do
       time = Benchmark.realtime do
-        client.upsert(index: 'benchmark_test', vectors: vectors)
+        client.upsert(index: "benchmark_test", vectors: vectors)
       end
       times << time
     end
@@ -81,7 +81,7 @@ puts "-" * 80
 end
 
 # Query benchmarks
-puts "\n" + "=" * 80
+puts "\n#{"=" * 80}"
 puts "QUERY BENCHMARKS"
 puts "=" * 80
 
@@ -93,7 +93,7 @@ puts "\nQuery performance (#{ITERATIONS} iterations):"
   ITERATIONS.times do
     time = Benchmark.realtime do
       client.query(
-        index: 'benchmark_test',
+        index: "benchmark_test",
         vector: query_vector,
         top_k: top_k
       )
@@ -111,7 +111,7 @@ end
 
 # Cleanup
 puts "\nCleaning up..."
-client.provider.delete_index(name: 'benchmark_test')
+client.provider.delete_index(name: "benchmark_test")
 client.provider.shutdown!
 
 puts "\n✅ Benchmark complete!"

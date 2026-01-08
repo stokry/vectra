@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe Vectra::Instrumentation do
   before do
@@ -13,30 +13,30 @@ RSpec.describe Vectra::Instrumentation do
     Vectra.configuration.instrumentation = false
   end
 
-  describe '.on_operation' do
-    it 'registers a handler' do
+  describe ".on_operation" do
+    it "registers a handler" do
       handler_called = false
       described_class.on_operation { |_event| handler_called = true }
 
       Vectra.configuration.instrumentation = true
-      described_class.instrument(operation: :test, provider: :pgvector, index: 'test') {}
+      described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
 
       expect(handler_called).to be true
     end
 
-    it 'calls multiple handlers in order' do
+    it "calls multiple handlers in order" do
       calls = []
       described_class.on_operation { |_event| calls << :first }
       described_class.on_operation { |_event| calls << :second }
 
       Vectra.configuration.instrumentation = true
-      described_class.instrument(operation: :test, provider: :pgvector, index: 'test') {}
+      described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
 
       expect(calls).to eq([:first, :second])
     end
   end
 
-  describe '.instrument' do
+  describe ".instrument" do
     let(:events) { [] }
 
     before do
@@ -44,23 +44,23 @@ RSpec.describe Vectra::Instrumentation do
       Vectra.configuration.instrumentation = true
     end
 
-    it 'creates event with correct attributes' do
+    it "creates event with correct attributes" do
       described_class.instrument(
         operation: :upsert,
         provider: :pgvector,
-        index: 'documents',
+        index: "documents",
         metadata: { vector_count: 10 }
-      ) { 'result' }
+      ) { "result" }
 
       event = events.first
       expect(event.operation).to eq(:upsert)
       expect(event.provider).to eq(:pgvector)
-      expect(event.index).to eq('documents')
+      expect(event.index).to eq("documents")
       expect(event.metadata[:vector_count]).to eq(10)
     end
 
-    it 'measures duration' do
-      described_class.instrument(operation: :test, provider: :pgvector, index: 'test') do
+    it "measures duration" do
+      described_class.instrument(operation: :test, provider: :pgvector, index: "test") do
         sleep 0.1
       end
 
@@ -69,45 +69,45 @@ RSpec.describe Vectra::Instrumentation do
       expect(event.duration).to be < 200   # Less than 200ms
     end
 
-    it 'captures errors' do
-      expect {
-        described_class.instrument(operation: :test, provider: :pgvector, index: 'test') do
-          raise StandardError, 'Test error'
+    it "captures errors" do
+      expect do
+        described_class.instrument(operation: :test, provider: :pgvector, index: "test") do
+          raise StandardError, "Test error"
         end
-      }.to raise_error(StandardError, 'Test error')
+      end.to raise_error(StandardError, "Test error")
 
       event = events.first
       expect(event.failure?).to be true
       expect(event.error).to be_a(StandardError)
-      expect(event.error.message).to eq('Test error')
+      expect(event.error.message).to eq("Test error")
     end
 
-    it 'returns block result' do
-      result = described_class.instrument(operation: :test, provider: :pgvector, index: 'test') do
-        'success'
+    it "returns block result" do
+      result = described_class.instrument(operation: :test, provider: :pgvector, index: "test") do
+        "success"
       end
 
-      expect(result).to eq('success')
+      expect(result).to eq("success")
     end
 
-    context 'when instrumentation is disabled' do
+    context "when instrumentation is disabled" do
       before { Vectra.configuration.instrumentation = false }
 
-      it 'does not call handlers' do
+      it "does not call handlers" do
         handler_called = false
         described_class.on_operation { |_event| handler_called = true }
 
-        described_class.instrument(operation: :test, provider: :pgvector, index: 'test') {}
+        described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
 
         expect(handler_called).to be false
       end
 
-      it 'still executes the block' do
-        result = described_class.instrument(operation: :test, provider: :pgvector, index: 'test') do
-          'result'
+      it "still executes the block" do
+        result = described_class.instrument(operation: :test, provider: :pgvector, index: "test") do
+          "result"
         end
 
-        expect(result).to eq('result')
+        expect(result).to eq("result")
       end
     end
   end
@@ -117,43 +117,43 @@ RSpec.describe Vectra::Instrumentation do
       described_class.new(
         operation: :query,
         provider: :pgvector,
-        index: 'documents',
+        index: "documents",
         duration: 123.45,
         metadata: { top_k: 10 },
         error: nil
       )
     end
 
-    describe '#success?' do
-      it 'returns true when no error' do
+    describe "#success?" do
+      it "returns true when no error" do
         expect(event.success?).to be true
       end
 
-      it 'returns false when error present' do
+      it "returns false when error present" do
         error_event = described_class.new(
           operation: :query,
           provider: :pgvector,
-          index: 'test',
+          index: "test",
           duration: 100,
-          error: StandardError.new('error')
+          error: StandardError.new("error")
         )
 
         expect(error_event.success?).to be false
       end
     end
 
-    describe '#failure?' do
-      it 'returns false when no error' do
+    describe "#failure?" do
+      it "returns false when no error" do
         expect(event.failure?).to be false
       end
 
-      it 'returns true when error present' do
+      it "returns true when error present" do
         error_event = described_class.new(
           operation: :query,
           provider: :pgvector,
-          index: 'test',
+          index: "test",
           duration: 100,
-          error: StandardError.new('error')
+          error: StandardError.new("error")
         )
 
         expect(error_event.failure?).to be true
@@ -161,17 +161,17 @@ RSpec.describe Vectra::Instrumentation do
     end
   end
 
-  describe 'error handling in handlers' do
-    it 'continues executing other handlers if one fails' do
+  describe "error handling in handlers" do
+    it "continues executing other handlers if one fails" do
       calls = []
-      described_class.on_operation { |_event| raise 'Handler error' }
+      described_class.on_operation { |_event| raise "Handler error" }
       described_class.on_operation { |_event| calls << :second }
 
       Vectra.configuration.instrumentation = true
 
-      expect {
-        described_class.instrument(operation: :test, provider: :pgvector, index: 'test') {}
-      }.not_to raise_error
+      expect do
+        described_class.instrument(operation: :test, provider: :pgvector, index: "test") {}
+      end.not_to raise_error
 
       expect(calls).to eq([:second])
     end

@@ -60,8 +60,8 @@ module Vectra
     #
     # @yield [event] The instrumentation event
     # @see Instrumentation.on_operation
-    def on_operation(&block)
-      Instrumentation.on_operation(&block)
+    def on_operation(&)
+      Instrumentation.on_operation(&)
     end
 
     # Create a new client with the given options

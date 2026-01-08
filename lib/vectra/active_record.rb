@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'active_support/concern'
+require "active_support/concern"
 
 module Vectra
   # ActiveRecord integration for vector embeddings
@@ -101,11 +101,11 @@ module Vectra
         return results unless load_records
 
         # Load ActiveRecord objects
-        ids = results.map { |match| match.id.gsub("#{config[:index]}_", '').to_i }
+        ids = results.map { |match| match.id.gsub("#{config[:index]}_", "").to_i }
         records = where(id: ids).index_by(&:id)
 
         results.map do |match|
-          id = match.id.gsub("#{config[:index]}_", '').to_i
+          id = match.id.gsub("#{config[:index]}_", "").to_i
           record = records[id]
           next unless record
 
@@ -165,7 +165,7 @@ module Vectra
       raise ArgumentError, "#{config[:attribute]} is nil" if vector_data.nil?
 
       self.class._vectra_search(vector_data, limit: limit + 1, filter: filter)
-        .reject { |record| record.id == id }  # Exclude self
+        .reject { |record| record.id == id } # Exclude self
         .first(limit)
     end
 
@@ -176,14 +176,14 @@ module Vectra
       return unless saved_change_to_attribute?(self.class._vectra_config[:attribute])
 
       index_vector!
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("Vectra auto-index failed: #{e.message}") if defined?(Rails)
     end
 
     # Auto-delete callback
     def _vectra_delete_vector
       delete_vector!
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("Vectra auto-delete failed: #{e.message}") if defined?(Rails)
     end
 
