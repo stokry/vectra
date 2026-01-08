@@ -131,8 +131,9 @@ RSpec.describe Vectra::ActiveRecord do
 
   describe ".vectra_client" do
     it "creates a client with configured provider" do
-      # Reset memoization
+      # Reset memoization and remove the mock to test actual behavior
       test_model_class.instance_variable_set(:@_vectra_client, nil)
+      allow(test_model_class).to receive(:vectra_client).and_call_original
 
       expect(Vectra::Client).to receive(:new).with(provider: :pgvector).and_return(mock_client)
       expect(test_model_class.vectra_client).to eq(mock_client)
@@ -140,6 +141,7 @@ RSpec.describe Vectra::ActiveRecord do
 
     it "memoizes the client" do
       test_model_class.instance_variable_set(:@_vectra_client, mock_client)
+      allow(test_model_class).to receive(:vectra_client).and_call_original
 
       expect(Vectra::Client).not_to receive(:new)
       expect(test_model_class.vectra_client).to eq(mock_client)
@@ -150,8 +152,8 @@ RSpec.describe Vectra::ActiveRecord do
   describe ".vector_search" do
     let(:mock_results) do
       [
-        Vectra::QueryResult::Match.new(id: "test_docs_1", score: 0.95, metadata: { title: "Doc 1" }),
-        Vectra::QueryResult::Match.new(id: "test_docs_2", score: 0.85, metadata: { title: "Doc 2" })
+        Vectra::Match.new(id: "test_docs_1", score: 0.95, metadata: { title: "Doc 1" }),
+        Vectra::Match.new(id: "test_docs_2", score: 0.85, metadata: { title: "Doc 2" })
       ]
     end
 
