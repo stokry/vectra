@@ -175,3 +175,69 @@ Gemspec/DevelopmentDependencies:
 
 Gemspec/OrderedDependencies:
   Enabled: false
+
+# Capybara - disable all (causes errors and not needed for this project)
+Capybara/RSpec/PredicateMatcher:
+  Enabled: false
+
+Capybara/CurrentPathExpectation:
+  Enabled: false
+
+Capybara/MatchStyle:
+  Enabled: false
+
+Capybara/NegationMatcher:
+  Enabled: false
+
+Capybara/SpecificActions:
+  Enabled: false
+
+Capybara/SpecificFinders:
+  Enabled: false
+
+Capybara/SpecificMatcher:
+  Enabled: false
+
+Capybara/VisibilityMatcher:
+  Enabled: false
+
+# FactoryBot - not used in this project
+FactoryBot/AttributeDefinedStatically:
+  Enabled: false
+
+FactoryBot/ConsistentParenthesesStyle:
+  Enabled: false
+
+FactoryBot/CreateList:
+  Enabled: false
+
+FactoryBot/FactoryClassName:
+  Enabled: false
+
+FactoryBot/FactoryNameStyle:
+  Enabled: false
+
+FactoryBot/SyntaxMethods:
+  Enabled: false
+
+# RSpecRails - not used in this project
+RSpecRails/AvoidSetupHook:
+  Enabled: false
+
+RSpecRails/HaveHttpStatus:
+  Enabled: false
+
+RSpecRails/HttpStatus:
+  Enabled: false
+
+RSpecRails/InferredSpecType:
+  Enabled: false
+
+RSpecRails/MinitestAssertions:
+  Enabled: false
+
+RSpecRails/NegationBeValid:
+  Enabled: false
+
+RSpecRails/TravelAround:
+  Enabled: false
