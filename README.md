@@ -1,440 +1,246 @@
-# Vectra
+# Vectra 🚀
 
-[![Gem Version](https://badge.fury.io/rb/vectra.svg)](https://badge.fury.io/rb/vectra)
+[![Gem Version](https://badge.fury.io/rb/vectra-client.svg)](https://rubygems.org/gems/vectra-client)
 [![CI](https://github.com/stokry/vectra/actions/workflows/ci.yml/badge.svg)](https://github.com/stokry/vectra/actions)
 [![codecov](https://codecov.io/gh/stokry/vectra/branch/main/graph/badge.svg)](https://codecov.io/gh/stokry/vectra)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-**Vectra** is a unified Ruby client for vector databases. Write once, switch providers seamlessly.
+> **A unified Ruby client for vector databases.** Write once, switch vector database providers seamlessly. Perfect for AI/ML applications, semantic search, and RAG (Retrieval Augmented Generation) systems.
 
-## Features
+## 📖 Complete Documentation
 
-- 🔌 **Unified API** - One interface for multiple vector databases
-- 🚀 **Modern Ruby** - Built for Ruby 3.2+ with modern patterns
-- 🔄 **Automatic Retries** - Built-in retry logic with exponential backoff
-- 📊 **Rich Results** - Enumerable query results with filtering capabilities
-- 🛡️ **Type Safety** - Comprehensive validation and meaningful errors
-- 📝 **Well Documented** - Extensive YARD documentation
+**Full documentation, guides, and API reference available at:** [**https://vectra-docs.netlify.app/**](https://vectra-docs.netlify.app/)
 
-## Supported Providers
+This README provides a quick overview. For detailed guides, examples, and API documentation, visit the official documentation site above.
 
-| Provider | Status | Version |
-|----------|--------|---------|
-| [Pinecone](https://pinecone.io) | ✅ Fully Supported | v0.1.0 |
-| [PostgreSQL + pgvector](https://github.com/pgvector/pgvector) | ✅ Fully Supported | v0.1.1 |
-| [Qdrant](https://qdrant.tech) | ✅ Fully Supported | v0.2.1 |
-| [Weaviate](https://weaviate.io) | 🚧 Planned | v0.3.0 |
+---
 
-## Installation
+## ✨ Key Features
+
+- 🔌 **Provider Agnostic** - Switch between vector database providers with minimal code changes
+- 🚀 **Production Ready** - Built for Ruby 3.2+ with comprehensive test coverage (95%+)
+- 🔄 **Resilient** - Built-in retry logic with exponential backoff and circuit breaker patterns
+- 📊 **Rich Results** - Enumerable query results with advanced filtering and mapping capabilities
+- 🛡️ **Type Safe** - Comprehensive input validation and meaningful error messages
+- 📈 **Observable** - Native instrumentation support for Datadog and New Relic
+- 🏗️ **Rails Ready** - Seamless ActiveRecord integration with migrations support
+- 📚 **Well Documented** - Extensive YARD documentation and comprehensive examples
+
+## 🗄️ Supported Vector Databases
+
+| Provider | Type | Status | Docs |
+|----------|------|--------|------|
+| **Pinecone** | Managed Cloud | ✅ Fully Supported | [Guide](https://vectra-docs.netlify.app/providers/pinecone) |
+| **PostgreSQL + pgvector** | SQL Database | ✅ Fully Supported | [Guide](https://vectra-docs.netlify.app/providers/pgvector) |
+| **Qdrant** | Open Source | ✅ Fully Supported | [Guide](https://vectra-docs.netlify.app/providers/qdrant) |
+| **Weaviate** | Open Source | ✅ Fully Supported | [Guide](https://vectra-docs.netlify.app/providers/weaviate) |
+
+
+
+## 📦 Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'vectra'
+gem 'vectra-client'
 ```
 
-And then execute:
+Then execute:
 
 ```bash
 bundle install
 ```
 
-Or install it yourself:
+Or install directly:
 
 ```bash
-gem install vectra
+gem install vectra-client
 ```
 
-### Provider-Specific Dependencies
+### RubyGems Information
 
-For **pgvector** support, add the `pg` gem:
+- **Gem Name:** `vectra-client`
+- **Latest Version:** 0.2.1
+- **Repository:** [stokry/vectra](https://github.com/stokry/vectra)
+- **RubyGems Page:** [vectra-client](https://rubygems.org/gems/vectra-client)
+- **License:** MIT
+- **Ruby Requirement:** >= 3.2.0
 
+### Provider-Specific Setup
+
+Each vector database may require additional dependencies:
+
+**PostgreSQL + pgvector:**
 ```ruby
 gem 'pg', '~> 1.5'
 ```
 
-## Quick Start
+**For Instrumentation:**
+```ruby
+gem 'dogstatsd-ruby'      # Datadog
+gem 'newrelic_rpm'        # New Relic
+```
 
-### Configuration
+## 🚀 Quick Start
+
+### 1. Initialize a Client
 
 ```ruby
 require 'vectra'
 
-# Global configuration
-Vectra.configure do |config|
-  config.provider = :pinecone
-  config.api_key = ENV['PINECONE_API_KEY']
-  config.environment = 'us-east-1'  # or config.host = 'your-index-host.pinecone.io'
-end
-
-# Create a client
-client = Vectra::Client.new
-```
-
-Or use per-client configuration:
-
-```ruby
-# Shortcut for Pinecone
-client = Vectra.pinecone(
-  api_key: ENV['PINECONE_API_KEY'],
-  environment: 'us-east-1'
-)
-
-# Shortcut for pgvector (PostgreSQL)
-client = Vectra.pgvector(
-  connection_url: 'postgres://user:password@localhost/mydb'
-)
-
-# Shortcut for Qdrant
-client = Vectra.qdrant(
-  host: 'http://localhost:6333',        # Local Qdrant
-  api_key: ENV['QDRANT_API_KEY']        # Optional for local instances
-)
-
-# Generic client with options
+# Pinecone
 client = Vectra::Client.new(
   provider: :pinecone,
   api_key: ENV['PINECONE_API_KEY'],
-  environment: 'us-east-1',
-  timeout: 60,
-  max_retries: 5
+  environment: 'us-west-4'
+)
+
+# PostgreSQL + pgvector
+client = Vectra::Client.new(
+  provider: :pgvector,
+  database: 'my_app_production',
+  host: 'localhost'
+)
+
+# Qdrant
+client = Vectra::Client.new(
+  provider: :qdrant,
+  host: 'http://localhost:6333'
 )
 ```
 
-### Basic Operations
-
-#### Upsert Vectors
+### 2. Upsert Vectors
 
 ```ruby
 client.upsert(
-  index: 'my-index',
   vectors: [
-    { id: 'vec1', values: [0.1, 0.2, 0.3], metadata: { text: 'Hello world' } },
-    { id: 'vec2', values: [0.4, 0.5, 0.6], metadata: { text: 'Ruby is great' } }
+    { 
+      id: 'doc-1', 
+      values: [0.1, 0.2, 0.3], 
+      metadata: { title: 'Introduction to AI' }
+    },
+    { 
+      id: 'doc-2', 
+      values: [0.2, 0.3, 0.4], 
+      metadata: { title: 'Advanced ML Techniques' }
+    }
   ]
 )
-# => { upserted_count: 2 }
 ```
 
-#### Query Vectors
+### 3. Search for Similar Vectors
 
 ```ruby
 results = client.query(
-  index: 'my-index',
-  vector: [0.1, 0.2, 0.3],
-  top_k: 5,
-  include_metadata: true
-)
-
-# Iterate over results
-results.each do |match|
-  puts "ID: #{match.id}, Score: #{match.score}"
-  puts "Metadata: #{match.metadata}"
-end
-
-# Access specific results
-results.first          # First match
-results.ids            # All matching IDs
-results.scores         # All scores
-results.max_score      # Highest score
-
-# Filter by score
-high_quality = results.above_score(0.8)
-```
-
-#### Query with Filters
-
-```ruby
-results = client.query(
-  index: 'my-index',
-  vector: [0.1, 0.2, 0.3],
-  top_k: 10,
-  filter: { category: 'programming', language: 'ruby' }
-)
-```
-
-#### Fetch Vectors by ID
-
-```ruby
-vectors = client.fetch(index: 'my-index', ids: ['vec1', 'vec2'])
-
-vectors['vec1'].values    # [0.1, 0.2, 0.3]
-vectors['vec1'].metadata  # { 'text' => 'Hello world' }
-```
-
-#### Update Vector Metadata
-
-```ruby
-client.update(
-  index: 'my-index',
-  id: 'vec1',
-  metadata: { category: 'updated', processed: true }
-)
-```
-
-#### Delete Vectors
-
-```ruby
-# Delete by IDs
-client.delete(index: 'my-index', ids: ['vec1', 'vec2'])
-
-# Delete by filter
-client.delete(index: 'my-index', filter: { category: 'old' })
-
-# Delete all (use with caution!)
-client.delete(index: 'my-index', delete_all: true)
-```
-
-### Working with Vectors
-
-```ruby
-# Create a Vector object
-vector = Vectra::Vector.new(
-  id: 'my-vector',
-  values: [0.1, 0.2, 0.3],
-  metadata: { text: 'Example' }
-)
-
-vector.dimension        # => 3
-vector.metadata?        # => true
-vector.to_h             # Convert to hash
-
-# Calculate similarity
-other = Vectra::Vector.new(id: 'other', values: [0.1, 0.2, 0.3])
-vector.cosine_similarity(other)    # => 1.0 (identical)
-vector.euclidean_distance(other)   # => 0.0
-```
-
-### Index Management
-
-```ruby
-# List all indexes
-indexes = client.list_indexes
-indexes.each { |idx| puts idx[:name] }
-
-# Describe an index
-info = client.describe_index(index: 'my-index')
-puts info[:dimension]  # => 384
-puts info[:metric]     # => "cosine"
-
-# Get index statistics
-stats = client.stats(index: 'my-index')
-puts stats[:total_vector_count]
-```
-
-### Namespaces
-
-Namespaces allow you to partition vectors within an index:
-
-```ruby
-# Upsert to a namespace
-client.upsert(
-  index: 'my-index',
-  namespace: 'production',
-  vectors: [...]
-)
-
-# Query within a namespace
-client.query(
-  index: 'my-index',
-  namespace: 'production',
   vector: [0.1, 0.2, 0.3],
   top_k: 5
 )
+
+results.matches.each do |match|
+  puts "#{match['id']}: #{match['score']}"
+  puts "  Metadata: #{match['metadata']}"
+end
 ```
 
-### pgvector (PostgreSQL)
+### 4. Delete Vectors
 
-pgvector uses PostgreSQL tables as indexes. Each "index" is a table with a vector column.
+```ruby
+client.delete(ids: ['doc-1', 'doc-2'])
+```
 
-#### Setup PostgreSQL with pgvector
+## 📖 Full Documentation
+
+For complete documentation, examples, and guides, visit:
+
+**👉 [https://vectra-docs.netlify.app/](https://vectra-docs.netlify.app/)**
+
+### Documentation Includes:
+
+- [Installation Guide](https://vectra-docs.netlify.app/guides/installation)
+- [Getting Started](https://vectra-docs.netlify.app/guides/getting-started)
+- [Provider Guides](https://vectra-docs.netlify.app/providers)
+  - [Pinecone](https://vectra-docs.netlify.app/providers/pinecone)
+  - [PostgreSQL + pgvector](https://vectra-docs.netlify.app/providers/pgvector)
+  - [Qdrant](https://vectra-docs.netlify.app/providers/qdrant)
+  - [Weaviate](https://vectra-docs.netlify.app/providers/weaviate)
+- [API Reference](https://vectra-docs.netlify.app/api/overview)
+- [Code Examples](https://vectra-docs.netlify.app/examples)
+- [Rails Integration Guide](https://vectra-docs.netlify.app/providers/pgvector/)
+
+---
+
+## 💡 Use Cases
+
+### Semantic Search
+Build intelligent search that understands meaning, not just keywords. Perfect for product discovery, knowledge base search, and content recommendation.
+
+### Retrieval Augmented Generation (RAG)
+Combine vector databases with LLMs to enable precise information retrieval for AI applications, chatbots, and knowledge systems.
+
+### Duplicate Detection
+Identify and deduplicate similar items across your dataset using vector similarity.
+
+### Recommendation Systems
+Power personalized recommendations based on user behavior and content similarity.
+
+---
+
+
+## 🛠️ Development
+
+### Set Up Development Environment
 
 ```bash
-# Using Docker
-docker run -d --name pgvector \
-  -e POSTGRES_PASSWORD=password \
-  -p 5432:5432 \
-  pgvector/pgvector:pg16
-```
-
-#### Create an Index (Table)
-
-```ruby
-client = Vectra.pgvector(connection_url: 'postgres://postgres:password@localhost/postgres')
-
-# Create a new index with cosine similarity
-client.provider.create_index(
-  name: 'documents',
-  dimension: 384,
-  metric: 'cosine'  # or 'euclidean', 'inner_product'
-)
-```
-
-#### Supported Metrics
-
-| Metric | Description | pgvector Operator |
-|--------|-------------|-------------------|
-| `cosine` | Cosine similarity (default) | `<=>` |
-| `euclidean` | Euclidean distance | `<->` |
-| `inner_product` | Inner product / dot product | `<#>` |
-
-#### Table Structure
-
-Vectra creates tables with the following structure:
-
-```sql
-CREATE TABLE documents (
-  id TEXT PRIMARY KEY,
-  embedding vector(384),
-  metadata JSONB DEFAULT '{}',
-  namespace TEXT DEFAULT '',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- IVFFlat index for fast similarity search
-CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops);
-```
-
-## Configuration Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `provider` | Vector database provider (`:pinecone`, `:pgvector`, `:qdrant`, `:weaviate`) | Required |
-| `api_key` | API key for authentication (password for pgvector) | Required* |
-| `environment` | Environment/region (Pinecone) | - |
-| `host` | Direct host URL or PostgreSQL connection URL | - |
-| `timeout` | Request timeout in seconds | 30 |
-| `open_timeout` | Connection timeout in seconds | 10 |
-| `max_retries` | Maximum retry attempts | 3 |
-| `retry_delay` | Initial retry delay in seconds | 1 |
-| `logger` | Logger instance for debugging | nil |
-
-*For pgvector, `api_key` is used as the PostgreSQL password.
-
-## Error Handling
-
-Vectra provides specific error classes for different failure scenarios:
-
-```ruby
-begin
-  client.query(index: 'my-index', vector: [0.1, 0.2], top_k: 5)
-rescue Vectra::AuthenticationError => e
-  puts "Authentication failed: #{e.message}"
-rescue Vectra::RateLimitError => e
-  puts "Rate limited. Retry after #{e.retry_after} seconds"
-rescue Vectra::NotFoundError => e
-  puts "Resource not found: #{e.message}"
-rescue Vectra::ValidationError => e
-  puts "Invalid request: #{e.message}"
-rescue Vectra::ServerError => e
-  puts "Server error (#{e.status_code}): #{e.message}"
-rescue Vectra::Error => e
-  puts "General error: #{e.message}"
-end
-```
-
-## Logging
-
-Enable debug logging to see request details:
-
-```ruby
-require 'logger'
-
-Vectra.configure do |config|
-  config.provider = :pinecone
-  config.api_key = ENV['PINECONE_API_KEY']
-  config.environment = 'us-east-1'
-  config.logger = Logger.new($stdout)
-end
-```
-
-## Best Practices
-
-### Batch Upserts
-
-For large datasets, batch your upserts:
-
-```ruby
-vectors = large_dataset.each_slice(100).map do |batch|
-  client.upsert(index: 'my-index', vectors: batch)
-end
-```
-
-### Connection Reuse
-
-Create a single client instance and reuse it:
-
-```ruby
-# Good: Reuse the client
-client = Vectra::Client.new(...)
-client.query(...)
-client.upsert(...)
-
-# Avoid: Creating new clients for each operation
-Vectra::Client.new(...).query(...)
-Vectra::Client.new(...).upsert(...)
-```
-
-### Error Recovery
-
-Implement retry logic for transient failures:
-
-```ruby
-def query_with_retry(client, **params, retries: 3)
-  client.query(**params)
-rescue Vectra::RateLimitError => e
-  if retries > 0
-    sleep(e.retry_after || 1)
-    retry(retries: retries - 1)
-  else
-    raise
-  end
-end
-```
-
-## Development
-
-After checking out the repo:
-
-```bash
-# Install dependencies
+git clone https://github.com/stokry/vectra.git
+cd vectra
 bundle install
+```
 
-# Run tests
+### Run Tests
+
+```bash
+# All tests
 bundle exec rspec
 
-# Run linter
+# Unit tests only
+bundle exec rspec spec/vectra
+
+# Integration tests only
+bundle exec rspec spec/integration
+```
+
+### Code Quality
+
+```bash
+# Run RuboCop linter
 bundle exec rubocop
 
 # Generate documentation
 bundle exec rake docs
 ```
 
-## Roadmap
+## 🤝 Contributing
 
-### v0.1.0
-- ✅ Pinecone provider
-- ✅ Basic CRUD operations
-- ✅ Configuration system
-- ✅ Error handling with retries
-- ✅ Comprehensive tests
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### v0.1.1 (Current)
-- ✅ pgvector (PostgreSQL) provider
-- ✅ Multiple similarity metrics (cosine, euclidean, inner product)
-- ✅ Namespace support for pgvector
-- ✅ IVFFlat index creation
+See [CHANGELOG.md](CHANGELOG.md) for the complete history of changes.
 
-### v0.2.1
-- ✅ Qdrant provider (fully implemented)
-- ✅ Enhanced error handling
-- ✅ Improved retry middleware
+## 🔗 Links
 
-### v0.3.0
-- 🚧 Weaviate provider
-- 🚧 Batch operations
+- **Documentation:** [https://vectra-docs.netlify.app/](https://vectra-docs.netlify.app/)
+- **RubyGems:** [vectra-client](https://rubygems.org/gems/vectra-client)
+- **GitHub:** [stokry/vectra](https://github.com/stokry/vectra)
+- **Issues:** [Report a bug](https://github.com/stokry/vectra/issues)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Built with ❤️ by the Vectra community**
 - 🚧 Performance optimizations
 
 ### v1.0.0
