@@ -3,6 +3,7 @@
 require "spec_helper"
 require "webmock/rspec"
 
+# rubocop:disable Lint/AmbiguousBlockAssociation, Style/MultilineBlockChain
 RSpec.describe Vectra::Providers::Qdrant do
   let(:config) do
     cfg = Vectra::Configuration.new
@@ -702,3 +703,4 @@ RSpec.describe Vectra::Providers::Qdrant do
     end
   end
 end
+# rubocop:enable Lint/AmbiguousBlockAssociation, Style/MultilineBlockChain

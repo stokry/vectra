@@ -58,8 +58,8 @@ module Vectra
       raise ConfigurationError, "Provider must be configured" if provider.nil?
 
       # API key is optional for some providers (Qdrant local, pgvector)
-      unless api_key_optional_provider?
-        raise ConfigurationError, "API key must be configured" if api_key.nil? || api_key.empty?
+      if !api_key_optional_provider? && (api_key.nil? || api_key.empty?)
+        raise ConfigurationError, "API key must be configured"
       end
 
       validate_provider_specific!

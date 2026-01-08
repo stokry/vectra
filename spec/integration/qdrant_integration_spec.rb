@@ -121,7 +121,7 @@ RSpec.describe "Qdrant Integration" do
         # Wait for indexing
         sleep(1)
 
-        # Note: Qdrant uses hashed IDs, so we fetch by the hashed ID
+        # NOTE: Qdrant uses hashed IDs, so we fetch by the hashed ID
         result = client.query(
           index: collection_name,
           vector: test_vectors[0][:values],

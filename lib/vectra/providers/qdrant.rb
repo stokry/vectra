@@ -16,6 +16,7 @@ module Vectra
     #   client = Vectra::Client.new
     #   client.upsert(index: 'my-collection', vectors: [...])
     #
+    # rubocop:disable Metrics/ClassLength
     class Qdrant < Base
       # @see Base#provider_name
       def provider_name
@@ -83,7 +84,7 @@ module Vectra
       end
 
       # @see Base#fetch
-      def fetch(index:, ids:, namespace: nil)
+      def fetch(index:, ids:, namespace: nil) # rubocop:disable Lint/UnusedMethodArgument
         point_ids = ids.map { |id| generate_point_id(id) }
 
         body = {
@@ -191,6 +192,7 @@ module Vectra
       end
 
       # @see Base#describe_index
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def describe_index(index:)
         response = with_error_handling { connection.get("/collections/#{index}") }
 
@@ -221,6 +223,7 @@ module Vectra
           handle_error(response)
         end
       end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       # @see Base#stats
       def stats(index:, namespace: nil)
@@ -364,8 +367,6 @@ module Vectra
         operator, val = operator_hash.first
 
         case operator.to_s
-        when "$eq"
-          { key: key, match: { value: val } }
         when "$ne"
           { key: key, match: { except: [val] } }
         when "$gt"
@@ -380,7 +381,7 @@ module Vectra
           { key: key, match: { any: val } }
         when "$nin"
           { key: key, match: { except: val } }
-        else
+        else # $eq or unknown operator - exact match
           { key: key, match: { value: val } }
         end
       end
@@ -406,13 +407,11 @@ module Vectra
       # Convert Vectra metric to Qdrant distance
       def metric_to_distance(metric)
         case metric.to_s.downcase
-        when "cosine"
-          "Cosine"
         when "euclidean", "l2"
           "Euclid"
         when "dot_product", "dotproduct", "inner_product"
           "Dot"
-        else
+        else # cosine or unknown - default to Cosine
           "Cosine"
         end
       end
@@ -431,5 +430,6 @@ module Vectra
         end
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
