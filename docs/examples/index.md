@@ -6,27 +6,49 @@ permalink: /examples/
 
 # Code Examples
 
-Explore practical examples to get started with Vectra:
+Practical examples to get started with Vectra.
 
-## Basic Examples
+## Quick Examples
 
-- [Basic Usage]({{ site.baseurl }}/examples/basic-usage/) - Simple searches and operations
-- [Batch Operations]({{ site.baseurl }}/examples/basic-usage/#batch-operations) - Working with multiple vectors
-- [Error Handling]({{ site.baseurl }}/examples/basic-usage/#error-handling) - Proper error handling patterns
+<div class="tma-comparison-grid">
+  <div class="tma-comparison-card">
+    <h4>Basic Usage</h4>
+    <p>Simple searches and CRUD operations</p>
+    <a href="{{ site.baseurl }}/examples/basic-usage/">View Guide →</a>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>Rails Integration</h4>
+    <p>ActiveRecord integration with has_vector</p>
+    <a href="{{ site.baseurl }}/providers/pgvector/">View Guide →</a>
+  </div>
+</div>
 
-## Provider-Specific Examples
+## Provider Examples
 
-- [Pinecone Example]({{ site.baseurl }}/providers/pinecone/#example)
-- [Qdrant Example]({{ site.baseurl }}/providers/qdrant/#example)
-- [Weaviate Example]({{ site.baseurl }}/providers/weaviate/#example)
-- [pgvector Example]({{ site.baseurl }}/providers/pgvector/#example)
+<div class="tma-comparison-grid">
+  <div class="tma-comparison-card">
+    <h4>Pinecone</h4>
+    <p>Managed cloud vector database</p>
+    <a href="{{ site.baseurl }}/providers/pinecone/">View Guide →</a>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>Qdrant</h4>
+    <p>Open source, self-hosted</p>
+    <a href="{{ site.baseurl }}/providers/qdrant/">View Guide →</a>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>Weaviate</h4>
+    <p>Semantic search with GraphQL</p>
+    <a href="{{ site.baseurl }}/providers/weaviate/">View Guide →</a>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>pgvector</h4>
+    <p>PostgreSQL with vector support</p>
+    <a href="{{ site.baseurl }}/providers/pgvector/">View Guide →</a>
+  </div>
+</div>
 
-## Rails Integration
+## More Resources
 
-Check out the [pgvector guide]({{ site.baseurl }}/providers/pgvector/) for Rails ActiveRecord integration examples.
-
-## Need More Examples?
-
-- Check the [GitHub Repository](https://github.com/stokry/vectra/tree/main/examples)
-- See the [Implementation Guide](https://github.com/stokry/vectra/blob/main/IMPLEMENTATION_GUIDE.md)
-- Review [Integration Tests](https://github.com/stokry/vectra/tree/main/spec/integration)
+- [GitHub Examples](https://github.com/stokry/vectra/tree/main/examples) - Full example files
+- [Integration Tests](https://github.com/stokry/vectra/tree/main/spec/integration) - Real-world test cases

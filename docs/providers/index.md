@@ -6,57 +6,76 @@ permalink: /providers/
 
 # Vector Database Providers
 
-Vectra supports multiple vector database providers. Choose the one that best fits your needs:
+Vectra supports multiple vector database providers. Choose the one that best fits your needs.
 
 ## Supported Providers
 
-| Provider | Type | Best For | Documentation |
-|----------|------|----------|---|
-| **Pinecone** | Managed Cloud | Production, Fully managed | [Guide]({{ site.baseurl }}/providers/pinecone) |
-| **Qdrant** | Open Source | Self-hosted, High performance | [Guide]({{ site.baseurl }}/providers/qdrant) |
-| **Weaviate** | Open Source | Semantic search, GraphQL | [Guide]({{ site.baseurl }}/providers/weaviate) |
-| **PostgreSQL + pgvector** | SQL Database | SQL integration, ACID | [Guide]({{ site.baseurl }}/providers/pgvector) |
+| Provider | Type | Best For |
+|----------|------|----------|
+| [**Pinecone**]({{ site.baseurl }}/providers/pinecone) | Managed Cloud | Production, Zero ops |
+| [**Qdrant**]({{ site.baseurl }}/providers/qdrant) | Open Source | Self-hosted, Performance |
+| [**Weaviate**]({{ site.baseurl }}/providers/weaviate) | Open Source | Semantic search, GraphQL |
+| [**pgvector**]({{ site.baseurl }}/providers/pgvector) | PostgreSQL | SQL integration, ACID |
 
 ## Quick Comparison
 
-### Pinecone
-- ✅ Fully managed service
-- ✅ Easy setup
-- ✅ Scalable
-- ❌ Cloud only
-- ❌ Paid service
-
-### Qdrant
-- ✅ Open source
-- ✅ Self-hosted
-- ✅ High performance
-- ✅ Multiple deployment options
-- ❌ More configuration needed
-
-### Weaviate
-- ✅ Open source
-- ✅ Semantic search
-- ✅ GraphQL API
-- ✅ Multi-model support
-- ❌ More complex
-
-### PostgreSQL + pgvector
-- ✅ SQL database
-- ✅ ACID transactions
-- ✅ Existing infrastructure
-- ✅ Affordable
-- ❌ Not specialized for vectors
+<div class="tma-comparison-grid">
+  <div class="tma-comparison-card">
+    <h4>Pinecone</h4>
+    <ul>
+      <li class="pro">Fully managed service</li>
+      <li class="pro">Easy setup</li>
+      <li class="pro">Highly scalable</li>
+      <li class="con">Cloud only</li>
+      <li class="con">Paid service</li>
+    </ul>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>Qdrant</h4>
+    <ul>
+      <li class="pro">Open source</li>
+      <li class="pro">Self-hosted option</li>
+      <li class="pro">High performance</li>
+      <li class="pro">Cloud option available</li>
+      <li class="con">More configuration</li>
+    </ul>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>Weaviate</h4>
+    <ul>
+      <li class="pro">Open source</li>
+      <li class="pro">Semantic search</li>
+      <li class="pro">GraphQL API</li>
+      <li class="pro">Multi-model support</li>
+      <li class="con">More complex setup</li>
+    </ul>
+  </div>
+  <div class="tma-comparison-card">
+    <h4>pgvector</h4>
+    <ul>
+      <li class="pro">SQL database</li>
+      <li class="pro">ACID transactions</li>
+      <li class="pro">Use existing Postgres</li>
+      <li class="pro">Very affordable</li>
+      <li class="con">Not vector-specialized</li>
+    </ul>
+  </div>
+</div>
 
 ## Switching Providers
 
 One of Vectra's key features is easy provider switching:
 
 ```ruby
-# All it takes is changing one line!
-client = Vectra::Client.new(provider: :qdrant)
+# Just change the provider - your code stays the same!
+client = Vectra::Client.new(provider: :qdrant, host: 'localhost:6333')
 
-# All your code remains the same
-results = client.query(vector: [0.1, 0.2, 0.3])
+# All operations work identically
+client.upsert(vectors: [...])
+results = client.query(vector: [...], top_k: 5)
 ```
 
-See the [Getting Started Guide]({{ site.baseurl }}/guides/getting-started) for more information.
+## Next Steps
+
+- [Getting Started Guide]({{ site.baseurl }}/guides/getting-started)
+- [API Reference]({{ site.baseurl }}/api/overview)

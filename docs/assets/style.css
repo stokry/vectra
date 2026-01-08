@@ -506,21 +506,37 @@ code {
   height: calc(100vh - var(--tma-header-height));
   background: var(--tma-color-bg-secondary);
   border-right: 1px solid var(--tma-color-border);
-  padding: var(--tma-spacing-xl);
+  padding: var(--tma-spacing-lg) var(--tma-spacing-md);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tma-color-bg-hover) transparent;
+}
+
+.tma-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tma-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tma-sidebar::-webkit-scrollbar-thumb {
+  background: var(--tma-color-bg-hover);
+  border-radius: 3px;
 }
 
 .tma-sidebar__section {
-  margin-bottom: var(--tma-spacing-xl);
+  margin-bottom: var(--tma-spacing-lg);
 }
 
 .tma-sidebar__title {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--tma-color-text-muted);
-  margin-bottom: var(--tma-spacing-md);
+  margin-bottom: var(--tma-spacing-sm);
+  padding: 0 var(--tma-spacing-sm);
 }
 
 .tma-sidebar__list {
@@ -529,17 +545,16 @@ code {
 
 .tma-sidebar__link {
   display: block;
-  padding: var(--tma-spacing-sm) var(--tma-spacing-md);
+  padding: 6px 10px;
   color: var(--tma-color-text-secondary);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   border-radius: var(--tma-radius-sm);
   transition: all var(--tma-transition-fast);
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
-.tma-sidebar__link:hover,
-.tma-sidebar__link--active {
+.tma-sidebar__link:hover {
   color: var(--tma-color-text-primary);
   background: var(--tma-color-bg-hover);
 }
@@ -554,6 +569,7 @@ code {
   flex: 1;
   padding: var(--tma-spacing-2xl) var(--tma-spacing-3xl);
   max-width: 900px;
+  min-height: calc(100vh - var(--tma-header-height));
 }
 
 /* ============================================
@@ -825,4 +841,77 @@ code {
 .tma-callout__title {
   font-weight: 600;
   margin-bottom: var(--tma-spacing-sm);
+}
+
+/* ============================================
+   Comparison Grid (2 columns)
+   ============================================ */
+.tma-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--tma-spacing-lg);
+  margin: var(--tma-spacing-xl) 0;
+}
+
+@media (max-width: 768px) {
+  .tma-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tma-comparison-card {
+  background: var(--tma-color-bg-secondary);
+  border: 1px solid var(--tma-color-border);
+  border-radius: var(--tma-radius-md);
+  padding: var(--tma-spacing-lg);
+}
+
+.tma-comparison-card h3,
+.tma-comparison-card h4 {
+  margin-top: 0;
+  margin-bottom: var(--tma-spacing-md);
+  color: var(--tma-color-text-primary);
+  font-size: 1.1rem;
+}
+
+.tma-comparison-card ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.tma-comparison-card li {
+  padding: 4px 0;
+  color: var(--tma-color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.tma-comparison-card p {
+  color: var(--tma-color-text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 var(--tma-spacing-md) 0;
+}
+
+.tma-comparison-card a {
+  color: var(--tma-color-accent-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.tma-comparison-card a:hover {
+  text-decoration: underline;
+}
+
+/* Pro/Con styling */
+.tma-content .pro::before {
+  content: '✓ ';
+  color: var(--tma-color-accent-primary);
+  font-weight: bold;
+}
+
+.tma-content .con::before {
+  content: '✗ ';
+  color: #ef4444;
+  font-weight: bold;
 }
