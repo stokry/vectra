@@ -17,11 +17,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Changelog
-        uses: decathlon/release-notes-generator-action@v1.4.0
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          output: CHANGELOG.md
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install github_changelog_generator
+        run: gem install github_changelog_generator
+
+      - name: Generate Changelog
+        run: github_changelog_generator --token ${{ secrets.GITHUB_TOKEN }} --output CHANGELOG.md
 
       - name: Commit Changelog
         run: |
