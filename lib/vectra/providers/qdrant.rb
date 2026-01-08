@@ -43,7 +43,7 @@ module Vectra
           points: points
         }
 
-        response = connection.put("/collections/#{index}/points", body)
+        response = with_error_handling { connection.put("/collections/#{index}/points", body) }
 
         if response.success?
           log_debug("Upserted #{normalized.size} vectors to #{index}")
@@ -67,7 +67,7 @@ module Vectra
         qdrant_filter = build_filter(filter, namespace)
         body[:filter] = qdrant_filter if qdrant_filter
 
-        response = connection.post("/collections/#{index}/points/search", body)
+        response = with_error_handling { connection.post("/collections/#{index}/points/search", body) }
 
         if response.success?
           matches = transform_search_results(response.body["result"] || [])
@@ -92,7 +92,7 @@ module Vectra
           with_payload: true
         }
 
-        response = connection.post("/collections/#{index}/points", body)
+        response = with_error_handling { connection.post("/collections/#{index}/points", body) }
 
         if response.success?
           vectors = {}
@@ -124,7 +124,7 @@ module Vectra
             payload: payload
           }
 
-          response = connection.post("/collections/#{index}/points/payload", payload_body)
+          response = with_error_handling { connection.post("/collections/#{index}/points/payload", payload_body) }
           handle_error(response) unless response.success?
         end
 
@@ -139,7 +139,7 @@ module Vectra
             ]
           }
 
-          response = connection.put("/collections/#{index}/points", vector_body)
+          response = with_error_handling { connection.put("/collections/#{index}/points", vector_body) }
           handle_error(response) unless response.success?
         end
 
@@ -163,7 +163,7 @@ module Vectra
           raise ValidationError, "Must specify ids, filter, or delete_all"
         end
 
-        response = connection.post("/collections/#{index}/points/delete", body)
+        response = with_error_handling { connection.post("/collections/#{index}/points/delete", body) }
 
         if response.success?
           log_debug("Deleted vectors from #{index}")
@@ -175,7 +175,7 @@ module Vectra
 
       # @see Base#list_indexes
       def list_indexes
-        response = connection.get("/collections")
+        response = with_error_handling { connection.get("/collections") }
 
         if response.success?
           (response.body["result"]&.dig("collections") || []).map do |col|
@@ -192,7 +192,7 @@ module Vectra
 
       # @see Base#describe_index
       def describe_index(index:)
-        response = connection.get("/collections/#{index}")
+        response = with_error_handling { connection.get("/collections/#{index}") }
 
         if response.success?
           result = response.body["result"]
@@ -250,7 +250,7 @@ module Vectra
           }
         }
 
-        response = connection.put("/collections/#{name}", body)
+        response = with_error_handling { connection.put("/collections/#{name}", body) }
 
         if response.success?
           log_debug("Created collection #{name}")
@@ -265,7 +265,7 @@ module Vectra
       # @param name [String] collection name
       # @return [Hash] deletion result
       def delete_index(name:)
-        response = connection.delete("/collections/#{name}")
+        response = with_error_handling { connection.delete("/collections/#{name}") }
 
         if response.success?
           log_debug("Deleted collection #{name}")
@@ -277,11 +277,23 @@ module Vectra
 
       private
 
+      def validate_config!
+        super
+        raise ConfigurationError, "Host must be configured for Qdrant" if config.host.nil? || config.host.empty?
+      end
+
       def connection
         @connection ||= build_connection(
           config.host,
           auth_headers
         )
+      end
+
+      # Wrap HTTP calls to handle Faraday::RetriableResponse
+      def with_error_handling
+        yield
+      rescue Faraday::RetriableResponse => e
+        handle_retriable_response(e)
       end
 
       def auth_headers

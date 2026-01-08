@@ -218,6 +218,16 @@ module Vectra
         end
       end
 
+      # Handle Faraday::RetriableResponse from retry middleware
+      # This is raised when all retries are exhausted
+      #
+      # @param exception [Faraday::RetriableResponse] the exception
+      # @raise [Error] appropriate error for the response
+      def handle_retriable_response(exception)
+        response = exception.response
+        handle_error(response)
+      end
+
       # Extract error message from response body
       #
       # @param body [Hash, String, nil] response body
