@@ -1,27 +1,43 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "active_record"
-require "sqlite3"
 
-# Setup in-memory SQLite database for testing
-ActiveRecord::Base.establish_connection(
-  adapter: "sqlite3",
-  database: ":memory:"
-)
+# Try to load ActiveRecord and SQLite3
+ACTIVE_RECORD_AVAILABLE = begin
+  require "active_record"
+  require "sqlite3"
+  true
+rescue LoadError
+  false
+end
 
-# Create test table
-ActiveRecord::Schema.define do
-  create_table :test_documents, force: true do |t|
-    t.string :title
-    t.text :content
-    t.string :category
-    t.text :embedding # JSON array as text
-    t.timestamps
+# Setup in-memory SQLite database for testing (only if dependencies available)
+if ACTIVE_RECORD_AVAILABLE
+  begin
+    ActiveRecord::Base.establish_connection(
+      adapter: "sqlite3",
+      database: ":memory:"
+    )
+
+    ActiveRecord::Schema.define do
+      create_table :test_documents, force: true do |t|
+        t.string :title
+        t.text :content
+        t.string :category
+        t.text :embedding # JSON array as text
+        t.timestamps
+      end
+    end
+  rescue StandardError => e
+    warn "Could not set up ActiveRecord test database: #{e.message}"
   end
 end
 
 RSpec.describe Vectra::ActiveRecord do
+  before(:all) do
+    skip "ActiveRecord/SQLite3 not available" unless ACTIVE_RECORD_AVAILABLE
+  end
+
   # Test model
   let(:test_model_class) do
     Class.new(ActiveRecord::Base) do

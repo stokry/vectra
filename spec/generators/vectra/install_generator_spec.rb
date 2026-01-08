@@ -1,30 +1,46 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "rails/generators/test_case"
-require "generators/vectra/install_generator"
 
-# Mock Rails for generator testing
-unless defined?(Rails)
-  module Rails
-    VERSION = Struct.new(:major, :minor).new(7, 0)
+# Mock Rails for generator testing (must be defined before loading the generator)
+# This needs to be set up before requiring the generator file
+module Rails
+  VERSION = Struct.new(:major, :minor).new(7, 0) unless defined?(VERSION)
 
-    module Generators
-      class Base
-        def self.source_root(path = nil)
-          @source_root = path if path
-          @source_root
-        end
-
-        def self.class_option(*); end
+  module Generators
+    class Base
+      def self.source_root(path = nil)
+        @source_root = path if path
+        @source_root
       end
-    end
 
-    def self.root
-      Pathname.new(File.expand_path("../../..", __dir__))
+      def self.class_option(*); end
+      def self.desc(*); end
+
+      attr_accessor :options, :destination_root
+
+      def initialize(args = [], options = {}, config = {})
+        @options = options
+        @destination_root = config[:destination_root]
+      end
+
+      def template(source, destination); end
+      def migration_template(source, destination, options = {}); end
+      def generate(*args); end
+      def say(message, color = nil); end
     end
   end
+
+  def self.root
+    Pathname.new(File.expand_path("../../..", __dir__))
+  end
 end
+
+# Prevent the generator from trying to load the real Rails generators
+$LOADED_FEATURES << "rails/generators/base.rb"
+
+# Now require the generator after Rails mock is set up
+require "generators/vectra/install_generator"
 
 RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
   let(:destination_root) { File.expand_path("../../../tmp/generator_test", __dir__) }

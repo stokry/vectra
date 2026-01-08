@@ -18,8 +18,8 @@ SimpleCov.start do
     minimum_coverage 90
     minimum_coverage_by_file 80
   else
-    # Without integration tests and without ActiveRecord/Generator tests, lower threshold
-    minimum_coverage 60
+    # Without integration tests, but with comprehensive unit tests
+    minimum_coverage 80
   end
 end
 

@@ -42,7 +42,7 @@ Gem::Specification.new do |spec|
 
   # Development dependencies
   spec.add_development_dependency "activerecord", ">= 6.0"
-  spec.add_development_dependency "sqlite3", "~> 1.4" # For AR tests
+  spec.add_development_dependency "sqlite3", ">= 2.1" # For AR tests (ActiveRecord 8+ requires >= 2.1)
   spec.add_development_dependency "pg", "~> 1.5"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.12"
