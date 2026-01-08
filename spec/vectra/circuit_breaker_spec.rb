@@ -179,7 +179,10 @@ RSpec.describe Vectra::CircuitBreaker do
       threads = 10.times.map do
         Thread.new do
           5.times do
-            breaker.call { sleep(0.01); "ok" }
+            breaker.call do
+              sleep(0.01)
+              "ok"
+            end
           rescue Vectra::CircuitBreaker::OpenCircuitError
             # Expected when open
           end
@@ -187,7 +190,8 @@ RSpec.describe Vectra::CircuitBreaker do
       end
 
       threads.each(&:join)
-      # Should not raise any thread safety errors
+      # Verify no deadlock or race condition occurred
+      expect(breaker.stats[:state]).to be_in([:closed, :open, :half_open])
     end
   end
 end

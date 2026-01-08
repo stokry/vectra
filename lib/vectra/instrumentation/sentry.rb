@@ -68,22 +68,11 @@ module Vectra
               vectra_index: event.index
             )
 
-            scope.set_context("vectra", {
-              provider: event.provider.to_s,
-              operation: event.operation.to_s,
-              index: event.index,
-              duration_ms: event.duration,
-              metadata: event.metadata
-            })
+            scope.set_context("vectra", build_context(event))
 
             # Custom fingerprint to group similar errors
             if @fingerprint_by_operation
-              scope.set_fingerprint([
-                "vectra",
-                event.provider.to_s,
-                event.operation.to_s,
-                event.error.class.name
-              ])
+              scope.set_fingerprint(build_fingerprint(event))
             end
 
             # Set error level based on error type
@@ -93,6 +82,22 @@ module Vectra
           end
         end
 
+        # Build context hash for Sentry
+        def build_context(event)
+          {
+            provider: event.provider.to_s,
+            operation: event.operation.to_s,
+            index: event.index,
+            duration_ms: event.duration,
+            metadata: event.metadata
+          }
+        end
+
+        # Build fingerprint array for error grouping
+        def build_fingerprint(event)
+          ["vectra", event.provider.to_s, event.operation.to_s, event.error.class.name]
+        end
+
         # Determine error level based on error type
         def error_level(error)
           case error
@@ -100,12 +105,10 @@ module Vectra
             :warning
           when Vectra::ValidationError
             :info
-          when Vectra::ServerError
+          when Vectra::ServerError, Vectra::ConnectionError, Vectra::TimeoutError
             :error
           when Vectra::AuthenticationError
             :fatal
-          else
-            :error
           end
         end
       end

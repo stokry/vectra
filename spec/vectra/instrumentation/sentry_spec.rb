@@ -3,6 +3,7 @@
 require "spec_helper"
 require "vectra/instrumentation/sentry"
 
+# rubocop:disable RSpec/InstanceVariable, Naming/AccessorMethodName, Naming/MethodParameterName
 RSpec.describe Vectra::Instrumentation::Sentry do
   # Mock Sentry module
   let(:mock_sentry) do
@@ -182,9 +183,9 @@ RSpec.describe Vectra::Instrumentation::Sentry do
 
       Vectra::Instrumentation.send(:notify_handlers, event)
 
-      expect(Sentry.last_scope.fingerprint).to eq([
-        "vectra", "pinecone", "query", "Vectra::RateLimitError"
-      ])
+      expect(Sentry.last_scope.fingerprint).to eq(
+        ["vectra", "pinecone", "query", "Vectra::RateLimitError"]
+      )
     end
 
     it "sets warning level for rate limit errors" do
@@ -216,3 +217,4 @@ RSpec.describe Vectra::Instrumentation::Sentry do
     end
   end
 end
+# rubocop:enable RSpec/InstanceVariable, Naming/AccessorMethodName, Naming/MethodParameterName

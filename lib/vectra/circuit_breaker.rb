@@ -82,14 +82,14 @@ module Vectra
     # @yield The operation to execute
     # @return [Object] Result of block or fallback
     # @raise [OpenCircuitError] If circuit is open and no fallback provided
-    def call(fallback: nil)
+    def call(fallback: nil, &)
       check_state!
 
       if open?
         return handle_open_circuit(fallback)
       end
 
-      execute_with_monitoring { yield }
+      execute_with_monitoring(&)
     rescue *@monitored_errors => e
       record_failure(e)
       raise

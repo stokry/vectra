@@ -3,6 +3,7 @@
 require "spec_helper"
 require "vectra/instrumentation/honeybadger"
 
+# rubocop:disable RSpec/InstanceVariable
 RSpec.describe Vectra::Instrumentation::Honeybadger do
   # Mock Honeybadger module
   let(:mock_honeybadger) do
@@ -192,3 +193,4 @@ RSpec.describe Vectra::Instrumentation::Honeybadger do
     end
   end
 end
+# rubocop:enable RSpec/InstanceVariable
