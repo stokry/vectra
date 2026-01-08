@@ -6,5 +6,5 @@ gem "jekyll", "~> 4.4"
 gem "jekyll-feed", "~> 0.12"
 gem "jekyll-seo-tag"
 gem "jekyll-sitemap"
-gem "minima", "~> 2.5"
 gem "webrick", "~> 1.8"
+

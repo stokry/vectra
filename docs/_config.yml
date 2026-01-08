@@ -1,12 +1,21 @@
 title: Vectra Documentation
-description: Unified Ruby client for vector databases
-theme: minima
+description: A unified Ruby client for vector databases. Build AI-powered search, RAG applications, and recommendation systems.
+url: "https://vectra-docs.netlify.app"
+baseurl: ""
+
 plugins:
   - jekyll-feed
   - jekyll-sitemap
+  - jekyll-seo-tag
 
 markdown: kramdown
 highlighter: rouge
+
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
 
 exclude:
   - Gemfile
@@ -16,5 +25,13 @@ exclude:
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
+  - _site/
 
 permalink: /:categories/:title/
+
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "page"

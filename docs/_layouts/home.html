@@ -1,33 +1,187 @@
----
-layout: default
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ site.description }}">
+  <title>{{ page.title }} - {{ site.title }}</title>
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <header class="tma-header">
+    <nav class="tma-nav">
+      <a href="{{ site.baseurl }}/" class="tma-nav__brand">Vectra</a>
+      <ul class="tma-nav__menu">
+        <li><a href="{{ site.baseurl }}/guides/getting-started" class="tma-nav__link">Getting Started</a></li>
+        <li><a href="{{ site.baseurl }}/providers" class="tma-nav__link">Providers</a></li>
+        <li><a href="{{ site.baseurl }}/api/overview" class="tma-nav__link">API</a></li>
+        <li><a href="{{ site.baseurl }}/examples" class="tma-nav__link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="tma-nav__link tma-nav__link--github">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          GitHub
+        </a></li>
+      </ul>
+    </nav>
+  </header>
 
-<div class="site-header">
-  <nav class="site-nav">
-    <div class="nav-container">
-      <a href="{{ site.baseurl }}/" class="nav-brand">Vectra</a>
-      <ul class="nav-menu">
-        <li><a href="{{ site.baseurl }}/guides/installation" class="nav-link">Guides</a></li>
-        <li><a href="{{ site.baseurl }}/api/overview" class="nav-link">API</a></li>
-        <li><a href="{{ site.baseurl }}/providers" class="nav-link">Providers</a></li>
-        <li><a href="{{ site.baseurl }}/examples" class="nav-link">Examples</a></li>
-        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+  <!-- Hero Section -->
+  <section class="tma-hero">
+    <div class="tma-hero__container">
+      <span class="tma-hero__badge">v0.2.2 — Qdrant & Weaviate Support</span>
+      <h1 class="tma-hero__title">
+        Vector Databases,<br>
+        <span class="tma-hero__title-gradient">Unified for Ruby</span>
+      </h1>
+      <p class="tma-hero__subtitle">
+        A powerful, unified Ruby client for vector databases. Build AI-powered search, 
+        RAG applications, and recommendation systems with a single, elegant API.
+      </p>
+      <div class="tma-hero__actions">
+        <a href="{{ site.baseurl }}/guides/getting-started" class="tma-btn tma-btn--primary">
+          Get Started →
+        </a>
+        <a href="https://github.com/stokry/vectra" class="tma-btn tma-btn--secondary">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          View on GitHub
+        </a>
+      </div>
+      
+      <!-- Install Command -->
+      <div class="tma-install" style="max-width: 400px; margin: 2rem auto 0;">
+        <span class="tma-install__prefix">$</span>
+        <span class="tma-install__command">gem install vectra-client</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="tma-features">
+    <div class="tma-features__grid">
+      <div class="tma-feature-card">
+        <span class="tma-feature-card__icon">🔌</span>
+        <h3 class="tma-feature-card__title">Provider Agnostic</h3>
+        <p class="tma-feature-card__description">
+          Switch between Pinecone, Qdrant, Weaviate, or pgvector with a single line change. No vendor lock-in.
+        </p>
+      </div>
+      <div class="tma-feature-card">
+        <span class="tma-feature-card__icon">🚀</span>
+        <h3 class="tma-feature-card__title">Production Ready</h3>
+        <p class="tma-feature-card__description">
+          Built for Ruby 3.2+ with comprehensive test coverage (95%+), retry logic, and circuit breakers.
+        </p>
+      </div>
+      <div class="tma-feature-card">
+        <span class="tma-feature-card__icon">📈</span>
+        <h3 class="tma-feature-card__title">Observable</h3>
+        <p class="tma-feature-card__description">
+          Native instrumentation for Datadog and New Relic. Track latency, throughput, and errors.
+        </p>
+      </div>
+      <div class="tma-feature-card">
+        <span class="tma-feature-card__icon">🏗️</span>
+        <h3 class="tma-feature-card__title">Rails Ready</h3>
+        <p class="tma-feature-card__description">
+          Seamless ActiveRecord integration with has_vector DSL and automatic migration support.
+        </p>
+      </div>
+      <div class="tma-feature-card">
+        <span class="tma-feature-card__icon">🔄</span>
+        <h3 class="tma-feature-card__title">Resilient</h3>
+        <p class="tma-feature-card__description">
+          Built-in retry logic with exponential backoff, jitter, and intelligent error recovery.
+        </p>
+      </div>
+      <div class="tma-feature-card">
+        <span class="tma-feature-card__icon">📚</span>
+        <h3 class="tma-feature-card__title">Well Documented</h3>
+        <p class="tma-feature-card__description">
+          Extensive YARD documentation, comprehensive examples, and detailed provider guides.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Providers Section -->
+  <section class="tma-providers">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Supported Providers</h2>
+      <p class="tma-section-header__subtitle">Choose your vector database. We handle the rest.</p>
+    </div>
+    <div class="tma-providers__grid">
+      <a href="{{ site.baseurl }}/providers/pinecone" class="tma-provider-card">
+        <div class="tma-provider-card__header">
+          <div class="tma-provider-card__icon">🌲</div>
+          <span class="tma-provider-card__name">Pinecone</span>
+          <span class="tma-provider-card__badge">Supported</span>
+        </div>
+        <p class="tma-provider-card__description">
+          Fully managed vector database in the cloud. Perfect for production workloads with minimal ops.
+        </p>
+        <span class="tma-provider-card__link">View Guide</span>
+      </a>
+      <a href="{{ site.baseurl }}/providers/qdrant" class="tma-provider-card">
+        <div class="tma-provider-card__header">
+          <div class="tma-provider-card__icon">🔷</div>
+          <span class="tma-provider-card__name">Qdrant</span>
+          <span class="tma-provider-card__badge">Supported</span>
+        </div>
+        <p class="tma-provider-card__description">
+          Open-source vector database with advanced filtering. Self-host or use Qdrant Cloud.
+        </p>
+        <span class="tma-provider-card__link">View Guide</span>
+      </a>
+      <a href="{{ site.baseurl }}/providers/weaviate" class="tma-provider-card">
+        <div class="tma-provider-card__header">
+          <div class="tma-provider-card__icon">🔮</div>
+          <span class="tma-provider-card__name">Weaviate</span>
+          <span class="tma-provider-card__badge">Supported</span>
+        </div>
+        <p class="tma-provider-card__description">
+          AI-native vector database with built-in vectorizers and GraphQL API.
+        </p>
+        <span class="tma-provider-card__link">View Guide</span>
+      </a>
+      <a href="{{ site.baseurl }}/providers/pgvector" class="tma-provider-card">
+        <div class="tma-provider-card__header">
+          <div class="tma-provider-card__icon">🐘</div>
+          <span class="tma-provider-card__name">pgvector</span>
+          <span class="tma-provider-card__badge">Supported</span>
+        </div>
+        <p class="tma-provider-card__description">
+          Vector similarity search in PostgreSQL. Use your existing database infrastructure.
+        </p>
+        <span class="tma-provider-card__link">View Guide</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Quick Start Code Section -->
+  <section class="tma-code-section">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Quick Start</h2>
+      <p class="tma-section-header__subtitle">Get up and running in minutes</p>
+    </div>
+    
+    {{ content }}
+  </section>
+
+  <!-- Footer -->
+  <footer class="tma-footer">
+    <div class="tma-footer__container">
+      <div>
+        <span class="tma-footer__brand">◆ Vectra</span>
+        <p class="tma-footer__copy">Built with ❤️ for the Ruby community</p>
+      </div>
+      <ul class="tma-footer__links">
+        <li><a href="https://github.com/stokry/vectra">GitHub</a></li>
+        <li><a href="https://rubygems.org/gems/vectra-client">RubyGems</a></li>
+        <li><a href="{{ site.baseurl }}/community/contributing">Contributing</a></li>
+        <li><a href="https://github.com/stokry/vectra/blob/main/LICENSE">MIT License</a></li>
       </ul>
     </div>
-  </nav>
-</div>
-
-<main class="site-main home-main">
-  {{ content }}
-</main>
-
-<footer class="site-footer">
-  <div class="footer-content">
-    <p>&copy; 2024 Vectra. MIT License.</p>
-    <ul class="footer-links">
-      <li><a href="https://github.com/stokry/vectra">GitHub</a></li>
-      <li><a href="https://rubygems.org/gems/vectra-client">RubyGems</a></li>
-      <li><a href="{{ site.baseurl }}/community/contributing">Contributing</a></li>
-    </ul>
-  </div>
-</footer>
+  </footer>
+</body>
+</html>

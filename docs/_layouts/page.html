@@ -1,20 +1,81 @@
----
-layout: default
----
-
-<div class="site-header">
-  <nav class="site-nav">
-    <div class="nav-container">
-      <a href="{{ site.baseurl }}/" class="nav-brand">Vectra</a>
-      <ul class="nav-menu">
-        <li><a href="{{ site.baseurl }}/guides/installation" class="nav-link">Guides</a></li>
-        <li><a href="{{ site.baseurl }}/api/overview" class="nav-link">API</a></li>
-        <li><a href="{{ site.baseurl }}/providers" class="nav-link">Providers</a></li>
-        <li><a href="{{ site.baseurl }}/examples" class="nav-link">Examples</a></li>
-        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <title>{{ page.title }} - {{ site.title }}</title>
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <header class="tma-header">
+    <nav class="tma-nav">
+      <a href="{{ site.baseurl }}/" class="tma-nav__brand">Vectra</a>
+      <ul class="tma-nav__menu">
+        <li><a href="{{ site.baseurl }}/guides/getting-started" class="tma-nav__link">Getting Started</a></li>
+        <li><a href="{{ site.baseurl }}/providers" class="tma-nav__link">Providers</a></li>
+        <li><a href="{{ site.baseurl }}/api/overview" class="tma-nav__link">API</a></li>
+        <li><a href="{{ site.baseurl }}/examples" class="tma-nav__link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="tma-nav__link tma-nav__link--github">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          GitHub
+        </a></li>
       </ul>
-    </div>
-  </nav>
-</div>
+    </nav>
+  </header>
 
-{{ content }}
+  <div class="tma-docs-layout">
+    <!-- Sidebar -->
+    <aside class="tma-sidebar">
+      <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">Getting Started</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/guides/installation" class="tma-sidebar__link {% if page.url == '/guides/installation/' %}tma-sidebar__link--active{% endif %}">Installation</a></li>
+          <li><a href="{{ site.baseurl }}/guides/getting-started" class="tma-sidebar__link {% if page.url == '/guides/getting-started/' %}tma-sidebar__link--active{% endif %}">Quick Start</a></li>
+        </ul>
+      </div>
+
+      <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">Providers</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/providers" class="tma-sidebar__link {% if page.url == '/providers/' %}tma-sidebar__link--active{% endif %}">Overview</a></li>
+          <li><a href="{{ site.baseurl }}/providers/pinecone" class="tma-sidebar__link {% if page.url == '/providers/pinecone/' %}tma-sidebar__link--active{% endif %}">Pinecone</a></li>
+          <li><a href="{{ site.baseurl }}/providers/qdrant" class="tma-sidebar__link {% if page.url == '/providers/qdrant/' %}tma-sidebar__link--active{% endif %}">Qdrant</a></li>
+          <li><a href="{{ site.baseurl }}/providers/weaviate" class="tma-sidebar__link {% if page.url == '/providers/weaviate/' %}tma-sidebar__link--active{% endif %}">Weaviate</a></li>
+          <li><a href="{{ site.baseurl }}/providers/pgvector" class="tma-sidebar__link {% if page.url == '/providers/pgvector/' %}tma-sidebar__link--active{% endif %}">pgvector</a></li>
+        </ul>
+      </div>
+
+      <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">API Reference</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/api/overview" class="tma-sidebar__link {% if page.url == '/api/overview/' %}tma-sidebar__link--active{% endif %}">Overview</a></li>
+        </ul>
+      </div>
+
+      <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">Examples</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/examples" class="tma-sidebar__link {% if page.url == '/examples/' %}tma-sidebar__link--active{% endif %}">Overview</a></li>
+          <li><a href="{{ site.baseurl }}/examples/basic-usage" class="tma-sidebar__link {% if page.url == '/examples/basic-usage/' %}tma-sidebar__link--active{% endif %}">Basic Usage</a></li>
+        </ul>
+      </div>
+
+      <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">Community</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/community/contributing" class="tma-sidebar__link {% if page.url == '/community/contributing/' %}tma-sidebar__link--active{% endif %}">Contributing</a></li>
+          <li><a href="https://github.com/stokry/vectra/issues" class="tma-sidebar__link" target="_blank">Report Issue</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="tma-docs-content tma-content">
+      {{ content }}
+    </main>
+  </div>
+</body>
+</html>
