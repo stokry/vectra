@@ -1,0 +1,119 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Providers - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="vector-database-providers">Vector Database Providers</h1>
+
+<p>Vectra supports multiple vector database providers. Choose the one that best fits your needs:</p>
+
+<h2 id="supported-providers">Supported Providers</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Provider</th>
+      <th>Type</th>
+      <th>Best For</th>
+      <th>Documentation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Pinecone</strong></td>
+      <td>Managed Cloud</td>
+      <td>Production, Fully managed</td>
+      <td><a href="/providers/pinecone">Guide</a></td>
+    </tr>
+    <tr>
+      <td><strong>Qdrant</strong></td>
+      <td>Open Source</td>
+      <td>Self-hosted, High performance</td>
+      <td><a href="/providers/qdrant">Guide</a></td>
+    </tr>
+    <tr>
+      <td><strong>Weaviate</strong></td>
+      <td>Open Source</td>
+      <td>Semantic search, GraphQL</td>
+      <td><a href="/providers/weaviate">Guide</a></td>
+    </tr>
+    <tr>
+      <td><strong>PostgreSQL + pgvector</strong></td>
+      <td>SQL Database</td>
+      <td>SQL integration, ACID</td>
+      <td><a href="/providers/pgvector">Guide</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="quick-comparison">Quick Comparison</h2>
+
+<h3 id="pinecone">Pinecone</h3>
+<ul>
+  <li>✅ Fully managed service</li>
+  <li>✅ Easy setup</li>
+  <li>✅ Scalable</li>
+  <li>❌ Cloud only</li>
+  <li>❌ Paid service</li>
+</ul>
+
+<h3 id="qdrant">Qdrant</h3>
+<ul>
+  <li>✅ Open source</li>
+  <li>✅ Self-hosted</li>
+  <li>✅ High performance</li>
+  <li>✅ Multiple deployment options</li>
+  <li>❌ More configuration needed</li>
+</ul>
+
+<h3 id="weaviate">Weaviate</h3>
+<ul>
+  <li>✅ Open source</li>
+  <li>✅ Semantic search</li>
+  <li>✅ GraphQL API</li>
+  <li>✅ Multi-model support</li>
+  <li>❌ More complex</li>
+</ul>
+
+<h3 id="postgresql--pgvector">PostgreSQL + pgvector</h3>
+<ul>
+  <li>✅ SQL database</li>
+  <li>✅ ACID transactions</li>
+  <li>✅ Existing infrastructure</li>
+  <li>✅ Affordable</li>
+  <li>❌ Not specialized for vectors</li>
+</ul>
+
+<h2 id="switching-providers">Switching Providers</h2>
+
+<p>One of Vectra’s key features is easy provider switching:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># All it takes is changing one line!</span>
+<span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">provider: :qdrant</span><span class="p">)</span>
+
+<span class="c1"># All your code remains the same</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>See the <a href="/guides/getting-started">Getting Started Guide</a> for more information.</p>
+
+
+</body>

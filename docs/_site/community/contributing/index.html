@@ -1,0 +1,110 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contributing - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="contributing-to-vectra">Contributing to Vectra</h1>
+
+<p>We welcome contributions! Here’s how to get started.</p>
+
+<h2 id="development-setup">Development Setup</h2>
+
+<ol>
+  <li>Clone the repository:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/stokry/vectra.git
+<span class="nb">cd </span>vectra
+</code></pre></div>    </div>
+  </li>
+  <li>Install dependencies:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">install</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Run tests:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>rspec
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="making-changes">Making Changes</h2>
+
+<ol>
+  <li>Create a feature branch:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git checkout <span class="nt">-b</span> feature/your-feature-name
+</code></pre></div>    </div>
+  </li>
+  <li>Make your changes and write tests</li>
+  <li>Run linter:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>rubocop
+</code></pre></div>    </div>
+  </li>
+  <li>Commit and push:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git add <span class="nb">.</span>
+git commit <span class="nt">-m</span> <span class="s2">"Description of changes"</span>
+git push origin feature/your-feature-name
+</code></pre></div>    </div>
+  </li>
+  <li>Create a Pull Request</li>
+</ol>
+
+<h2 id="code-style">Code Style</h2>
+
+<p>We use RuboCop for code style. Ensure your code passes:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>rubocop
+</code></pre></div></div>
+
+<h2 id="testing">Testing</h2>
+
+<p>All changes require tests:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run all tests</span>
+bundle <span class="nb">exec </span>rspec
+
+<span class="c"># Run specific suite</span>
+bundle <span class="nb">exec </span>rspec spec/vectra
+
+<span class="c"># Run with coverage</span>
+bundle <span class="nb">exec </span>rspec <span class="nt">--cov</span>
+</code></pre></div></div>
+
+<h2 id="documentation">Documentation</h2>
+
+<p>Please update documentation for any changes:</p>
+
+<ul>
+  <li>Update README.md for user-facing changes</li>
+  <li>Update CHANGELOG.md</li>
+  <li>Add examples if needed</li>
+</ul>
+
+<h2 id="questions">Questions?</h2>
+
+<p>Feel free to:</p>
+<ul>
+  <li>Open an issue on GitHub</li>
+  <li>Check existing issues and discussions</li>
+  <li>Read the <a href="https://github.com/stokry/vectra/blob/main/IMPLEMENTATION_GUIDE.md">Implementation Guide</a></li>
+</ul>
+
+<p>Thank you for contributing! 🙌</p>
+
+
+</body>

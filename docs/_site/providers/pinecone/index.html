@@ -1,0 +1,121 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pinecone - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="pinecone-provider">Pinecone Provider</h1>
+
+<p><a href="https://www.pinecone.io/">Pinecone</a> is a managed vector database in the cloud.</p>
+
+<h2 id="setup">Setup</h2>
+
+<ol>
+  <li>Create a Pinecone account at https://www.pinecone.io/</li>
+  <li>Create an index and get your API key</li>
+  <li>Set up Vectra:</li>
+</ol>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :pinecone</span><span class="p">,</span>
+  <span class="ss">api_key: </span><span class="no">ENV</span><span class="p">[</span><span class="s1">'PINECONE_API_KEY'</span><span class="p">],</span>
+  <span class="ss">index_name: </span><span class="s1">'my-index'</span><span class="p">,</span>
+  <span class="ss">environment: </span><span class="s1">'us-west-4'</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="features">Features</h2>
+
+<ul>
+  <li>✅ Upsert vectors</li>
+  <li>✅ Query/search</li>
+  <li>✅ Delete vectors</li>
+  <li>✅ Fetch vectors by ID</li>
+  <li>✅ Index statistics</li>
+  <li>✅ Metadata filtering</li>
+  <li>✅ Namespace support</li>
+</ul>
+
+<h2 id="example">Example</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Initialize client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :pinecone</span><span class="p">,</span>
+  <span class="ss">api_key: </span><span class="no">ENV</span><span class="p">[</span><span class="s1">'PINECONE_API_KEY'</span><span class="p">],</span>
+  <span class="ss">environment: </span><span class="s1">'us-west-4'</span>
+<span class="p">)</span>
+
+<span class="c1"># Upsert vectors</span>
+<span class="n">client</span><span class="p">.</span><span class="nf">upsert</span><span class="p">(</span>
+  <span class="ss">vectors: </span><span class="p">[</span>
+    <span class="p">{</span> <span class="ss">id: </span><span class="s1">'doc-1'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'Page 1'</span> <span class="p">}</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="ss">id: </span><span class="s1">'doc-2'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'Page 2'</span> <span class="p">}</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Search</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">top_k: </span><span class="mi">5</span><span class="p">)</span>
+<span class="n">results</span><span class="p">.</span><span class="nf">matches</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">match</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">match</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">match</span><span class="p">[</span><span class="s1">'score'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="configuration-options">Configuration Options</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">api_key</code></td>
+      <td>String</td>
+      <td>Yes</td>
+      <td>Your Pinecone API key</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">environment</code></td>
+      <td>String</td>
+      <td>Yes</td>
+      <td>Pinecone environment (e.g., ‘us-west-4’)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">index_name</code></td>
+      <td>String</td>
+      <td>No</td>
+      <td>Index name (if not set globally)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="documentation">Documentation</h2>
+
+<ul>
+  <li><a href="https://docs.pinecone.io/">Pinecone Docs</a></li>
+  <li><a href="https://docs.pinecone.io/reference/api/">Pinecone API Reference</a></li>
+</ul>
+
+
+</body>

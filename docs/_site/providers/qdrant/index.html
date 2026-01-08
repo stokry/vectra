@@ -1,0 +1,124 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qdrant - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="qdrant-provider">Qdrant Provider</h1>
+
+<p><a href="https://qdrant.tech/">Qdrant</a> is an open-source vector search engine.</p>
+
+<h2 id="setup">Setup</h2>
+
+<h3 id="local-installation">Local Installation</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-p</span> 6333:6333 qdrant/qdrant
+</code></pre></div></div>
+
+<h3 id="connect-with-vectra">Connect with Vectra</h3>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :qdrant</span><span class="p">,</span>
+  <span class="ss">host: </span><span class="s1">'localhost'</span><span class="p">,</span>
+  <span class="ss">port: </span><span class="mi">6333</span><span class="p">,</span>
+  <span class="ss">collection_name: </span><span class="s1">'my-collection'</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="features">Features</h2>
+
+<ul>
+  <li>✅ Upsert vectors</li>
+  <li>✅ Query/search</li>
+  <li>✅ Delete vectors</li>
+  <li>✅ Fetch vectors by ID</li>
+  <li>✅ Collection management</li>
+  <li>✅ Metadata filtering</li>
+  <li>✅ Hybrid search</li>
+</ul>
+
+<h2 id="example">Example</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Initialize client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :qdrant</span><span class="p">,</span>
+  <span class="ss">host: </span><span class="s1">'localhost'</span><span class="p">,</span>
+  <span class="ss">port: </span><span class="mi">6333</span>
+<span class="p">)</span>
+
+<span class="c1"># Upsert vectors</span>
+<span class="n">client</span><span class="p">.</span><span class="nf">upsert</span><span class="p">(</span>
+  <span class="ss">vectors: </span><span class="p">[</span>
+    <span class="p">{</span> <span class="ss">id: </span><span class="s1">'doc-1'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">source: </span><span class="s1">'web'</span> <span class="p">}</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Search</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">top_k: </span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="configuration-options">Configuration Options</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">host</code></td>
+      <td>String</td>
+      <td>Yes</td>
+      <td>Qdrant host address</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">port</code></td>
+      <td>Integer</td>
+      <td>Yes</td>
+      <td>Qdrant port (default: 6333)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">collection_name</code></td>
+      <td>String</td>
+      <td>No</td>
+      <td>Collection name</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">api_key</code></td>
+      <td>String</td>
+      <td>No</td>
+      <td>API key if auth is enabled</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="documentation">Documentation</h2>
+
+<ul>
+  <li><a href="https://qdrant.tech/documentation/">Qdrant Docs</a></li>
+  <li><a href="https://api.qdrant.tech/">Qdrant API Reference</a></li>
+</ul>
+
+
+</body>

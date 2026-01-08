@@ -1,0 +1,82 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Installation - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="installation-guide">Installation Guide</h1>
+
+<h2 id="requirements">Requirements</h2>
+
+<ul>
+  <li>Ruby 3.2.0 or higher</li>
+  <li>Bundler</li>
+</ul>
+
+<h2 id="install-via-bundler">Install via Bundler</h2>
+
+<p>Add Vectra to your Gemfile:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'vectra-client'</span>
+</code></pre></div></div>
+
+<p>Then run:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">install</span>
+</code></pre></div></div>
+
+<h2 id="install-standalone">Install Standalone</h2>
+
+<p>Alternatively, install via RubyGems:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gem <span class="nb">install </span>vectra-client
+</code></pre></div></div>
+
+<h2 id="rails-integration">Rails Integration</h2>
+
+<p>For Rails applications, run the install generator:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails generate vectra:install
+</code></pre></div></div>
+
+<p>This will create an initializer file at <code class="language-plaintext highlighter-rouge">config/initializers/vectra.rb</code>.</p>
+
+<h2 id="provider-specific-setup">Provider-Specific Setup</h2>
+
+<p>Each vector database provider may require additional dependencies:</p>
+
+<h3 id="postgresql-with-pgvector">PostgreSQL with pgvector</h3>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'pg'</span><span class="p">,</span> <span class="s1">'~&gt; 1.5'</span>
+</code></pre></div></div>
+
+<h3 id="instrumentation">Instrumentation</h3>
+
+<h4 id="datadog">Datadog</h4>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'dogstatsd-ruby'</span>
+</code></pre></div></div>
+
+<h4 id="new-relic">New Relic</h4>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'newrelic_rpm'</span>
+</code></pre></div></div>
+
+<p>See <a href="/providers">Provider Guides</a> for detailed setup instructions.</p>
+
+
+</body>

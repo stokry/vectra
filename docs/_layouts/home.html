@@ -1,0 +1,33 @@
+---
+layout: default
+---
+
+<div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="{{ site.baseurl }}/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="{{ site.baseurl }}/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="{{ site.baseurl }}/api/overview" class="nav-link">API</a></li>
+        <li><a href="{{ site.baseurl }}/providers" class="nav-link">Providers</a></li>
+        <li><a href="{{ site.baseurl }}/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<main class="site-main home-main">
+  {{ content }}
+</main>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <p>&copy; 2024 Vectra. MIT License.</p>
+    <ul class="footer-links">
+      <li><a href="https://github.com/stokry/vectra">GitHub</a></li>
+      <li><a href="https://rubygems.org/gems/vectra-client">RubyGems</a></li>
+      <li><a href="{{ site.baseurl }}/community/contributing">Contributing</a></li>
+    </ul>
+  </div>
+</footer>

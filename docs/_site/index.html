@@ -1,0 +1,92 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vectra - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<main class="site-main home-main">
+  <h1 id="welcome-to-vectra-documentation">Welcome to Vectra Documentation</h1>
+
+<p><strong>Vectra</strong> is a unified Ruby client for vector databases that allows you to write once and switch providers easily.</p>
+
+<h2 id="supported-vector-databases">Supported Vector Databases</h2>
+
+<ul>
+  <li><strong>Pinecone</strong> - Managed vector database in the cloud</li>
+  <li><strong>Qdrant</strong> - Open-source vector database</li>
+  <li><strong>Weaviate</strong> - Open-source vector search engine</li>
+  <li><strong>PostgreSQL with pgvector</strong> - SQL database with vector support</li>
+</ul>
+
+<h2 id="quick-links">Quick Links</h2>
+
+<ul>
+  <li><a href="/guides/installation">Installation Guide</a></li>
+  <li><a href="/guides/getting-started">Getting Started</a></li>
+  <li><a href="/api/overview">API Reference</a></li>
+  <li><a href="/examples/basic-usage">Examples</a></li>
+  <li><a href="/community/contributing">Contributing</a></li>
+</ul>
+
+<h2 id="key-features">Key Features</h2>
+
+<ul>
+  <li>🔄 <strong>Provider Agnostic</strong> - Switch between different vector database providers with minimal code changes</li>
+  <li>🚀 <strong>Easy Integration</strong> - Works seamlessly with Rails and other Ruby frameworks</li>
+  <li>📊 <strong>Vector Operations</strong> - Create, search, update, and delete vectors</li>
+  <li>🔌 <strong>Multiple Providers</strong> - Support for leading vector database platforms</li>
+  <li>📈 <strong>Instrumentation</strong> - Built-in support for Datadog and New Relic monitoring</li>
+  <li>🗄️ <strong>ActiveRecord Integration</strong> - Native support for Rails models</li>
+</ul>
+
+<h2 id="get-started">Get Started</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'vectra'</span>
+
+<span class="c1"># Initialize client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">provider: :pinecone</span><span class="p">,</span> <span class="ss">api_key: </span><span class="s1">'your-key'</span><span class="p">)</span>
+
+<span class="c1"># Upsert vectors</span>
+<span class="n">client</span><span class="p">.</span><span class="nf">upsert</span><span class="p">(</span>
+  <span class="ss">vectors: </span><span class="p">[</span>
+    <span class="p">{</span> <span class="ss">id: </span><span class="s1">'1'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">text: </span><span class="s1">'example'</span> <span class="p">}</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Search</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">top_k: </span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For more detailed examples, see <a href="/examples/basic-usage">Basic Usage</a>.</p>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <p>&copy; 2024 Vectra. MIT License.</p>
+    <ul class="footer-links">
+      <li><a href="https://github.com/stokry/vectra">GitHub</a></li>
+      <li><a href="https://rubygems.org/gems/vectra-client">RubyGems</a></li>
+      <li><a href="/community/contributing">Contributing</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>

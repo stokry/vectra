@@ -1,0 +1,155 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PostgreSQL with pgvector - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="postgresql-with-pgvector-provider">PostgreSQL with pgvector Provider</h1>
+
+<p><a href="https://github.com/pgvector/pgvector">pgvector</a> is a PostgreSQL extension for vector data.</p>
+
+<h2 id="setup">Setup</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install PostgreSQL with pgvector extension</span>
+<span class="c"># macOS with Homebrew</span>
+brew <span class="nb">install </span>postgresql
+
+<span class="c"># Enable pgvector extension</span>
+psql <span class="nt">-d</span> your_database <span class="nt">-c</span> <span class="s2">"CREATE EXTENSION IF NOT EXISTS vector;"</span>
+</code></pre></div></div>
+
+<h3 id="connect-with-vectra">Connect with Vectra</h3>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :pgvector</span><span class="p">,</span>
+  <span class="ss">database: </span><span class="s1">'my_database'</span><span class="p">,</span>
+  <span class="ss">host: </span><span class="s1">'localhost'</span><span class="p">,</span>
+  <span class="ss">port: </span><span class="mi">5432</span><span class="p">,</span>
+  <span class="ss">user: </span><span class="s1">'postgres'</span><span class="p">,</span>
+  <span class="ss">password: </span><span class="no">ENV</span><span class="p">[</span><span class="s1">'DB_PASSWORD'</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="features">Features</h2>
+
+<ul>
+  <li>✅ Upsert vectors</li>
+  <li>✅ Query/search</li>
+  <li>✅ Delete vectors</li>
+  <li>✅ SQL integration</li>
+  <li>✅ ACID transactions</li>
+  <li>✅ Complex queries</li>
+  <li>✅ Rails ActiveRecord integration</li>
+</ul>
+
+<h2 id="example">Example</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Initialize client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :pgvector</span><span class="p">,</span>
+  <span class="ss">database: </span><span class="s1">'vectors_db'</span><span class="p">,</span>
+  <span class="ss">host: </span><span class="s1">'localhost'</span>
+<span class="p">)</span>
+
+<span class="c1"># Upsert vectors</span>
+<span class="n">client</span><span class="p">.</span><span class="nf">upsert</span><span class="p">(</span>
+  <span class="ss">vectors: </span><span class="p">[</span>
+    <span class="p">{</span> <span class="ss">id: </span><span class="s1">'doc-1'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'Doc 1'</span> <span class="p">}</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Search using cosine distance</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">top_k: </span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="activerecord-integration">ActiveRecord Integration</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Document</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="kp">include</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">ActiveRecord</span>
+  
+  <span class="n">vector_search</span> <span class="ss">:embedding_vector</span>
+<span class="k">end</span>
+
+<span class="c1"># Search</span>
+<span class="n">docs</span> <span class="o">=</span> <span class="no">Document</span><span class="p">.</span><span class="nf">vector_search</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">limit: </span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="configuration-options">Configuration Options</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">database</code></td>
+      <td>String</td>
+      <td>Yes</td>
+      <td>Database name</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">host</code></td>
+      <td>String</td>
+      <td>Yes</td>
+      <td>PostgreSQL host</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">port</code></td>
+      <td>Integer</td>
+      <td>No</td>
+      <td>PostgreSQL port (default: 5432)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">user</code></td>
+      <td>String</td>
+      <td>No</td>
+      <td>Database user</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">password</code></td>
+      <td>String</td>
+      <td>No</td>
+      <td>Database password</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">schema</code></td>
+      <td>String</td>
+      <td>No</td>
+      <td>Database schema</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="documentation">Documentation</h2>
+
+<ul>
+  <li><a href="https://github.com/pgvector/pgvector">pgvector GitHub</a></li>
+  <li><a href="https://github.com/pgvector/pgvector#readme">pgvector Docs</a></li>
+</ul>
+
+
+</body>

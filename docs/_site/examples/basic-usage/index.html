@@ -1,0 +1,117 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Basic Usage - Vectra Documentation</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+  <div class="site-header">
+  <nav class="site-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">Vectra</a>
+      <ul class="nav-menu">
+        <li><a href="/guides/installation" class="nav-link">Guides</a></li>
+        <li><a href="/api/overview" class="nav-link">API</a></li>
+        <li><a href="/providers" class="nav-link">Providers</a></li>
+        <li><a href="/examples" class="nav-link">Examples</a></li>
+        <li><a href="https://github.com/stokry/vectra" target="_blank" class="nav-link">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<h1 id="basic-usage-examples">Basic Usage Examples</h1>
+
+<h2 id="simple-search">Simple Search</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'vectra'</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+  <span class="ss">provider: :pinecone</span><span class="p">,</span>
+  <span class="ss">api_key: </span><span class="no">ENV</span><span class="p">[</span><span class="s1">'PINECONE_API_KEY'</span><span class="p">],</span>
+  <span class="ss">environment: </span><span class="s1">'us-west-4'</span>
+<span class="p">)</span>
+
+<span class="c1"># Search for similar vectors</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span>
+  <span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span>
+  <span class="ss">top_k: </span><span class="mi">5</span>
+<span class="p">)</span>
+
+<span class="nb">puts</span> <span class="n">results</span><span class="p">.</span><span class="nf">matches</span><span class="p">.</span><span class="nf">count</span>
+</code></pre></div></div>
+
+<h2 id="batch-operations">Batch Operations</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Upsert multiple vectors at once</span>
+<span class="n">vectors</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">{</span> <span class="ss">id: </span><span class="s1">'1'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'Doc 1'</span> <span class="p">}</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="ss">id: </span><span class="s1">'2'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'Doc 2'</span> <span class="p">}</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="ss">id: </span><span class="s1">'3'</span><span class="p">,</span> <span class="ss">values: </span><span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="ss">metadata: </span><span class="p">{</span> <span class="ss">title: </span><span class="s1">'Doc 3'</span> <span class="p">}</span> <span class="p">}</span>
+<span class="p">]</span>
+
+<span class="n">client</span><span class="p">.</span><span class="nf">upsert</span><span class="p">(</span><span class="ss">vectors: </span><span class="n">vectors</span><span class="p">)</span>
+
+<span class="c1"># Delete multiple vectors</span>
+<span class="n">client</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="ss">ids: </span><span class="p">[</span><span class="s1">'1'</span><span class="p">,</span> <span class="s1">'2'</span><span class="p">,</span> <span class="s1">'3'</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h2 id="rails-integration">Rails Integration</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/initializers/vectra.rb</span>
+<span class="no">Vectra</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">provider</span> <span class="o">=</span> <span class="ss">:pgvector</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">database</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">database_configuration</span><span class="p">[</span><span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">][</span><span class="s1">'database'</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="c1"># app/models/document.rb</span>
+<span class="k">class</span> <span class="nc">Document</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="kp">include</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">ActiveRecord</span>
+  
+  <span class="n">vector_search</span> <span class="ss">:embedding</span>
+  
+  <span class="k">def</span> <span class="nf">generate_embedding</span>
+    <span class="c1"># Generate embedding using OpenAI, Cohere, etc.</span>
+    <span class="n">embedding_vector</span> <span class="o">=</span> <span class="n">generate_vector_from_text</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">embedding</span> <span class="o">=</span> <span class="n">embedding_vector</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Usage</span>
+<span class="n">doc</span> <span class="o">=</span> <span class="no">Document</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">similar_docs</span> <span class="o">=</span> <span class="n">doc</span><span class="p">.</span><span class="nf">vector_search</span><span class="p">(</span><span class="ss">limit: </span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="with-metadata-filtering">With Metadata Filtering</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span>
+  <span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span>
+  <span class="ss">top_k: </span><span class="mi">10</span><span class="p">,</span>
+  <span class="ss">include_metadata: </span><span class="kp">true</span>
+<span class="p">)</span>
+
+<span class="n">results</span><span class="p">.</span><span class="nf">matches</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">match</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="s2">"ID: </span><span class="si">#{</span><span class="n">match</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"Score: </span><span class="si">#{</span><span class="n">match</span><span class="p">[</span><span class="s1">'score'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"Metadata: </span><span class="si">#{</span><span class="n">match</span><span class="p">[</span><span class="s1">'metadata'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="error-handling">Error Handling</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">begin</span>
+  <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="ss">vector: </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+<span class="k">rescue</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">ConnectionError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="nb">puts</span> <span class="s2">"Connection failed: </span><span class="si">#{</span><span class="n">e</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">rescue</span> <span class="no">Vectra</span><span class="o">::</span><span class="no">ValidationError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="nb">puts</span> <span class="s2">"Invalid input: </span><span class="si">#{</span><span class="n">e</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="nb">puts</span> <span class="s2">"Unexpected error: </span><span class="si">#{</span><span class="n">e</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>See <a href="/guides/getting-started">Getting Started</a> for more examples.</p>
+
+
+</body>

@@ -1,0 +1,12 @@
+[build]
+  command = "cd docs && bundle install && bundle exec jekyll build"
+  publish = "docs/_site"
+
+[build.environment]
+  JEKYLL_ENV = "production"
+  RUBY_VERSION = "3.4.7"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
