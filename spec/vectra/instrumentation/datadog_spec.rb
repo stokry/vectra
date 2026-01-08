@@ -43,7 +43,7 @@ RSpec.describe Vectra::Instrumentation::Datadog do
 
   describe ".setup!" do
     it "initializes DogStatsD client with default options" do
-      expect(Datadog::Statsd).to receive(:new).with(
+      allow(Datadog::Statsd).to receive(:new).with(
         "localhost",
         8125,
         namespace: "vectra"
@@ -52,26 +52,31 @@ RSpec.describe Vectra::Instrumentation::Datadog do
       described_class.setup!
 
       expect(described_class.statsd).to eq(mock_statsd)
+      expect(Datadog::Statsd).to have_received(:new).with("localhost", 8125, namespace: "vectra")
     end
 
     it "accepts custom host and port" do
-      expect(Datadog::Statsd).to receive(:new).with(
+      allow(Datadog::Statsd).to receive(:new).with(
         "custom-host",
         9125,
         namespace: "vectra"
       ).and_return(mock_statsd)
 
       described_class.setup!(host: "custom-host", port: 9125)
+
+      expect(Datadog::Statsd).to have_received(:new).with("custom-host", 9125, namespace: "vectra")
     end
 
     it "accepts custom namespace" do
-      expect(Datadog::Statsd).to receive(:new).with(
+      allow(Datadog::Statsd).to receive(:new).with(
         "localhost",
         8125,
         namespace: "my_app"
       ).and_return(mock_statsd)
 
       described_class.setup!(namespace: "my_app")
+
+      expect(Datadog::Statsd).to have_received(:new).with("localhost", 8125, namespace: "my_app")
     end
 
     it "registers instrumentation handler" do

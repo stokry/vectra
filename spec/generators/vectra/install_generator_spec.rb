@@ -5,10 +5,12 @@ require "spec_helper"
 # Mock Rails for generator testing (must be defined before loading the generator)
 # This needs to be set up before requiring the generator file
 module Rails
-  module VERSION
-    MAJOR = 7
-    MINOR = 0
-  end unless defined?(VERSION)
+  unless defined?(VERSION)
+    module VERSION
+      MAJOR = 7
+      MINOR = 0
+    end
+  end
 
   module Generators
     class Base
@@ -22,15 +24,15 @@ module Rails
 
       attr_accessor :options, :destination_root
 
-      def initialize(args = [], options = {}, config = {})
+      def initialize(_args = [], options = {}, config = {})
         @options = options
         @destination_root = config[:destination_root]
       end
 
-      def template(source, destination); end
-      def migration_template(source, destination, options = {}); end
-      def generate(*args); end
-      def say(message, color = nil); end
+      def template(_source, _destination); end
+      def migration_template(_source, _destination, _options = {}); end
+      def generate(*_args); end
+      def say(_message, _color = nil); end
     end
   end
 
@@ -45,6 +47,7 @@ $LOADED_FEATURES << "rails/generators/base.rb"
 # Now require the generator after Rails mock is set up
 require "generators/vectra/install_generator"
 
+# rubocop:disable RSpec/FilePath, RSpec/SpecFilePathFormat
 RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
   let(:destination_root) { File.expand_path("../../../tmp/generator_test", __dir__) }
 
@@ -234,6 +237,7 @@ RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
       expect(generator.send(:migration_version)).to eq("[7.0]")
     end
 
+    # rubocop:disable RSpec/RemoveConst
     it "handles different Rails versions" do
       # Temporarily redefine Rails::VERSION constants
       old_major = Rails::VERSION::MAJOR
@@ -254,6 +258,7 @@ RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
       Rails::VERSION.const_set(:MAJOR, old_major)
       Rails::VERSION.const_set(:MINOR, old_minor)
     end
+    # rubocop:enable RSpec/RemoveConst
   end
 
   describe "instruction methods" do

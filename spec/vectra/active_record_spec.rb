@@ -34,9 +34,11 @@ if ACTIVE_RECORD_AVAILABLE
 end
 
 RSpec.describe Vectra::ActiveRecord do
+  # rubocop:disable RSpec/BeforeAfterAll
   before(:all) do
     skip "ActiveRecord/SQLite3 not available" unless ACTIVE_RECORD_AVAILABLE
   end
+  # rubocop:enable RSpec/BeforeAfterAll
 
   # Test model
   let(:test_model_class) do
@@ -46,11 +48,11 @@ RSpec.describe Vectra::ActiveRecord do
       include Vectra::ActiveRecord
 
       has_vector :embedding,
-                  dimension: 3,
-                  provider: :pgvector,
-                  index: "test_docs",
-                  auto_index: true,
-                  metadata_fields: [:title, :category]
+                 dimension: 3,
+                 provider: :pgvector,
+                 index: "test_docs",
+                 auto_index: true,
+                 metadata_fields: [:title, :category]
 
       # Serialize embedding as JSON (Rails 8+ syntax)
       serialize :embedding, coder: JSON
@@ -89,7 +91,9 @@ RSpec.describe Vectra::ActiveRecord do
     it "uses table_name as default index" do
       model_class = Class.new(ActiveRecord::Base) do
         self.table_name = "custom_table"
+
         include Vectra::ActiveRecord
+
         has_vector :embedding, dimension: 3
       end
 
@@ -101,7 +105,9 @@ RSpec.describe Vectra::ActiveRecord do
 
       model_class = Class.new(ActiveRecord::Base) do
         self.table_name = "test"
+
         include Vectra::ActiveRecord
+
         has_vector :embedding, dimension: 3
       end
 
@@ -119,7 +125,9 @@ RSpec.describe Vectra::ActiveRecord do
     it "does not register callbacks when auto_index is false" do
       model_class = Class.new(ActiveRecord::Base) do
         self.table_name = "test_documents"
+
         include Vectra::ActiveRecord
+
         has_vector :embedding, dimension: 3, auto_index: false
         serialize :embedding, coder: JSON
       end
@@ -134,9 +142,10 @@ RSpec.describe Vectra::ActiveRecord do
       # Reset memoization and remove the mock to test actual behavior
       test_model_class.instance_variable_set(:@_vectra_client, nil)
       allow(test_model_class).to receive(:vectra_client).and_call_original
+      allow(Vectra::Client).to receive(:new).with(provider: :pgvector).and_return(mock_client)
 
-      expect(Vectra::Client).to receive(:new).with(provider: :pgvector).and_return(mock_client)
       expect(test_model_class.vectra_client).to eq(mock_client)
+      expect(Vectra::Client).to have_received(:new).with(provider: :pgvector)
     end
 
     it "memoizes the client" do
@@ -169,8 +178,7 @@ RSpec.describe Vectra::ActiveRecord do
     it "queries the vector index" do
       allow(mock_query_result).to receive(:above_score).and_return(mock_query_result)
       allow(mock_query_result).to receive(:map).and_yield(mock_results[0]).and_yield(mock_results[1]).and_return([])
-
-      expect(mock_client).to receive(:query).with(
+      allow(mock_client).to receive(:query).with(
         index: "test_docs",
         vector: query_vector,
         top_k: 10,
@@ -178,18 +186,27 @@ RSpec.describe Vectra::ActiveRecord do
       ).and_return(mock_query_result)
 
       test_model_class.vector_search(query_vector, limit: 10)
+
+      expect(mock_client).to have_received(:query).with(
+        index: "test_docs",
+        vector: query_vector,
+        top_k: 10,
+        filter: {}
+      )
     end
 
     it "applies score threshold filter" do
-      expect(mock_client).to receive(:query).and_return(mock_query_result)
-      expect(mock_query_result).to receive(:above_score).with(0.9).and_return(mock_query_result)
+      allow(mock_client).to receive(:query).and_return(mock_query_result)
+      allow(mock_query_result).to receive(:above_score).with(0.9).and_return(mock_query_result)
       allow(mock_query_result).to receive(:map).and_return([])
 
       test_model_class.vector_search(query_vector, score_threshold: 0.9)
+
+      expect(mock_query_result).to have_received(:above_score).with(0.9)
     end
 
     it "returns raw results when load_records is false" do
-      expect(mock_client).to receive(:query).and_return(mock_query_result)
+      allow(mock_client).to receive(:query).and_return(mock_query_result)
       allow(mock_query_result).to receive(:above_score).and_return(mock_query_result)
 
       results = test_model_class.vector_search(query_vector, load_records: false)
@@ -202,8 +219,7 @@ RSpec.describe Vectra::ActiveRecord do
       allow(mock_query_result).to receive(:map) do |&block|
         mock_results.map(&block)
       end
-
-      expect(mock_client).to receive(:query).and_return(mock_query_result)
+      allow(mock_client).to receive(:query).and_return(mock_query_result)
 
       records = test_model_class.vector_search(query_vector)
 
@@ -217,8 +233,7 @@ RSpec.describe Vectra::ActiveRecord do
       allow(mock_query_result).to receive(:map) do |&block|
         mock_results.map(&block)
       end
-
-      expect(mock_client).to receive(:query).and_return(mock_query_result)
+      allow(mock_client).to receive(:query).and_return(mock_query_result)
 
       records = test_model_class.vector_search(query_vector)
       loaded_record = records.compact.first
@@ -231,12 +246,14 @@ RSpec.describe Vectra::ActiveRecord do
     let(:record) { test_model_class.create!(title: "Test", embedding: test_vector) }
 
     it "searches using record's vector" do
-      expect(test_model_class).to receive(:_vectra_search).with(
+      allow(test_model_class).to receive(:_vectra_search).with(
         test_vector,
         limit: 10
       ).and_return([])
 
       test_model_class.similar_to(record)
+
+      expect(test_model_class).to have_received(:_vectra_search).with(test_vector, limit: 10)
     end
 
     it "raises error if record has no vector" do
@@ -248,13 +265,17 @@ RSpec.describe Vectra::ActiveRecord do
     end
 
     it "passes options to search" do
-      expect(test_model_class).to receive(:_vectra_search).with(
+      allow(test_model_class).to receive(:_vectra_search).with(
         test_vector,
         limit: 5,
         filter: { category: "tech" }
       ).and_return([])
 
       test_model_class.similar_to(record, limit: 5, filter: { category: "tech" })
+
+      expect(test_model_class).to have_received(:_vectra_search).with(
+        test_vector, limit: 5, filter: { category: "tech" }
+      )
     end
   end
 
@@ -326,7 +347,7 @@ RSpec.describe Vectra::ActiveRecord do
     end
 
     it "finds similar records" do
-      expect(test_model_class).to receive(:_vectra_search).with(
+      allow(test_model_class).to receive(:_vectra_search).with(
         test_vector,
         limit: 11, # limit + 1 to account for self-exclusion
         filter: {}
@@ -346,13 +367,17 @@ RSpec.describe Vectra::ActiveRecord do
     end
 
     it "applies filters" do
-      expect(test_model_class).to receive(:_vectra_search).with(
+      allow(test_model_class).to receive(:_vectra_search).with(
         test_vector,
         limit: 6,
         filter: { category: "tech" }
       ).and_return([])
 
       record.similar(limit: 5, filter: { category: "tech" })
+
+      expect(test_model_class).to have_received(:_vectra_search).with(
+        test_vector, limit: 6, filter: { category: "tech" }
+      )
     end
   end
 

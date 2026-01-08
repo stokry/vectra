@@ -34,7 +34,7 @@ task :changelog do
 end
 
 desc "Bump version to VERSION"
-task :bump_version, [:version] do |t, args|
+task :bump_version, [:version] do |_t, args|
   version = args[:version]
   raise "Version required: rake bump_version[1.2.3]" unless version
 
