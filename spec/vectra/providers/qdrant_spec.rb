@@ -132,7 +132,7 @@ RSpec.describe Vectra::Providers::Qdrant do
       expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
         .with { |req|
           body = JSON.parse(req.body)
-          body["filter"].present?
+          !body["filter"].nil? && !body["filter"].empty?
         }
     end
 
@@ -194,7 +194,7 @@ RSpec.describe Vectra::Providers::Qdrant do
       expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points")
         .with { |req|
           body = JSON.parse(req.body)
-          body["ids"].present? &&
+          !body["ids"].nil? && !body["ids"].empty? &&
             body["with_vector"] == true &&
             body["with_payload"] == true
         }
@@ -281,7 +281,7 @@ RSpec.describe Vectra::Providers::Qdrant do
       expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/delete")
         .with { |req|
           body = JSON.parse(req.body)
-          body["points"].present?
+          !body["points"].nil? && !body["points"].empty?
         }
     end
 
@@ -301,7 +301,7 @@ RSpec.describe Vectra::Providers::Qdrant do
       expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/delete")
         .with { |req|
           body = JSON.parse(req.body)
-          body["filter"].present?
+          !body["filter"].nil? && !body["filter"].empty?
         }
     end
 
@@ -589,15 +589,21 @@ RSpec.describe Vectra::Providers::Qdrant do
 
   describe "configuration validation" do
     it "raises ConfigurationError when host is not configured" do
-      config.host = nil
+      bad_config = Vectra::Configuration.new
+      bad_config.instance_variable_set(:@provider, :qdrant)
+      bad_config.api_key = "test-key"
+      bad_config.host = nil
 
       expect do
-        described_class.new(config)
+        described_class.new(bad_config)
       end.to raise_error(Vectra::ConfigurationError, /host.*must be configured/i)
     end
 
     it "works without api_key for local Qdrant instances" do
-      config.api_key = ""
+      local_config = Vectra::Configuration.new
+      local_config.instance_variable_set(:@provider, :qdrant)
+      local_config.api_key = nil
+      local_config.host = base_url
 
       stub_request(:get, "#{base_url}/collections")
         .to_return(
@@ -606,7 +612,8 @@ RSpec.describe Vectra::Providers::Qdrant do
           headers: { "Content-Type" => "application/json" }
         )
 
-      expect { provider.list_indexes }.not_to raise_error
+      local_provider = described_class.new(local_config)
+      expect { local_provider.list_indexes }.not_to raise_error
     end
   end
 

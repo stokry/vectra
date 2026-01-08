@@ -56,7 +56,11 @@ module Vectra
     # @raise [ConfigurationError] if configuration is invalid
     def validate!
       raise ConfigurationError, "Provider must be configured" if provider.nil?
-      raise ConfigurationError, "API key must be configured" if api_key.nil? || api_key.empty?
+
+      # API key is optional for some providers (Qdrant local, pgvector)
+      unless api_key_optional_provider?
+        raise ConfigurationError, "API key must be configured" if api_key.nil? || api_key.empty?
+      end
 
       validate_provider_specific!
     end
@@ -105,6 +109,11 @@ module Vectra
     end
 
     private
+
+    # Providers that don't require API key (local instances)
+    def api_key_optional_provider?
+      %i[qdrant pgvector].include?(provider)
+    end
 
     def validate_provider_specific!
       case provider
