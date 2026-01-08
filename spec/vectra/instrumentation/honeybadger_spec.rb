@@ -4,10 +4,9 @@ require "spec_helper"
 require "vectra/instrumentation/honeybadger"
 
 RSpec.describe Vectra::Instrumentation::Honeybadger do
-  before do
-    Vectra::Instrumentation.clear_handlers!
-    # Mock Honeybadger module
-    stub_const("Honeybadger", Class.new do
+  # Mock Honeybadger module
+  let(:mock_honeybadger) do
+    Module.new do
       class << self
         attr_accessor :breadcrumbs, :notifications
 
@@ -31,8 +30,12 @@ RSpec.describe Vectra::Instrumentation::Honeybadger do
           @notifications = []
         end
       end
-    end)
+    end
+  end
 
+  before do
+    Vectra::Instrumentation.clear_handlers!
+    stub_const("Honeybadger", mock_honeybadger)
     Honeybadger.reset!
   end
 
@@ -142,6 +145,8 @@ RSpec.describe Vectra::Instrumentation::Honeybadger do
     end
 
     it "notifies on rate limit when enabled" do
+      # Clear handlers and re-setup with rate limit enabled
+      Vectra::Instrumentation.clear_handlers!
       described_class.setup!(notify_on_rate_limit: true)
 
       event = Vectra::Instrumentation::Event.new(

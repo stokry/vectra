@@ -4,10 +4,9 @@ require "spec_helper"
 require "vectra/instrumentation/sentry"
 
 RSpec.describe Vectra::Instrumentation::Sentry do
-  before do
-    Vectra::Instrumentation.clear_handlers!
-    # Mock Sentry module
-    stub_const("Sentry", Class.new do
+  # Mock Sentry module
+  let(:mock_sentry) do
+    Module.new do
       class << self
         attr_accessor :breadcrumbs, :captured_exceptions, :last_scope
 
@@ -32,38 +31,54 @@ RSpec.describe Vectra::Instrumentation::Sentry do
           @last_scope = nil
         end
       end
+    end
+  end
 
-      class Breadcrumb
-        attr_reader :category, :message, :level, :data
+  # Mock Breadcrumb class
+  let(:mock_breadcrumb_class) do
+    Class.new do
+      attr_reader :category, :message, :level, :data
 
-        def initialize(category:, message:, level:, data:)
-          @category = category
-          @message = message
-          @level = level
-          @data = data
-        end
+      def initialize(category:, message:, level:, data:)
+        @category = category
+        @message = message
+        @level = level
+        @data = data
+      end
+    end
+  end
+
+  # Mock Scope class
+  let(:mock_scope_class) do
+    Class.new do
+      attr_reader :tags, :context, :fingerprint, :level
+
+      def set_tags(tags)
+        @tags = tags
       end
 
-      class MockScope
-        attr_reader :tags, :context, :fingerprint, :level
-
-        def set_tags(tags)
-          @tags = tags
-        end
-
-        def set_context(name, context)
-          @context = { name => context }
-        end
-
-        def set_fingerprint(fingerprint)
-          @fingerprint = fingerprint
-        end
-
-        def set_level(level)
-          @level = level
-        end
+      def set_context(name, ctx)
+        @context ||= {}
+        @context[name] = ctx
       end
-    end)
+
+      def set_fingerprint(fp)
+        @fingerprint = fp
+      end
+
+      def set_level(lvl)
+        @level = lvl
+      end
+    end
+  end
+
+  before do
+    Vectra::Instrumentation.clear_handlers!
+
+    # Setup mock Sentry module with nested classes
+    stub_const("MockScope", mock_scope_class)
+    stub_const("Sentry", mock_sentry)
+    stub_const("Sentry::Breadcrumb", mock_breadcrumb_class)
 
     Sentry.reset!
   end
@@ -72,7 +87,6 @@ RSpec.describe Vectra::Instrumentation::Sentry do
     it "registers instrumentation handler" do
       described_class.setup!
 
-      # Trigger an event
       event = Vectra::Instrumentation::Event.new(
         operation: :query,
         provider: :pinecone,
