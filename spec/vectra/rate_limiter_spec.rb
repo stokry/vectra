@@ -87,7 +87,8 @@ RSpec.describe Vectra::RateLimiter do
 
     it "refills over time" do
       5.times { limiter.try_acquire }
-      expect(limiter.available_tokens).to eq(0)
+      # Tokens may have refilled slightly, so check it's very low
+      expect(limiter.available_tokens).to be < 0.1
 
       sleep(0.2) # Should refill ~2 tokens at 10/sec
       expect(limiter.available_tokens).to be > 0
@@ -118,7 +119,8 @@ RSpec.describe Vectra::RateLimiter do
   describe "#reset!" do
     it "restores full token capacity" do
       5.times { limiter.try_acquire }
-      expect(limiter.available_tokens).to eq(0)
+      # Tokens may have refilled slightly, so check it's very low
+      expect(limiter.available_tokens).to be < 0.1
 
       limiter.reset!
       expect(limiter.available_tokens).to eq(5)

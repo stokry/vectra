@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "timeout"
+
 module Vectra
   # Health check functionality for Vectra clients
   #

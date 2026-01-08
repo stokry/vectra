@@ -87,17 +87,28 @@ RSpec.describe Vectra::HealthCheck do
     end
 
     context "with pool stats" do
+      let(:pgvector_provider) { double("PgvectorProvider") } # rubocop:disable RSpec/VerifiedDoubles
+
+      let(:pgvector_client) do
+        client = Vectra::Client.allocate
+        client.instance_variable_set(:@config, config)
+        client.instance_variable_set(:@provider, pgvector_provider)
+        client
+      end
+
       before do
-        allow(mock_provider).to receive(:list_indexes).and_return([])
-        allow(mock_provider).to receive(:respond_to?).with(:pool_stats).and_return(true)
-        allow(mock_provider).to receive(:pool_stats).and_return({
+        allow(pgvector_provider).to receive(:provider_name).and_return(:pgvector)
+        allow(pgvector_provider).to receive(:list_indexes).and_return([])
+        allow(pgvector_provider).to receive(:respond_to?).with(:pool_stats).and_return(true)
+        allow(pgvector_provider).to receive(:pool_stats).and_return({
           available: 5,
-          checked_out: 2
+          checked_out: 2,
+          size: 10
         })
       end
 
       it "includes pool stats" do
-        result = client.health_check
+        result = pgvector_client.health_check
 
         expect(result.pool[:available]).to eq(5)
         expect(result.pool[:checked_out]).to eq(2)
