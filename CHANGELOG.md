@@ -43,6 +43,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Thread-safe implementation
   - Configurable failure/success thresholds
 
+- **Credential Rotation** (`Vectra::CredentialRotator`)
+  - Zero-downtime API key rotation
+  - Pre-rotation validation
+  - Rollback support
+  - Multi-provider rotation manager
+  - Per-provider rotation tracking
+
+- **Audit Logging** (`Vectra::AuditLog`)
+  - Structured audit events for compliance
+  - Access, authentication, authorization logging
+  - Configuration change tracking
+  - Credential rotation audit trail
+  - Automatic API key sanitization
+  - Global audit logging support
+
 ## [0.3.0] - 2025-01-08
 
 ### Added
