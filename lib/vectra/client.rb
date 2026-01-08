@@ -60,7 +60,14 @@ module Vectra
       validate_index!(index)
       validate_vectors!(vectors)
 
-      provider.upsert(index: index, vectors: vectors, namespace: namespace)
+      Instrumentation.instrument(
+        operation: :upsert,
+        provider: provider_name,
+        index: index,
+        metadata: { vector_count: vectors.size }
+      ) do
+        provider.upsert(index: index, vectors: vectors, namespace: namespace)
+      end
     end
 
     # Query vectors by similarity

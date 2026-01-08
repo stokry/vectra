@@ -5,6 +5,8 @@ module Vectra
     class Pgvector < Base
       # Connection management for pgvector provider
       module Connection
+        include Vectra::Retry
+
         private
 
         # Get or create database connection
@@ -49,7 +51,9 @@ module Vectra
         # Execute SQL with parameters
         def execute(sql, params = [])
           log_debug("Executing SQL", { sql: sql, params: params })
-          connection.exec_params(sql, params)
+          with_retry do
+            connection.exec_params(sql, params)
+          end
         rescue PG::Error => e
           handle_pg_error(e)
         end
