@@ -1,0 +1,607 @@
+---
+layout: page
+title: Monitoring & Observability
+permalink: /guides/monitoring/
+---
+
+# Monitoring & Observability
+
+Complete guide for monitoring Vectra in production with Prometheus, Grafana, and APM tools.
+
+## Quick Setup
+
+```ruby
+Vectra.configure do |config|
+  config.provider = :pinecone
+  config.api_key = ENV['PINECONE_API_KEY']
+  config.instrumentation = true  # Enable metrics
+end
+```
+
+## Prometheus Metrics
+
+### Exporter Setup
+
+Create `config/initializers/vectra_metrics.rb`:
+
+```ruby
+# frozen_string_literal: true
+
+require "prometheus/client"
+
+module VectraMetrics
+  REGISTRY = Prometheus::Client.registry
+
+  # Request counters
+  REQUESTS_TOTAL = REGISTRY.counter(
+    :vectra_requests_total,
+    docstring: "Total Vectra requests",
+    labels: [:provider, :operation, :status]
+  )
+
+  # Latency histogram
+  REQUEST_DURATION = REGISTRY.histogram(
+    :vectra_request_duration_seconds,
+    docstring: "Request duration in seconds",
+    labels: [:provider, :operation],
+    buckets: [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+  )
+
+  # Vector counts
+  VECTORS_PROCESSED = REGISTRY.counter(
+    :vectra_vectors_processed_total,
+    docstring: "Total vectors processed",
+    labels: [:provider, :operation]
+  )
+
+  # Cache metrics
+  CACHE_HITS = REGISTRY.counter(
+    :vectra_cache_hits_total,
+    docstring: "Cache hit count"
+  )
+
+  CACHE_MISSES = REGISTRY.counter(
+    :vectra_cache_misses_total,
+    docstring: "Cache miss count"
+  )
+
+  # Pool metrics (pgvector)
+  POOL_SIZE = REGISTRY.gauge(
+    :vectra_pool_connections,
+    docstring: "Connection pool size",
+    labels: [:state]  # available, checked_out
+  )
+
+  # Error counter
+  ERRORS_TOTAL = REGISTRY.counter(
+    :vectra_errors_total,
+    docstring: "Total errors",
+    labels: [:provider, :error_type]
+  )
+end
+
+# Custom instrumentation handler
+Vectra::Instrumentation.register(:prometheus) do |event|
+  labels = {
+    provider: event[:provider],
+    operation: event[:operation]
+  }
+
+  # Record request
+  status = event[:error] ? "error" : "success"
+  VectraMetrics::REQUESTS_TOTAL.increment(labels: labels.merge(status: status))
+
+  # Record duration
+  if event[:duration]
+    VectraMetrics::REQUEST_DURATION.observe(event[:duration], labels: labels)
+  end
+
+  # Record vector count
+  if event[:metadata]&.dig(:vector_count)
+    VectraMetrics::VECTORS_PROCESSED.increment(
+      by: event[:metadata][:vector_count],
+      labels: labels
+    )
+  end
+
+  # Record errors
+  if event[:error]
+    VectraMetrics::ERRORS_TOTAL.increment(
+      labels: labels.merge(error_type: event[:error].class.name)
+    )
+  end
+end
+```
+
+### Prometheus Scrape Config
+
+Add to `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'vectra'
+    static_configs:
+      - targets: ['localhost:9292']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+```
+
+### Expose Metrics Endpoint (Rack)
+
+```ruby
+# config.ru
+require "prometheus/middleware/exporter"
+
+use Prometheus::Middleware::Exporter
+run YourApp
+```
+
+## Grafana Dashboard
+
+### Dashboard JSON Template
+
+Save as `vectra-dashboard.json` and import into Grafana:
+
+```json
+{
+  "dashboard": {
+    "title": "Vectra Vector Database Metrics",
+    "uid": "vectra-metrics",
+    "timezone": "browser",
+    "refresh": "30s",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "sum(rate(vectra_requests_total[5m])) by (operation)",
+            "legendFormat": "{{ "{{operation}}" }}"
+          }
+        ]
+      },
+      {
+        "title": "Request Latency (p95)",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(vectra_request_duration_seconds_bucket[5m])) by (le, operation))",
+            "legendFormat": "{{ "{{operation}}" }} p95"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "sum(rate(vectra_errors_total[5m])) by (error_type)",
+            "legendFormat": "{{ "{{error_type}}" }}"
+          }
+        ]
+      },
+      {
+        "title": "Vectors Processed",
+        "type": "stat",
+        "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+        "targets": [
+          {
+            "expr": "sum(increase(vectra_vectors_processed_total[24h]))",
+            "legendFormat": "24h Total"
+          }
+        ]
+      },
+      {
+        "title": "Cache Hit Ratio",
+        "type": "gauge",
+        "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+        "targets": [
+          {
+            "expr": "sum(vectra_cache_hits_total) / (sum(vectra_cache_hits_total) + sum(vectra_cache_misses_total)) * 100"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                { "color": "red", "value": 0 },
+                { "color": "yellow", "value": 50 },
+                { "color": "green", "value": 80 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Connection Pool (pgvector)",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "vectra_pool_connections{state='available'}",
+            "legendFormat": "Available"
+          },
+          {
+            "expr": "vectra_pool_connections{state='checked_out'}",
+            "legendFormat": "In Use"
+          }
+        ]
+      },
+      {
+        "title": "Operations by Provider",
+        "type": "piechart",
+        "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "sum(vectra_requests_total) by (provider)",
+            "legendFormat": "{{ "{{provider}}" }}"
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "provider",
+          "type": "query",
+          "query": "label_values(vectra_requests_total, provider)",
+          "multi": true,
+          "includeAll": true
+        }
+      ]
+    }
+  }
+}
+```
+
+## APM Integration
+
+### Datadog
+
+```ruby
+# config/initializers/vectra_datadog.rb
+require "vectra/instrumentation/datadog"
+
+Vectra.configure do |config|
+  config.instrumentation = true
+end
+
+# Auto-traces all Vectra operations with:
+# - Service name: vectra
+# - Resource: operation name (upsert, query, etc.)
+# - Tags: provider, index, vector_count
+```
+
+#### Datadog Dashboard JSON
+
+```json
+{
+  "title": "Vectra Performance",
+  "widgets": [
+    {
+      "definition": {
+        "title": "Request Rate by Operation",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:vectra.request.count{*} by {operation}.as_rate()",
+            "display_type": "bars"
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "title": "P95 Latency",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "p95:vectra.request.duration{*} by {operation}"
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "title": "Error Rate",
+        "type": "query_value",
+        "requests": [
+          {
+            "q": "sum:vectra.error.count{*}.as_rate() / sum:vectra.request.count{*}.as_rate() * 100"
+          }
+        ],
+        "precision": 2,
+        "custom_unit": "%"
+      }
+    }
+  ]
+}
+```
+
+### New Relic
+
+```ruby
+# config/initializers/vectra_newrelic.rb
+require "vectra/instrumentation/new_relic"
+
+Vectra.configure do |config|
+  config.instrumentation = true
+end
+
+# Records custom events: VectraOperation
+# Attributes: provider, operation, duration, vector_count, error
+```
+
+#### New Relic NRQL Queries
+
+```sql
+-- Request throughput
+SELECT rate(count(*), 1 minute) FROM VectraOperation FACET operation TIMESERIES
+
+-- Average latency by operation
+SELECT average(duration) FROM VectraOperation FACET operation TIMESERIES
+
+-- Error rate
+SELECT percentage(count(*), WHERE error IS NOT NULL) FROM VectraOperation TIMESERIES
+
+-- Slowest operations
+SELECT max(duration) FROM VectraOperation FACET operation WHERE duration > 1
+```
+
+### OpenTelemetry
+
+```ruby
+# config/initializers/vectra_otel.rb
+require "opentelemetry/sdk"
+require "opentelemetry/exporter/otlp"
+
+OpenTelemetry::SDK.configure do |c|
+  c.service_name = "vectra-service"
+  c.use_all
+end
+
+# Custom OpenTelemetry handler
+Vectra::Instrumentation.register(:opentelemetry) do |event|
+  tracer = OpenTelemetry.tracer_provider.tracer("vectra")
+  
+  tracer.in_span("vectra.#{event[:operation]}") do |span|
+    span.set_attribute("vectra.provider", event[:provider].to_s)
+    span.set_attribute("vectra.index", event[:index]) if event[:index]
+    span.set_attribute("vectra.vector_count", event[:metadata][:vector_count]) if event.dig(:metadata, :vector_count)
+    
+    if event[:error]
+      span.record_exception(event[:error])
+      span.status = OpenTelemetry::Trace::Status.error(event[:error].message)
+    end
+  end
+end
+```
+
+## Alert Configurations
+
+### Prometheus Alerting Rules
+
+Save as `vectra-alerts.yml`:
+
+```yaml
+groups:
+  - name: vectra
+    rules:
+      # High error rate
+      - alert: VectraHighErrorRate
+        expr: |
+          sum(rate(vectra_errors_total[5m])) 
+          / sum(rate(vectra_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Vectra error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      # High latency
+      - alert: VectraHighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(vectra_request_duration_seconds_bucket[5m])) by (le, operation)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Vectra latency for {{ $labels.operation }}"
+          description: "P95 latency is {{ $value | humanizeDuration }}"
+
+      # Connection pool exhausted (pgvector)
+      - alert: VectraPoolExhausted
+        expr: vectra_pool_connections{state="available"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Vectra connection pool exhausted"
+          description: "No available connections in pool"
+
+      # Low cache hit ratio
+      - alert: VectraLowCacheHitRatio
+        expr: |
+          sum(rate(vectra_cache_hits_total[5m])) 
+          / (sum(rate(vectra_cache_hits_total[5m])) + sum(rate(vectra_cache_misses_total[5m]))) < 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low Vectra cache hit ratio"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }}"
+
+      # No requests (service down?)
+      - alert: VectraNoRequests
+        expr: sum(rate(vectra_requests_total[5m])) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No Vectra requests"
+          description: "No requests in the last 10 minutes"
+```
+
+### PagerDuty Integration
+
+```yaml
+# alertmanager.yml
+receivers:
+  - name: 'vectra-critical'
+    pagerduty_configs:
+      - service_key: '<your-pagerduty-key>'
+        severity: critical
+        description: '{{ .GroupLabels.alertname }}'
+        details:
+          summary: '{{ .Annotations.summary }}'
+          description: '{{ .Annotations.description }}'
+
+route:
+  receiver: 'vectra-critical'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'vectra-critical'
+```
+
+### Slack Alerts
+
+```yaml
+# alertmanager.yml
+receivers:
+  - name: 'vectra-slack'
+    slack_configs:
+      - api_url: '<your-slack-webhook>'
+        channel: '#alerts'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ .Annotations.description }}'
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+```
+
+## Health Check Endpoint
+
+```ruby
+# app/controllers/health_controller.rb
+class HealthController < ApplicationController
+  def vectra
+    client = Vectra::Client.new
+    
+    # Check provider connectivity
+    start = Time.now
+    stats = client.stats(index: "health-check")
+    latency = Time.now - start
+
+    render json: {
+      status: "healthy",
+      provider: client.provider_name,
+      latency_ms: (latency * 1000).round(2),
+      pool_stats: client.provider.respond_to?(:pool_stats) ? client.provider.pool_stats : nil
+    }
+  rescue StandardError => e
+    render json: {
+      status: "unhealthy",
+      error: e.class.name,
+      message: e.message
+    }, status: :service_unavailable
+  end
+end
+```
+
+## Logging Best Practices
+
+```ruby
+# config/initializers/vectra_logging.rb
+Vectra.configure do |config|
+  config.logger = Rails.logger
+end
+
+# Structured logging handler
+Vectra::Instrumentation.register(:logger) do |event|
+  Rails.logger.info({
+    event: "vectra.#{event[:operation]}",
+    provider: event[:provider],
+    index: event[:index],
+    duration_ms: event[:duration] ? (event[:duration] * 1000).round(2) : nil,
+    vector_count: event.dig(:metadata, :vector_count),
+    error: event[:error]&.class&.name
+  }.compact.to_json)
+end
+```
+
+## Quick Reference
+
+| Metric | Description | Alert Threshold |
+|--------|-------------|-----------------|
+| `vectra_requests_total` | Total requests | - |
+| `vectra_request_duration_seconds` | Request latency | p95 > 2s |
+| `vectra_errors_total` | Error count | > 5% error rate |
+| `vectra_vectors_processed_total` | Vectors processed | - |
+| `vectra_cache_hits_total` | Cache hits | < 50% hit ratio |
+| `vectra_pool_connections` | Pool connections | 0 available |
+
+## Monitoring Cost Optimization
+
+Optimize your monitoring infrastructure costs:
+
+| Setting | Default | Low-Cost | Notes |
+|---------|---------|----------|-------|
+| Scrape interval | 15s | 30s | Reduces storage by ~50% |
+| Retention | 15d | 7d | Adjust via `--storage.tsdb.retention.time` |
+| Histogram buckets | 10 | 5 | Fewer buckets = less cardinality |
+
+**Metric Cardinality Estimates:**
+
+- ~100 timeseries per provider
+- ~500 timeseries for multi-provider setup
+- Cache/pool metrics add ~20 timeseries
+
+**Cost Reduction Tips:**
+
+```yaml
+# prometheus.yml - Longer scrape interval
+scrape_configs:
+  - job_name: 'vectra'
+    scrape_interval: 30s  # Instead of 15s
+    scrape_timeout: 10s
+```
+
+```ruby
+# Reduce histogram buckets
+REQUEST_DURATION = REGISTRY.histogram(
+  :vectra_request_duration_seconds,
+  docstring: "Request duration",
+  labels: [:provider, :operation],
+  buckets: [0.1, 0.5, 1, 5, 10]  # 5 instead of 10 buckets
+)
+```
+
+**Downsampling for Long-term Storage:**
+
+```yaml
+# Thanos/Cortex downsampling rules
+- record: vectra:request_rate:5m
+  expr: sum(rate(vectra_requests_total[5m])) by (provider, operation)
+```
+
+## Troubleshooting Runbooks
+
+Quick links to incident response procedures:
+
+- [High Error Rate Runbook]({{ site.baseurl }}/guides/runbooks/high-error-rate) - Error rate >5%
+- [Pool Exhaustion Runbook]({{ site.baseurl }}/guides/runbooks/pool-exhausted) - No available connections
+- [Cache Issues Runbook]({{ site.baseurl }}/guides/runbooks/cache-issues) - Low hit ratio, stale data
+- [High Latency Runbook]({{ site.baseurl }}/guides/runbooks/high-latency) - P95 >2s
+
+## Next Steps
+
+- [Performance Guide]({{ site.baseurl }}/guides/performance)
+- [API Reference]({{ site.baseurl }}/api/overview)
+- [Provider Guides]({{ site.baseurl }}/providers)
