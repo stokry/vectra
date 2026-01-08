@@ -47,7 +47,7 @@ module Vectra
     # @param index [String] Index accessed
     # @param result_count [Integer, nil] Number of results
     # @param metadata [Hash] Additional metadata
-    def log_access(user_id: nil, operation:, index:, result_count: nil, **metadata)
+    def log_access(operation:, index: nil, result_count: nil, user_id: nil, **metadata)
       log_event(
         type: :access,
         user_id: user_id,
@@ -64,7 +64,7 @@ module Vectra
     # @param success [Boolean] Authentication success
     # @param provider [String, nil] Provider name
     # @param metadata [Hash] Additional metadata
-    def log_authentication(user_id: nil, success:, provider: nil, **metadata)
+    def log_authentication(success:, provider: nil, user_id: nil, **metadata)
       log_event(
         type: :authentication,
         user_id: user_id,
@@ -126,7 +126,7 @@ module Vectra
     # @param operation [String] Operation (upsert, delete, update)
     # @param index [String] Index modified
     # @param record_count [Integer] Number of records affected
-    def log_data_modification(user_id: nil, operation:, index:, record_count:)
+    def log_data_modification(operation:, index:, record_count:, user_id: nil)
       log_event(
         type: :data_modification,
         user_id: user_id,
@@ -166,12 +166,12 @@ module Vectra
     def sanitize_value(value)
       case value
       when String
-        # Mask sensitive values
-        if value.match?(/^[a-zA-Z0-9_-]{20,}$/) # Looks like API key
-          value[0, 8] + "..." + value[-4, 4]
-        else
-          value
-        end
+        # Mask sensitive values: keep a short prefix and suffix, hide the middle
+        return value unless value.length >= 10
+
+        prefix = value[0, 9]
+        suffix = value[-4, 4]
+        "#{prefix}...#{suffix}"
       when Hash
         value.transform_values { |v| sanitize_value(v) }
       else

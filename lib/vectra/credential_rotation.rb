@@ -52,6 +52,7 @@ module Vectra
     #
     # @param validate [Boolean] Validate key before switching
     # @return [Boolean] true if switched successfully
+    # rubocop:disable Naming/PredicateMethod
     def switch_to_secondary(validate: true)
       return false if secondary_key.nil? || secondary_key.empty?
 
@@ -63,6 +64,7 @@ module Vectra
       @rotation_complete = true
       true
     end
+    # rubocop:enable Naming/PredicateMethod
 
     # Rollback to primary key
     #
@@ -149,7 +151,7 @@ module Vectra
       #
       # @return [Hash<Symbol, Boolean>] Test results
       def test_all_secondary
-        rotators.transform_values { |r| r.test_secondary }
+        rotators.transform_values(&:test_secondary)
       end
 
       # Rotate all providers
@@ -175,7 +177,7 @@ module Vectra
           {
             rotation_complete: r.rotation_complete?,
             has_secondary: !r.secondary_key.nil?,
-            active_key: r.active_key[0, 8] + "..." # First 8 chars only
+            active_key: "#{r.active_key[0, 8]}..." # First 8 chars only
           }
         end
       end
