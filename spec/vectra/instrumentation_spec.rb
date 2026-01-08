@@ -4,12 +4,12 @@ require "spec_helper"
 
 RSpec.describe Vectra::Instrumentation do
   before do
-    described_class.clear_handlers!
+    Vectra::Instrumentation.clear_handlers!
     Vectra.configuration.instrumentation = false
   end
 
   after do
-    described_class.clear_handlers!
+    Vectra::Instrumentation.clear_handlers!
     Vectra.configuration.instrumentation = false
   end
 

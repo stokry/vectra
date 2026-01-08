@@ -140,5 +140,17 @@ module Vectra
         "#{error.class} - #{error.message}. Waiting #{delay.round(2)}s..."
       )
     end
+
+    # Log final error
+    #
+    # @param message [String] Error message
+    # @param error [Exception] The error
+    def log_error(message, error)
+      return unless config.logger
+
+      config.logger.error(
+        "[Vectra] #{message}: #{error.class} - #{error.message}"
+      )
+    end
   end
 end
