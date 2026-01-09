@@ -1023,14 +1023,14 @@ code {
 
 .tma-button--primary {
   background: var(--tma-color-accent-primary);
-  color: #0a0a0f;
+  color: #0a0a0f!important;
   border-color: var(--tma-color-accent-primary);
 }
 
 .tma-button--primary:hover {
   background: var(--tma-color-accent-light);
   border-color: var(--tma-color-accent-light);
-  color: #0a0a0f;
+  color: #0a0a0f!important;
   transform: translateY(-1px);
   box-shadow: var(--tma-shadow-md);
 }
