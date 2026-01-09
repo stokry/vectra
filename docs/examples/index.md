@@ -48,7 +48,16 @@ Practical examples to get started with Vectra.
   </div>
 </div>
 
+## Real-World Examples
+
+<div class="tma-comparison-card">
+  <h4>Production Use Cases</h4>
+  <p>E-commerce search, RAG chatbots, multi-tenant SaaS, and batch processing</p>
+  <a href="{{ site.baseurl }}/examples/real-world/">View Examples →</a>
+</div>
+
 ## More Resources
 
 - [GitHub Examples](https://github.com/stokry/vectra/tree/main/examples) - Full example files
+- [Comprehensive Demo](https://github.com/stokry/vectra/tree/main/examples/comprehensive_demo.rb) - Complete feature demonstration
 - [Integration Tests](https://github.com/stokry/vectra/tree/main/spec/integration) - Real-world test cases
