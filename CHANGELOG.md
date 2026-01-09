@@ -16,13 +16,20 @@
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.2.1...v0.2.2)
 
-## [v0.2.1](https://github.com/stokry/vectra/tree/v0.2.1) (2026-01-08)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.2.0...v0.2.1)
 
 ## [v0.2.0](https://github.com/stokry/vectra/tree/v0.2.0) (2026-01-08)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.1.3...v0.2.0)
+
+## [v0.3.3](https://github.com/stokry/vectra/tree/v0.3.3) (2026-01-09)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.3.2...v0.3.3)
+
+### Changed
+
+- Version bump and minor maintenance release.
 
 ## [v0.1.3](https://github.com/stokry/vectra/tree/v0.1.3) (2026-01-07)
 
