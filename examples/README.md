@@ -189,6 +189,45 @@ open http://localhost:6333/dashboard
 - **Documents:** 5-8 indexed
 - **Features shown:** Basic CRUD + caching
 
+## Grafana Dashboard 📊
+
+Create beautiful monitoring dashboards with Grafana - perfect for screenshots!
+
+### Quick Start (5 minutes)
+
+1. **Start Prometheus Exporter:**
+   ```bash
+   ruby examples/prometheus-exporter.rb
+   ```
+
+2. **Setup Grafana:**
+   - Sign up at [grafana.com](https://grafana.com) (free)
+   - Add Prometheus data source
+   - Import `examples/grafana-dashboard.json`
+
+3. **Take Screenshots:**
+   - Wait 1-2 minutes for metrics
+   - Use browser screenshot or Grafana's export feature
+   - Perfect panels: Request Rate, Latency Distribution, Pie Charts
+
+**See [GRAFANA_QUICKSTART.md](GRAFANA_QUICKSTART.md) for step-by-step guide.**
+
+### Dashboard Features
+
+- **12 Professional Panels:**
+  - Request rate, error rate, latency metrics
+  - Cache performance, connection pool status
+  - Time series, pie charts, bar gauges
+  - Color-coded thresholds
+
+- **Perfect for Screenshots:**
+  - Clean, modern design
+  - Dark theme support
+  - Multiple visualization types
+  - Real-time data updates
+
+See [grafana-setup.md](grafana-setup.md) for complete production setup.
+
 ## Next Steps
 
 1. **Read the main README:** `../README.md`

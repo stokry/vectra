@@ -138,6 +138,56 @@ run YourApp
 
 ## Grafana Dashboard
 
+### Live Dashboard Preview
+
+Vectra includes a comprehensive Grafana dashboard with 11 professional panels for monitoring all aspects of your vector database operations:
+
+<div class="tma-dashboard-showcase">
+  <div class="tma-dashboard-showcase__image">
+    <img src="{{ site.baseurl }}/grafana_final.png" alt="Vectra Grafana Dashboard - Real-time monitoring of vector database operations" class="tma-dashboard-screenshot">
+  </div>
+  <div class="tma-dashboard-showcase__features">
+    <h4>Dashboard Features</h4>
+    <ul>
+      <li><strong>Real-time Metrics:</strong> Request rate, latency, error tracking</li>
+      <li><strong>Performance Monitoring:</strong> P50, P95, P99 latency percentiles</li>
+      <li><strong>Cache Analytics:</strong> Hit ratio and performance metrics</li>
+      <li><strong>Provider Insights:</strong> Multi-provider comparison and distribution</li>
+      <li><strong>Connection Pooling:</strong> pgvector pool status and utilization</li>
+      <li><strong>Visual Analytics:</strong> Time series, pie charts, bar gauges</li>
+    </ul>
+    <div class="tma-dashboard-showcase__actions">
+      <a href="https://github.com/stokry/vectra/tree/main/examples#grafana-dashboard" class="tma-button tma-button--primary" target="_blank" rel="noopener">
+        Get Dashboard JSON →
+      </a>
+      <a href="https://github.com/stokry/vectra/blob/main/examples/GRAFANA_QUICKSTART.md" class="tma-button tma-button--secondary" target="_blank" rel="noopener">
+        Quick Start Guide →
+      </a>
+    </div>
+  </div>
+</div>
+
+### Quick Setup
+
+Get started in 5 minutes:
+
+1. **Start Prometheus Exporter:**
+   ```bash
+   gem install prometheus-client
+   ruby examples/prometheus-exporter.rb
+   ```
+
+2. **Import Dashboard:**
+   - Sign up at [grafana.com](https://grafana.com) (free tier available)
+   - Add Prometheus data source
+   - Import `examples/grafana-dashboard.json`
+
+3. **View Metrics:**
+   - Dashboard populates with real-time data
+   - Perfect for monitoring and screenshots
+
+See the [Quick Start Guide](https://github.com/stokry/vectra/blob/main/examples/GRAFANA_QUICKSTART.md) for detailed setup instructions.
+
 ### Dashboard JSON Template
 
 Save as `vectra-dashboard.json` and import into Grafana:
