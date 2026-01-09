@@ -11,6 +11,7 @@ AllCops:
     - 'bin/**/*'
     - 'node_modules/**/*'
     - 'lib/generators/**/templates/**/*'
+    - 'examples/**/*'
 
 # Layout
 Layout/LineLength:
@@ -30,6 +31,7 @@ Metrics/BlockLength:
     - 'vectra.gemspec'
     - 'Rakefile'
     - 'benchmarks/**/*'
+    - 'examples/**/*'
   AllowedMethods:
     - 'included'
     - 'class_methods'
@@ -38,26 +40,34 @@ Metrics/MethodLength:
   Max: 30
   Exclude:
     - 'spec/**/*'
+    - 'examples/**/*'
 
 Metrics/AbcSize:
   Max: 30
   Exclude:
     - 'spec/**/*'
+    - 'examples/**/*'
 
 Metrics/ClassLength:
   Max: 250
   Exclude:
     - 'spec/**/*'
+    - 'examples/**/*'
 
 Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*'
+    - 'examples/**/*'
 
 Metrics/CyclomaticComplexity:
   Max: 10
+  Exclude:
+    - 'examples/**/*'
 
 Metrics/PerceivedComplexity:
   Max: 10
+  Exclude:
+    - 'examples/**/*'
 
 Metrics/ParameterLists:
   Max: 7
