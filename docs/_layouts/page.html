@@ -79,12 +79,14 @@
     </main>
   </div>
   <script>
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
       const navToggle = document.querySelector('.tma-nav__toggle');
       const navMenu = document.querySelector('.tma-nav__menu');
       
       if (navToggle && navMenu) {
-        navToggle.addEventListener('click', function() {
+        navToggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
           const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
           navToggle.setAttribute('aria-expanded', !isExpanded);
           navMenu.classList.toggle('tma-nav__menu--open');
@@ -98,8 +100,18 @@
             navMenu.classList.remove('tma-nav__menu--open');
           });
         });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (navMenu.classList.contains('tma-nav__menu--open') && 
+              !navMenu.contains(e.target) && 
+              !navToggle.contains(e.target)) {
+            navToggle.setAttribute('aria-expanded', 'false');
+            navMenu.classList.remove('tma-nav__menu--open');
+          }
+        });
       }
-    })();
+    });
   </script>
 </body>
 </html>

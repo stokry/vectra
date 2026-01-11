@@ -790,6 +790,7 @@ code {
   }
   
   .tma-nav__menu {
+    display: flex;
     position: fixed;
     top: var(--tma-header-height);
     left: 0;
@@ -802,13 +803,17 @@ code {
     padding: var(--tma-spacing-lg);
     gap: var(--tma-spacing-xs);
     transform: translateX(100%);
-    transition: transform var(--tma-transition-normal);
+    transition: transform var(--tma-transition-normal), opacity var(--tma-transition-normal);
     z-index: 999;
     overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
   }
   
   .tma-nav__menu.tma-nav__menu--open {
     transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
   }
   
   .tma-nav__menu li {
