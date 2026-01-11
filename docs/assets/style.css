@@ -795,25 +795,29 @@ code {
     top: var(--tma-header-height);
     left: 0;
     right: 0;
-    bottom: 0;
+    height: 0;
+    max-height: 400px;
     background: rgba(10, 10, 15, 0.98);
     backdrop-filter: blur(12px);
     flex-direction: column;
     align-items: stretch;
-    padding: var(--tma-spacing-lg);
+    padding: 0;
     gap: var(--tma-spacing-xs);
     transform: translateX(100%);
-    transition: transform var(--tma-transition-normal), opacity var(--tma-transition-normal);
+    transition: transform var(--tma-transition-normal), opacity var(--tma-transition-normal), height var(--tma-transition-normal), padding var(--tma-transition-normal);
     z-index: 999;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
+    border-top: 1px solid var(--tma-color-border);
   }
   
   .tma-nav__menu.tma-nav__menu--open {
     transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
+    height: 400px;
+    padding: var(--tma-spacing-lg);
   }
   
   .tma-nav__menu li {
