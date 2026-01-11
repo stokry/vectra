@@ -14,7 +14,12 @@
   <header class="tma-header">
     <nav class="tma-nav">
       <a href="{{ site.baseurl }}/" class="tma-nav__brand">Vectra</a>
-      <ul class="tma-nav__menu">
+      <button class="tma-nav__toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span class="tma-nav__toggle-line"></span>
+        <span class="tma-nav__toggle-line"></span>
+        <span class="tma-nav__toggle-line"></span>
+      </button>
+      <ul class="tma-nav__menu" id="nav-menu">
         <li><a href="{{ site.baseurl }}/guides/getting-started" class="tma-nav__link">Getting Started</a></li>
         <li><a href="{{ site.baseurl }}/providers" class="tma-nav__link">Providers</a></li>
         <li><a href="{{ site.baseurl }}/api/overview" class="tma-nav__link">API</a></li>
@@ -73,5 +78,28 @@
       {{ content }}
     </main>
   </div>
+  <script>
+    (function() {
+      const navToggle = document.querySelector('.tma-nav__toggle');
+      const navMenu = document.querySelector('.tma-nav__menu');
+      
+      if (navToggle && navMenu) {
+        navToggle.addEventListener('click', function() {
+          const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+          navToggle.setAttribute('aria-expanded', !isExpanded);
+          navMenu.classList.toggle('tma-nav__menu--open');
+        });
+        
+        // Close menu when clicking on a link
+        const navLinks = navMenu.querySelectorAll('.tma-nav__link');
+        navLinks.forEach(function(link) {
+          link.addEventListener('click', function() {
+            navToggle.setAttribute('aria-expanded', 'false');
+            navMenu.classList.remove('tma-nav__menu--open');
+          });
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
