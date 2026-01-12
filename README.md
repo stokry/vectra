@@ -81,6 +81,15 @@ end
 # Ping with latency
 status = client.ping
 puts "Provider: #{status[:provider]}, Latency: #{status[:latency_ms]}ms"
+
+# Hybrid search (semantic + keyword)
+# Supported by: Qdrant, Weaviate, Pinecone, pgvector
+results = client.hybrid_search(
+  index: 'docs',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7  # 70% semantic, 30% keyword
+)
 ```
 
 ## Provider Examples

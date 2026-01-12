@@ -142,6 +142,88 @@ RSpec.describe Vectra::Providers::Weaviate do
     end
   end
 
+  describe "#hybrid_search" do
+    let(:query_vector) { [0.1, 0.2, 0.3] }
+    let(:query_text) { "ruby programming" }
+    let(:hybrid_graphql_response) do
+      {
+        "data" => {
+          "Get" => {
+            "Document" => [
+              {
+                "_additional" => {
+                  "id" => "doc-1",
+                  "distance" => 0.15
+                },
+                "metadata" => { "category" => "programming" },
+                "vector" => [0.1, 0.2, 0.3]
+              }
+            ]
+          }
+        }
+      }
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/v1/graphql")
+        .to_return(
+          status: 200,
+          body: hybrid_graphql_response.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+    end
+
+    it "performs hybrid search with BM25 and vector" do
+      result = provider.hybrid_search(
+        index: "Document",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        top_k: 5
+      )
+
+      expect(result).to be_a(Vectra::QueryResult)
+      expect(result.size).to eq(1)
+      expect(result.first.id).to eq("doc-1")
+    end
+
+    it "includes hybrid query with alpha in GraphQL" do
+      provider.hybrid_search(
+        index: "Document",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.5,
+        top_k: 10
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/v1/graphql")
+        .with { |request|
+          body = JSON.parse(request.body)
+          query = body["query"]
+          query.include?("hybrid:") &&
+            query.include?("query: \"#{query_text}\"") &&
+            query.include?("alpha: 0.5")
+        }
+    end
+
+    it "includes both hybrid and nearVector in query" do
+      provider.hybrid_search(
+        index: "Document",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        top_k: 5
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/v1/graphql")
+        .with { |request|
+          body = JSON.parse(request.body)
+          query = body["query"]
+          query.include?("hybrid:") && query.include?("nearVector:")
+        }
+    end
+  end
+
   describe "#fetch" do
     let(:response_body) do
       {

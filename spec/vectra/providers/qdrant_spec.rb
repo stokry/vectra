@@ -114,6 +114,70 @@ RSpec.describe Vectra::Providers::Qdrant do
 
       expect(result.first.metadata).to eq("text" => "Hello")
     end
+  end
+
+  describe "#hybrid_search" do
+    let(:query_vector) { [0.1, 0.2, 0.3] }
+    let(:query_text) { "ruby programming" }
+    let(:hybrid_results) do
+      [
+        { "id" => 123_456, "score" => 0.92, "payload" => { "text" => "Ruby guide" }, "vector" => [0.1, 0.2, 0.3] },
+        { "id" => 789_012, "score" => 0.88, "payload" => { "text" => "Programming tips" }, "vector" => [0.4, 0.5, 0.6] }
+      ]
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/collections/test_collection/points/query")
+        .to_return(
+          status: 200,
+          body: { result: hybrid_results }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+    end
+
+    it "performs hybrid search with prefetch and rescore" do
+      result = provider.hybrid_search(
+        index: "test_collection",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        top_k: 5
+      )
+
+      expect(result).to be_a(Vectra::QueryResult)
+      expect(result.size).to eq(2)
+      expect(result.first.score).to eq(0.92)
+    end
+
+    it "includes alpha parameter in request" do
+      provider.hybrid_search(
+        index: "test_collection",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.5,
+        top_k: 10
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
+        .with(body: hash_including(
+          "params" => hash_including("alpha" => 0.5)
+        ))
+    end
+
+    it "includes prefetch with text query" do
+      provider.hybrid_search(
+        index: "test_collection",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        top_k: 5
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
+        .with(body: hash_including(
+          "prefetch" => hash_including("query" => hash_including("text" => query_text))
+        ))
+    end
 
     it "sends correct query parameters" do
       provider.query(index: "test_collection", vector: query_vector, top_k: 5)

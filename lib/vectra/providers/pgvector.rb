@@ -94,6 +94,74 @@ module Vectra
         QueryResult.from_response(matches: matches, namespace: namespace)
       end
 
+      # Hybrid search combining vector similarity and PostgreSQL full-text search
+      #
+      # Combines pgvector similarity search with PostgreSQL's native full-text search.
+      # Requires a text search column (tsvector) in your table.
+      #
+      # @param index [String] table name
+      # @param vector [Array<Float>] query vector
+      # @param text [String] text query for full-text search
+      # @param alpha [Float] balance (0.0 = full-text, 1.0 = vector)
+      # @param top_k [Integer] number of results
+      # @param namespace [String, nil] optional namespace
+      # @param filter [Hash, nil] metadata filter
+      # @param include_values [Boolean] include vector values
+      # @param include_metadata [Boolean] include metadata
+      # @param text_column [String] column name for full-text search (default: 'content')
+      # @return [QueryResult] search results
+      #
+      # @note Your table should have a text column with a tsvector index:
+      #   CREATE INDEX idx_content_fts ON my_index USING gin(to_tsvector('english', content));
+      def hybrid_search(index:, vector:, text:, alpha:, top_k:, namespace: nil,
+                        filter: nil, include_values: false, include_metadata: true,
+                        text_column: "content")
+        ensure_table_exists!(index)
+
+        vector_literal = format_vector(vector)
+        distance_op = DISTANCE_FUNCTIONS[table_metric(index)]
+
+        # Build hybrid score: alpha * vector_similarity + (1-alpha) * text_rank
+        # Vector similarity: 1 - (distance / max_distance)
+        # Text rank: ts_rank from full-text search
+        select_cols = ["id"]
+        select_cols << "embedding" if include_values
+        select_cols << "metadata" if include_metadata
+
+        # Calculate hybrid score
+        # For vector: use cosine distance (1 - distance gives similarity)
+        # For text: use ts_rank
+        vector_score = "1.0 - (embedding #{distance_op} '#{vector_literal}'::vector)"
+        text_score = "ts_rank(to_tsvector('english', COALESCE(#{quote_ident(text_column)}, '')), " \
+                     "plainto_tsquery('english', #{escape_literal(text)}))"
+
+        # Normalize scores to 0-1 range and combine with alpha
+        hybrid_score = "(#{alpha} * #{vector_score} + (1.0 - #{alpha}) * #{text_score})"
+
+        select_cols << "#{hybrid_score} AS score"
+        select_cols << "#{vector_score} AS vector_score"
+        select_cols << "#{text_score} AS text_score"
+
+        where_clauses = build_where_clauses(namespace, filter)
+        where_clauses << "to_tsvector('english', COALESCE(#{quote_ident(text_column)}, '')) @@ " \
+                         "plainto_tsquery('english', #{escape_literal(text)})"
+
+        sql = "SELECT #{select_cols.join(', ')} FROM #{quote_ident(index)}"
+        sql += " WHERE #{where_clauses.join(' AND ')}" if where_clauses.any?
+        sql += " ORDER BY score DESC"
+        sql += " LIMIT #{top_k.to_i}"
+
+        result = execute(sql)
+        matches = result.map { |row| build_match_from_row(row, include_values, include_metadata) }
+
+        log_debug("Hybrid search returned #{matches.size} results (alpha: #{alpha})")
+
+        QueryResult.from_response(
+          matches: matches,
+          namespace: namespace
+        )
+      end
+
       # @see Base#fetch
       def fetch(index:, ids:, namespace: nil)
         ensure_table_exists!(index)

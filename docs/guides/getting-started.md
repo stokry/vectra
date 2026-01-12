@@ -121,6 +121,52 @@ if status[:error]
 end
 ```
 
+### Hybrid Search (Semantic + Keyword)
+
+Combine the best of both worlds: semantic understanding from vectors and exact keyword matching:
+
+```ruby
+# Hybrid search with 70% semantic, 30% keyword
+results = client.hybrid_search(
+  index: 'docs',
+  vector: embedding,           # Semantic search
+  text: 'ruby programming',  # Keyword search
+  alpha: 0.7,                 # 0.0 = pure keyword, 1.0 = pure semantic
+  top_k: 10
+)
+
+results.each do |match|
+  puts "#{match.id}: #{match.score}"
+end
+
+# Pure semantic (alpha = 1.0)
+results = client.hybrid_search(
+  index: 'docs',
+  vector: embedding,
+  text: 'ruby',
+  alpha: 1.0
+)
+
+# Pure keyword (alpha = 0.0)
+results = client.hybrid_search(
+  index: 'docs',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.0
+)
+```
+
+**Provider Support:**
+- **Qdrant**: ✅ Full support (prefetch + rescore API)
+- **Weaviate**: ✅ Full support (hybrid GraphQL with BM25)
+- **Pinecone**: ⚠️ Partial support (requires sparse vectors for true hybrid search)
+- **pgvector**: ✅ Full support (combines vector similarity + PostgreSQL full-text search)
+
+**Note for pgvector:** Your table needs a text column with a tsvector index:
+```sql
+CREATE INDEX idx_content_fts ON my_index USING gin(to_tsvector('english', content));
+```
+
 ### Dimension Validation
 
 Vectra automatically validates that all vectors in a batch have the same dimension:

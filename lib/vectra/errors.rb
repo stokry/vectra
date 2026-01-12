@@ -57,6 +57,9 @@ module Vectra
   # Raised when the provider is not supported
   class UnsupportedProviderError < Error; end
 
+  # Raised when a feature is not supported by the provider
+  class UnsupportedFeatureError < Error; end
+
   # Raised when an operation times out
   class TimeoutError < Error; end
 

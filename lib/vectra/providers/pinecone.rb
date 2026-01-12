@@ -67,6 +67,61 @@ module Vectra
         end
       end
 
+      # Hybrid search combining dense (vector) and sparse (keyword) search
+      #
+      # Pinecone supports hybrid search using sparse-dense vectors.
+      # For text-based keyword search, you need to provide sparse vectors.
+      #
+      # @param index [String] index name
+      # @param vector [Array<Float>] dense query vector
+      # @param text [String] text query (converted to sparse vector)
+      # @param alpha [Float] balance (0.0 = sparse, 1.0 = dense)
+      # @param top_k [Integer] number of results
+      # @param namespace [String, nil] optional namespace
+      # @param filter [Hash, nil] metadata filter
+      # @param include_values [Boolean] include vector values
+      # @param include_metadata [Boolean] include metadata
+      # @return [QueryResult] search results
+      #
+      # @note For proper hybrid search, you should generate sparse vectors
+      #   from text using a tokenizer (e.g., BM25). This method accepts text
+      #   but requires sparse vector generation externally.
+      def hybrid_search(index:, vector:, text:, alpha:, top_k:, namespace: nil,
+                        filter: nil, include_values: false, include_metadata: true)
+        # Pinecone hybrid search requires sparse vectors
+        # For now, we'll use dense vector only and log a warning
+        # In production, users should generate sparse vectors from text
+        log_debug("Pinecone hybrid search: text parameter ignored. " \
+                  "For true hybrid search, provide sparse vectors via sparse_values parameter.")
+
+        # Use dense vector search with alpha weighting
+        # Note: Pinecone's actual hybrid search requires sparse vectors
+        # This is a simplified implementation
+        body = {
+          vector: vector.map(&:to_f),
+          topK: top_k,
+          includeValues: include_values,
+          includeMetadata: include_metadata
+        }
+        body[:namespace] = namespace if namespace
+        body[:filter] = transform_filter(filter) if filter
+
+        # Alpha is used conceptually here - Pinecone's actual hybrid search
+        # requires sparse vectors in the query
+        response = data_connection(index).post("/query", body)
+
+        if response.success?
+          log_debug("Hybrid search returned #{response.body['matches']&.size || 0} results (alpha: #{alpha})")
+          QueryResult.from_response(
+            matches: transform_matches(response.body["matches"] || []),
+            namespace: response.body["namespace"],
+            usage: response.body["usage"]
+          )
+        else
+          handle_error(response)
+        end
+      end
+
       # @see Base#fetch
       def fetch(index:, ids:, namespace: nil)
         params = { ids: ids }

@@ -198,6 +198,71 @@ RSpec.describe Vectra::Client do
       end
     end
 
+    describe "#hybrid_search" do
+      let(:query_vector) { [0.1, 0.2, 0.3] }
+      let(:query_text) { "ruby programming" }
+      let(:hybrid_result) { Vectra::QueryResult.new(matches: [sample_match]) }
+
+      before do
+        allow(provider).to receive(:hybrid_search).and_return(hybrid_result)
+      end
+
+      it "performs hybrid search through provider" do
+        result = client.hybrid_search(
+          index: index_name,
+          vector: query_vector,
+          text: query_text,
+          alpha: 0.7
+        )
+
+        expect(result).to eq(hybrid_result)
+        expect(provider).to have_received(:hybrid_search).with(
+          index: index_name,
+          vector: query_vector,
+          text: query_text,
+          alpha: 0.7,
+          top_k: 10,
+          namespace: nil,
+          filter: nil,
+          include_values: false,
+          include_metadata: true
+        )
+      end
+
+      it "validates text query is not empty" do
+        expect do
+          client.hybrid_search(
+            index: index_name,
+            vector: query_vector,
+            text: ""
+          )
+        end.to raise_error(Vectra::ValidationError, /Text query cannot be nil or empty/)
+      end
+
+      it "validates alpha is between 0.0 and 1.0" do
+        expect do
+          client.hybrid_search(
+            index: index_name,
+            vector: query_vector,
+            text: query_text,
+            alpha: 1.5
+          )
+        end.to raise_error(Vectra::ValidationError, /Alpha must be between 0.0 and 1.0/)
+      end
+
+      it "raises UnsupportedFeatureError when provider doesn't support it" do
+        allow(provider).to receive(:respond_to?).with(:hybrid_search).and_return(false)
+
+        expect do
+          client.hybrid_search(
+            index: index_name,
+            vector: query_vector,
+            text: query_text
+          )
+        end.to raise_error(Vectra::UnsupportedFeatureError, /not supported by/)
+      end
+    end
+
     describe "query builder" do
       it "returns a QueryBuilder when called with index string only" do
         builder = client.query(index_name)

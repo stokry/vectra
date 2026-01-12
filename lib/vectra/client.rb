@@ -287,6 +287,71 @@ module Vectra
       provider.stats(index: index, namespace: namespace)
     end
 
+    # Hybrid search combining semantic (vector) and keyword (text) search
+    #
+    # Combines the best of both worlds: semantic understanding from vectors
+    # and exact keyword matching from text search.
+    #
+    # @param index [String] the index/collection name
+    # @param vector [Array<Float>] query vector for semantic search
+    # @param text [String] text query for keyword search
+    # @param alpha [Float] balance between semantic and keyword (0.0 = pure keyword, 1.0 = pure semantic)
+    # @param top_k [Integer] number of results to return
+    # @param namespace [String, nil] optional namespace
+    # @param filter [Hash, nil] metadata filter
+    # @param include_values [Boolean] include vector values in results
+    # @param include_metadata [Boolean] include metadata in results
+    # @return [QueryResult] search results
+    #
+    # @example Basic hybrid search
+    #   results = client.hybrid_search(
+    #     index: 'docs',
+    #     vector: embedding,
+    #     text: 'ruby programming',
+    #     alpha: 0.7  # 70% semantic, 30% keyword
+    #   )
+    #
+    # @example Pure semantic (alpha = 1.0)
+    #   results = client.hybrid_search(
+    #     index: 'docs',
+    #     vector: embedding,
+    #     text: 'ruby',
+    #     alpha: 1.0
+    #   )
+    #
+    # @example Pure keyword (alpha = 0.0)
+    #   results = client.hybrid_search(
+    #     index: 'docs',
+    #     vector: embedding,
+    #     text: 'ruby programming',
+    #     alpha: 0.0
+    #   )
+    #
+    def hybrid_search(index:, vector:, text:, alpha: 0.5, top_k: 10, namespace: nil,
+                      filter: nil, include_values: false, include_metadata: true)
+      validate_index!(index)
+      validate_query_vector!(vector)
+      raise ValidationError, "Text query cannot be nil or empty" if text.nil? || text.empty?
+      raise ValidationError, "Alpha must be between 0.0 and 1.0" unless (0.0..1.0).include?(alpha)
+
+      unless provider.respond_to?(:hybrid_search)
+        raise UnsupportedFeatureError,
+              "Hybrid search is not supported by #{provider_name} provider"
+      end
+
+      provider.hybrid_search(
+        index: index,
+        vector: vector,
+        text: text,
+        alpha: alpha,
+        top_k: top_k,
+        namespace: namespace,
+        filter: filter,
+        include_values: include_values,
+        include_metadata: include_metadata
+      )
+    end
+
     # Get the provider name
     #
     # @return [Symbol]
