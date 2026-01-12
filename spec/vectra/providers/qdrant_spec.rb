@@ -114,6 +114,49 @@ RSpec.describe Vectra::Providers::Qdrant do
 
       expect(result.first.metadata).to eq("text" => "Hello")
     end
+
+    it "sends correct query parameters" do
+      provider.query(index: "test_collection", vector: query_vector, top_k: 5)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+        .with { |req|
+          body = JSON.parse(req.body)
+          body["vector"] == [0.1, 0.2, 0.3] &&
+            body["limit"] == 5 &&
+            body["with_payload"] == true
+        }
+    end
+
+    it "includes filter when provided" do
+      provider.query(index: "test_collection", vector: query_vector, filter: { category: "tech" })
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+        .with { |req|
+          body = JSON.parse(req.body)
+          !body["filter"].nil? && !body["filter"].empty?
+        }
+    end
+
+    it "includes namespace in filter when provided" do
+      provider.query(index: "test_collection", vector: query_vector, namespace: "prod")
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+        .with { |req|
+          body = JSON.parse(req.body)
+          filter = body["filter"]
+          filter && filter["must"]&.any? { |c| c["key"] == "_namespace" }
+        }
+    end
+
+    it "requests vectors when include_values is true" do
+      provider.query(index: "test_collection", vector: query_vector, include_values: true)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+        .with { |req|
+          body = JSON.parse(req.body)
+          body["with_vector"] == true
+        }
+    end
   end
 
   describe "#hybrid_search" do
@@ -179,43 +222,70 @@ RSpec.describe Vectra::Providers::Qdrant do
         ))
     end
 
-    it "sends correct query parameters" do
-      provider.query(index: "test_collection", vector: query_vector, top_k: 5)
+    it "includes filter in hybrid search" do
+      stub_request(:post, "#{base_url}/collections/test_collection/points/query")
+        .to_return(
+          status: 200,
+          body: { result: hybrid_results }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
 
-      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+      provider.hybrid_search(
+        index: "test_collection",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        filter: { category: "tech" }
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
         .with { |req|
           body = JSON.parse(req.body)
-          body["vector"] == [0.1, 0.2, 0.3] &&
-            body["limit"] == 5 &&
-            body["with_payload"] == true
+          !body["prefetch"]["filter"].nil? && !body["prefetch"]["filter"].empty?
         }
     end
 
-    it "includes filter when provided" do
-      provider.query(index: "test_collection", vector: query_vector, filter: { category: "tech" })
+    it "includes namespace in hybrid search filter" do
+      stub_request(:post, "#{base_url}/collections/test_collection/points/query")
+        .to_return(
+          status: 200,
+          body: { result: hybrid_results }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
 
-      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+      provider.hybrid_search(
+        index: "test_collection",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        namespace: "prod"
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
         .with { |req|
           body = JSON.parse(req.body)
-          !body["filter"].nil? && !body["filter"].empty?
-        }
-    end
-
-    it "includes namespace in filter when provided" do
-      provider.query(index: "test_collection", vector: query_vector, namespace: "prod")
-
-      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
-        .with { |req|
-          body = JSON.parse(req.body)
-          filter = body["filter"]
+          filter = body["prefetch"]["filter"]
           filter && filter["must"]&.any? { |c| c["key"] == "_namespace" }
         }
     end
 
-    it "requests vectors when include_values is true" do
-      provider.query(index: "test_collection", vector: query_vector, include_values: true)
+    it "includes vectors when include_values is true in hybrid search" do
+      stub_request(:post, "#{base_url}/collections/test_collection/points/query")
+        .to_return(
+          status: 200,
+          body: { result: hybrid_results }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
 
-      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/search")
+      provider.hybrid_search(
+        index: "test_collection",
+        vector: query_vector,
+        text: query_text,
+        alpha: 0.7,
+        include_values: true
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
         .with { |req|
           body = JSON.parse(req.body)
           body["with_vector"] == true
