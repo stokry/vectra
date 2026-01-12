@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.4.0](https://github.com/stokry/vectra/tree/v0.4.0) (2026-01-12)
+
+### Added
+- Memory provider for in-memory vector storage
+- QueryBuilder for chainable query API
+- Batch operations with concurrent processing
+- Vector normalization methods (L2, L1)
+- Enhanced error message extraction
+
+### Fixed
+- Weaviate DELETE request query parameters
+- Qdrant error message extraction from nested status
+- Client ping error info capture
+- Credential rotation timeout parameter handling
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.3.4...v0.4.0)
+
 ## [v0.3.4](https://github.com/stokry/vectra/tree/v0.3.4) (2026-01-12)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.3.3...v0.3.4)
