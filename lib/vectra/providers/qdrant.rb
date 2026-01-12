@@ -299,6 +299,37 @@ module Vectra
         handle_retriable_response(e)
       end
 
+      # Extract error message from Qdrant response format
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      def extract_error_message(body)
+        case body
+        when Hash
+          # Qdrant wraps errors in "status" key
+          status = body["status"] || body
+          msg = status["error"] || body["message"] || body["error_message"] || body.to_s
+
+          # Add details
+          details = status["details"] || status["error_details"]
+          if details
+            details_str = details.is_a?(Hash) ? details.to_json : details.to_s
+            msg += " (#{details_str})" unless msg.include?(details_str)
+          end
+
+          # Add field-specific errors
+          if status["errors"].is_a?(Array)
+            field_errors = status["errors"].map { |e| e.is_a?(Hash) ? e["field"] || e["message"] : e }.join(", ")
+            msg += " [Fields: #{field_errors}]" if field_errors && !msg.include?(field_errors)
+          end
+
+          msg
+        when String
+          body
+        else
+          "Unknown error"
+        end
+      end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
       def auth_headers
         headers = {}
         headers["api-key"] = config.api_key if config.api_key && !config.api_key.empty?

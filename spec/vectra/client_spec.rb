@@ -103,7 +103,7 @@ RSpec.describe Vectra::Client do
       it "validates dimension consistency across vectors" do
         vectors = [
           { id: "vec1", values: [0.1, 0.2, 0.3] }, # 3 dimensions
-          { id: "vec2", values: [0.4, 0.5] }        # 2 dimensions - inconsistent!
+          { id: "vec2", values: [0.4, 0.5] } # 2 dimensions - inconsistent!
         ]
 
         expect { client.upsert(index: index_name, vectors: vectors) }

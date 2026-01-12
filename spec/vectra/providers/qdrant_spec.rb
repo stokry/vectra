@@ -589,7 +589,7 @@ RSpec.describe Vectra::Providers::Qdrant do
 
     context "with detailed error messages" do
       before do
-        stub_request(:post, "#{base_url}/collections/test/points/upsert")
+        stub_request(:put, "#{base_url}/collections/test/points")
           .to_return(
             status: 400,
             body: {

@@ -305,7 +305,7 @@ module Vectra
     #   else
     #     handle_unhealthy_connection
     #   end
-    def healthy?(timeout: 5)
+    def healthy?
       start = Time.now
       provider.list_indexes
       true
@@ -325,25 +325,29 @@ module Vectra
     # @example
     #   status = client.ping
     #   puts "Provider: #{status[:provider]}, Healthy: #{status[:healthy]}, Latency: #{status[:latency_ms]}ms"
-    def ping(timeout: 5)
+    def ping
       start = Time.now
-      healthy = healthy?(timeout: timeout)
+      healthy = true
+      error_info = nil
+
+      begin
+        provider.list_indexes
+      rescue StandardError => e
+        healthy = false
+        error_info = { error: e.class.name, error_message: e.message }
+        log_error("Health check failed", e)
+      end
+
       duration = ((Time.now - start) * 1000).round(2)
 
-      {
+      result = {
         healthy: healthy,
         provider: provider_name,
         latency_ms: duration
       }
-    rescue StandardError => e
-      duration = ((Time.now - start) * 1000).round(2) if defined?(start)
-      {
-        healthy: false,
-        provider: provider_name,
-        latency_ms: duration || 0,
-        error: e.class.name,
-        error_message: e.message
-      }
+
+      result.merge!(error_info) if error_info
+      result
     end
 
     # Chainable query builder
@@ -464,6 +468,7 @@ module Vectra
       raise ValidationError, "Index name cannot be empty" if index.empty?
     end
 
+    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def validate_vectors!(vectors)
       raise ValidationError, "Vectors cannot be nil" if vectors.nil?
       raise ValidationError, "Vectors must be an array" unless vectors.is_a?(Array)
@@ -488,6 +493,7 @@ module Vectra
               "All vectors in a batch must have the same dimension."
       end
     end
+    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
     def validate_query_vector!(vector)
       raise ValidationError, "Query vector cannot be nil" if vector.nil?

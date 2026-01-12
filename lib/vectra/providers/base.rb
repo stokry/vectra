@@ -232,6 +232,7 @@ module Vectra
       #
       # @param body [Hash, String, nil] response body
       # @return [String]
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def extract_error_message(body)
         case body
         when Hash
@@ -246,7 +247,7 @@ module Vectra
           end
 
           # Add field-specific errors if available
-          if body["errors"] && body["errors"].is_a?(Array)
+          if body["errors"].is_a?(Array)
             field_errors = body["errors"].map { |e| e.is_a?(Hash) ? e["field"] || e["message"] : e }.join(", ")
             msg += " [Fields: #{field_errors}]" if field_errors && !msg.include?(field_errors)
           end
@@ -258,6 +259,7 @@ module Vectra
           "Unknown error"
         end
       end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       # Log debug information
       #
