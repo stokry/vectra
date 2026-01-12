@@ -106,6 +106,60 @@ module Vectra
       Math.sqrt(values.zip(other_values).sum { |a, b| (a - b)**2 })
     end
 
+    # Normalize the vector in-place (mutates the vector)
+    #
+    # @param type [Symbol] normalization type: :l2 (default) or :l1
+    # @return [Vector] self (for method chaining)
+    #
+    # @example L2 normalization (unit vector)
+    #   vector = Vectra::Vector.new(id: 'v1', values: [3.0, 4.0])
+    #   vector.normalize!
+    #   vector.values # => [0.6, 0.8] (magnitude = 1.0)
+    #
+    # @example L1 normalization (sum = 1)
+    #   vector.normalize!(type: :l1)
+    #   vector.values.sum(&:abs) # => 1.0
+    def normalize!(type: :l2)
+      case type
+      when :l2
+        magnitude = Math.sqrt(values.sum { |v| v**2 })
+        if magnitude.zero?
+          # Zero vector - cannot normalize, return as-is
+          return self
+        end
+        @values = values.map { |v| v / magnitude }
+      when :l1
+        sum = values.sum(&:abs)
+        if sum.zero?
+          # Zero vector - cannot normalize, return as-is
+          return self
+        end
+        @values = values.map { |v| v / sum }
+      else
+        raise ArgumentError, "Unknown normalization type: #{type}. Use :l2 or :l1"
+      end
+      self
+    end
+
+    # Normalize a vector array without creating a Vector object
+    #
+    # @param vector [Array<Float>] vector values to normalize
+    # @param type [Symbol] normalization type: :l2 (default) or :l1
+    # @return [Array<Float>] normalized vector values
+    #
+    # @example Normalize OpenAI embedding
+    #   embedding = openai_response['data'][0]['embedding']
+    #   normalized = Vectra::Vector.normalize(embedding)
+    #   client.upsert(vectors: [{ id: '1', values: normalized }])
+    #
+    # @example L1 normalization
+    #   normalized = Vectra::Vector.normalize([1.0, 2.0, 3.0], type: :l1)
+    def self.normalize(vector, type: :l2)
+      temp_vector = new(id: "temp", values: vector.dup)
+      temp_vector.normalize!(type: type)
+      temp_vector.values
+    end
+
     # Check equality with another vector
     #
     # @param other [Vector] the other vector

@@ -65,6 +65,11 @@ results.each do |match|
   puts "#{match.id}: #{match.score}"
 end
 
+# Normalize embeddings (for better cosine similarity)
+embedding = openai_response['data'][0]['embedding']
+normalized = Vectra::Vector.normalize(embedding)
+client.upsert(vectors: [{ id: 'doc-1', values: normalized }])
+
 # Delete
 client.delete(ids: ['doc-1', 'doc-2'])
 ```

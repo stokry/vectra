@@ -37,6 +37,8 @@ class ProductSearchService
 
   def search(query:, category: nil, price_range: nil, limit: 20)
     query_embedding = generate_embedding(query)
+    # Normalize for better cosine similarity
+    query_embedding = Vectra::Vector.normalize(query_embedding)
     
     filter = {}
     filter[:category] = category if category
@@ -68,9 +70,12 @@ class ProductSearchService
 
   def generate_embedding(text)
     # Use your embedding model (OpenAI, sentence-transformers, etc.)
-    OpenAI::Client.new.embeddings(
+    embedding = OpenAI::Client.new.embeddings(
       parameters: { model: "text-embedding-ada-002", input: text }
     )["data"][0]["embedding"]
+    
+    # Normalize embeddings before storing
+    Vectra::Vector.normalize(embedding)
   end
 
   def fallback_search(query, category)

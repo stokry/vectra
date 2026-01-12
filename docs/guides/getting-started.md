@@ -67,6 +67,25 @@ results.each do |match|
 end
 ```
 
+### Normalize Embeddings
+
+For better cosine similarity results, normalize your embeddings before upserting:
+
+```ruby
+# Normalize OpenAI embeddings (recommended)
+embedding = openai_response['data'][0]['embedding']
+normalized = Vectra::Vector.normalize(embedding)
+client.upsert(vectors: [{ id: 'doc-1', values: normalized }])
+
+# Or normalize in-place
+vector = Vectra::Vector.new(id: 'doc-1', values: embedding)
+vector.normalize!  # L2 normalization (default, unit vector)
+client.upsert(vectors: [vector])
+
+# L1 normalization (sum of absolute values = 1)
+vector.normalize!(type: :l1)
+```
+
 ### Delete Vectors
 
 ```ruby

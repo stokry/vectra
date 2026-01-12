@@ -252,4 +252,121 @@ RSpec.describe Vectra::Vector do
       expect(vector.hash).to eq(other.hash)
     end
   end
+
+  describe "#normalize!" do
+    context "with L2 normalization" do
+      it "normalizes vector to unit length" do
+        vec = described_class.new(id: "v1", values: [3.0, 4.0])
+        vec.normalize!
+
+        magnitude = Math.sqrt(vec.values.sum { |v| v**2 })
+        expect(magnitude).to be_within(0.0001).of(1.0)
+      end
+
+      it "preserves direction of vector" do
+        vec = described_class.new(id: "v1", values: [3.0, 4.0])
+        original_ratio = vec.values[0] / vec.values[1]
+        vec.normalize!
+        normalized_ratio = vec.values[0] / vec.values[1]
+
+        expect(normalized_ratio).to be_within(0.0001).of(original_ratio)
+      end
+
+      it "returns self for method chaining" do
+        vec = described_class.new(id: "v1", values: [3.0, 4.0])
+        result = vec.normalize!
+        expect(result).to eq(vec)
+      end
+
+      it "handles zero vector gracefully" do
+        vec = described_class.new(id: "v1", values: [0.0, 0.0, 0.0])
+        original_values = vec.values.dup
+        vec.normalize!
+
+        expect(vec.values).to eq(original_values)
+      end
+
+      it "handles negative values" do
+        vec = described_class.new(id: "v1", values: [-3.0, 4.0])
+        vec.normalize!
+
+        magnitude = Math.sqrt(vec.values.sum { |v| v**2 })
+        expect(magnitude).to be_within(0.0001).of(1.0)
+      end
+    end
+
+    context "with L1 normalization" do
+      it "normalizes vector so sum of absolute values equals 1" do
+        vec = described_class.new(id: "v1", values: [1.0, 2.0, 3.0])
+        vec.normalize!(type: :l1)
+
+        sum = vec.values.sum(&:abs)
+        expect(sum).to be_within(0.0001).of(1.0)
+      end
+
+      it "handles zero vector gracefully" do
+        vec = described_class.new(id: "v1", values: [0.0, 0.0, 0.0])
+        original_values = vec.values.dup
+        vec.normalize!(type: :l1)
+
+        expect(vec.values).to eq(original_values)
+      end
+
+      it "handles negative values" do
+        vec = described_class.new(id: "v1", values: [-1.0, 2.0, -3.0])
+        vec.normalize!(type: :l1)
+
+        sum = vec.values.sum(&:abs)
+        expect(sum).to be_within(0.0001).of(1.0)
+      end
+    end
+
+    context "with invalid type" do
+      it "raises ArgumentError for unknown normalization type" do
+        vec = described_class.new(id: "v1", values: [1.0, 2.0])
+        expect { vec.normalize!(type: :invalid) }
+          .to raise_error(ArgumentError, /Unknown normalization type/)
+      end
+    end
+  end
+
+  describe ".normalize" do
+    it "normalizes array without creating Vector object" do
+      result = described_class.normalize([3.0, 4.0])
+
+      expect(result).to be_an(Array)
+      magnitude = Math.sqrt(result.sum { |v| v**2 })
+      expect(magnitude).to be_within(0.0001).of(1.0)
+    end
+
+    it "does not mutate original array" do
+      original = [3.0, 4.0]
+      described_class.normalize(original)
+
+      expect(original).to eq([3.0, 4.0])
+    end
+
+    it "supports L1 normalization" do
+      result = described_class.normalize([1.0, 2.0, 3.0], type: :l1)
+
+      sum = result.sum(&:abs)
+      expect(sum).to be_within(0.0001).of(1.0)
+    end
+
+    it "handles zero vector" do
+      result = described_class.normalize([0.0, 0.0, 0.0])
+
+      expect(result).to eq([0.0, 0.0, 0.0])
+    end
+
+    it "works with OpenAI-style embeddings" do
+      # Simulate OpenAI embedding (1536 dimensions)
+      embedding = Array.new(1536) { rand(-1.0..1.0) }
+      normalized = described_class.normalize(embedding)
+
+      magnitude = Math.sqrt(normalized.sum { |v| v**2 })
+      expect(magnitude).to be_within(0.0001).of(1.0)
+      expect(normalized.length).to eq(1536)
+    end
+  end
 end
