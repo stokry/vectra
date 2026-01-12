@@ -66,6 +66,53 @@ RSpec.describe Vectra::Batch do
       expect(result[:errors]).not_to be_empty
       expect(result[:successful_chunks]).to be < result[:chunks]
     end
+
+    it "calls on_progress callback after each chunk completes" do
+      progress_calls = []
+      progress_callback = proc do |stats|
+        progress_calls << stats
+      end
+
+      batch.upsert_async(
+        index: "test",
+        vectors: vectors,
+        chunk_size: 3,
+        on_progress: progress_callback
+      )
+
+      expect(progress_calls.size).to eq(4) # 4 chunks
+      expect(progress_calls.first).to include(:processed, :total, :percentage, :current_chunk, :total_chunks, :success_count, :failed_count)
+      expect(progress_calls.first[:total_chunks]).to eq(4)
+      expect(progress_calls.first[:total]).to eq(10)
+      expect(progress_calls.last[:percentage]).to be >= 90.0
+    end
+
+    it "tracks success and failed counts in progress callback" do
+      call_count = 0
+      allow(client).to receive(:upsert) do
+        call_count += 1
+        raise StandardError, "Test error" if call_count == 2
+
+        { upserted_count: 3 }
+      end
+
+      progress_calls = []
+      progress_callback = proc do |stats|
+        progress_calls << stats
+      end
+
+      batch.upsert_async(
+        index: "test",
+        vectors: vectors,
+        chunk_size: 3,
+        on_progress: progress_callback
+      )
+
+      # Last progress call should reflect final state
+      final_stats = progress_calls.last
+      expect(final_stats[:success_count]).to be > 0
+      expect(final_stats[:failed_count]).to eq(1)
+    end
   end
 
   describe "#delete_async" do
@@ -86,6 +133,21 @@ RSpec.describe Vectra::Batch do
       result = batch.delete_async(index: "test", ids: [], chunk_size: 3)
 
       expect(result[:chunks]).to eq(0)
+    end
+
+    it "calls on_progress callback for delete operations" do
+      progress_calls = []
+      progress_callback = proc { |stats| progress_calls << stats }
+
+      batch.delete_async(
+        index: "test",
+        ids: ids,
+        chunk_size: 3,
+        on_progress: progress_callback
+      )
+
+      expect(progress_calls.size).to eq(4) # 4 chunks
+      expect(progress_calls.first[:total_chunks]).to eq(4)
     end
   end
 
@@ -109,6 +171,21 @@ RSpec.describe Vectra::Batch do
       result = batch.fetch_async(index: "test", ids: [], chunk_size: 2)
 
       expect(result).to eq({})
+    end
+
+    it "calls on_progress callback for fetch operations" do
+      progress_calls = []
+      progress_callback = proc { |stats| progress_calls << stats }
+
+      batch.fetch_async(
+        index: "test",
+        ids: ids,
+        chunk_size: 2,
+        on_progress: progress_callback
+      )
+
+      expect(progress_calls.size).to eq(3) # 6 ids / 2 chunk_size = 3 chunks
+      expect(progress_calls.first[:total_chunks]).to eq(3)
     end
   end
 end

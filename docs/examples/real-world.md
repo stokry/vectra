@@ -325,8 +325,10 @@ class DocumentIndexer
 
   def index_large_dataset(documents, concurrency: 4)
     total = documents.size
-    processed = 0
     errors = []
+    
+    # Create batch client with specified concurrency
+    batch_client = Vectra::Batch.new(@client, concurrency: concurrency)
     
     # Convert to vectors
     vectors = documents.map do |doc|
@@ -337,25 +339,27 @@ class DocumentIndexer
       }
     end
     
-    # Process in async batches
-    result = @batch_client.upsert_async(
+    # Process in async batches with progress tracking
+    result = batch_client.upsert_async(
       index: "documents",
       vectors: vectors,
-      concurrency: concurrency,
-      on_progress: proc { |success, failed, total|
-        processed = success + failed
-        progress = (processed.to_f / total * 100).round(1)
+      chunk_size: 100,
+      on_progress: proc { |stats|
+        progress = stats[:percentage]
+        processed = stats[:processed]
+        total = stats[:total]
+        chunk = stats[:current_chunk] + 1
+        total_chunks = stats[:total_chunks]
+        
         puts "Progress: #{progress}% (#{processed}/#{total})"
-      },
-      on_error: proc { |error, vector|
-        errors << { id: vector[:id], error: error.message }
+        puts "  Chunk #{chunk}/#{total_chunks} | Success: #{stats[:success_count]}, Failed: #{stats[:failed_count]}"
       }
     )
     
     {
-      success: result[:success],
-      failed: result[:failed],
-      errors: errors,
+      success: result[:upserted_count],
+      failed: result[:errors].size,
+      errors: result[:errors],
       total: total
     }
   end

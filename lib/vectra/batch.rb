@@ -17,6 +17,17 @@ module Vectra
   #   )
   #   puts "Upserted: #{result[:upserted_count]}"
   #
+  # @example With progress tracking
+  #   batch.upsert_async(
+  #     index: 'docs',
+  #     vectors: large_array,
+  #     on_progress: ->(stats) {
+  #       puts "Progress: #{stats[:percentage]}% (#{stats[:processed]}/#{stats[:total]})"
+  #       puts "  Chunk #{stats[:current_chunk] + 1}/#{stats[:total_chunks]}"
+  #       puts "  Success: #{stats[:success_count]}, Failed: #{stats[:failed_count]}"
+  #     }
+  #   )
+  #
   class Batch
     DEFAULT_CONCURRENCY = 4
     DEFAULT_CHUNK_SIZE = 100
@@ -38,12 +49,23 @@ module Vectra
     # @param vectors [Array<Hash>] vectors to upsert
     # @param namespace [String, nil] optional namespace
     # @param chunk_size [Integer] vectors per chunk (default: 100)
+    # @param on_progress [Proc, nil] optional callback called after each chunk completes
+    #   Callback receives hash with: processed, total, percentage, current_chunk, total_chunks, success_count, failed_count
     # @return [Hash] aggregated result with :upserted_count, :chunks, :errors
-    def upsert_async(index:, vectors:, namespace: nil, chunk_size: DEFAULT_CHUNK_SIZE)
+    #
+    # @example With progress callback
+    #   batch.upsert_async(
+    #     index: 'docs',
+    #     vectors: large_array,
+    #     on_progress: ->(stats) {
+    #       puts "Progress: #{stats[:percentage]}% (#{stats[:processed]}/#{stats[:total]})"
+    #     }
+    #   )
+    def upsert_async(index:, vectors:, namespace: nil, chunk_size: DEFAULT_CHUNK_SIZE, on_progress: nil)
       chunks = vectors.each_slice(chunk_size).to_a
       return { upserted_count: 0, chunks: 0, errors: [] } if chunks.empty?
 
-      results = process_chunks_concurrently(chunks) do |chunk|
+      results = process_chunks_concurrently(chunks, total_items: vectors.size, on_progress: on_progress) do |chunk|
         client.upsert(index: index, vectors: chunk, namespace: namespace)
       end
 
@@ -56,12 +78,14 @@ module Vectra
     # @param ids [Array<String>] IDs to delete
     # @param namespace [String, nil] optional namespace
     # @param chunk_size [Integer] IDs per chunk (default: 100)
+    # @param on_progress [Proc, nil] optional callback called after each chunk completes
+    #   Callback receives hash with: processed, total, percentage, current_chunk, total_chunks, success_count, failed_count
     # @return [Hash] aggregated result
-    def delete_async(index:, ids:, namespace: nil, chunk_size: DEFAULT_CHUNK_SIZE)
+    def delete_async(index:, ids:, namespace: nil, chunk_size: DEFAULT_CHUNK_SIZE, on_progress: nil)
       chunks = ids.each_slice(chunk_size).to_a
       return { deleted_count: 0, chunks: 0, errors: [] } if chunks.empty?
 
-      results = process_chunks_concurrently(chunks) do |chunk|
+      results = process_chunks_concurrently(chunks, total_items: ids.size, on_progress: on_progress) do |chunk|
         client.delete(index: index, ids: chunk, namespace: namespace)
       end
 
@@ -74,12 +98,14 @@ module Vectra
     # @param ids [Array<String>] IDs to fetch
     # @param namespace [String, nil] optional namespace
     # @param chunk_size [Integer] IDs per chunk (default: 100)
+    # @param on_progress [Proc, nil] optional callback called after each chunk completes
+    #   Callback receives hash with: processed, total, percentage, current_chunk, total_chunks, success_count, failed_count
     # @return [Hash<String, Vector>] merged results
-    def fetch_async(index:, ids:, namespace: nil, chunk_size: DEFAULT_CHUNK_SIZE)
+    def fetch_async(index:, ids:, namespace: nil, chunk_size: DEFAULT_CHUNK_SIZE, on_progress: nil)
       chunks = ids.each_slice(chunk_size).to_a
       return {} if chunks.empty?
 
-      results = process_chunks_concurrently(chunks) do |chunk|
+      results = process_chunks_concurrently(chunks, total_items: ids.size, on_progress: on_progress) do |chunk|
         client.fetch(index: index, ids: chunk, namespace: namespace)
       end
 
@@ -88,15 +114,41 @@ module Vectra
 
     private
 
-    def process_chunks_concurrently(chunks)
+    def process_chunks_concurrently(chunks, total_items: nil, on_progress: nil)
       pool = Concurrent::FixedThreadPool.new(concurrency)
       futures = []
+      progress_mutex = Mutex.new
+      completed_count = Concurrent::AtomicFixnum.new(0)
+      success_count = Concurrent::AtomicFixnum.new(0)
+      failed_count = Concurrent::AtomicFixnum.new(0)
 
       chunks.each_with_index do |chunk, index|
         futures << Concurrent::Future.execute(executor: pool) do
-          { index: index, result: yield(chunk), error: nil }
+          result = yield(chunk)
+          success_count.increment
+          { index: index, result: result, error: nil }
         rescue StandardError => e
+          failed_count.increment
           { index: index, result: nil, error: e }
+        ensure
+          # Call progress callback when chunk completes
+          if on_progress
+            completed = completed_count.increment
+            processed = [completed * (chunks.first.size), total_items || chunks.size * chunks.first.size].min
+            percentage = total_items ? (processed.to_f / total_items * 100).round(2) : (completed.to_f / chunks.size * 100).round(2)
+
+            progress_mutex.synchronize do
+              on_progress.call(
+                processed: processed,
+                total: total_items || chunks.size * chunks.first.size,
+                percentage: percentage,
+                current_chunk: completed - 1,
+                total_chunks: chunks.size,
+                success_count: success_count.value,
+                failed_count: failed_count.value
+              )
+            end
+          end
         end
       end
 
