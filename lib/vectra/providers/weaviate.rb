@@ -75,7 +75,7 @@ module Vectra
               #{index}(
                 limit: #{top_k}
                 nearVector: { vector: [#{vector.map { |v| format('%.10f', v.to_f) }.join(', ')}] }
-                #{where_filter ? "where: #{JSON.generate(where_filter)}" : ""}
+                #{"where: #{JSON.generate(where_filter)}" if where_filter}
               ) {
                 #{selection_block}
               }
@@ -102,6 +102,7 @@ module Vectra
         end
       end
 
+      # rubocop:disable Metrics/PerceivedComplexity
       def fetch(index:, ids:, namespace: nil)
         body = {
           "class" => index,
@@ -139,6 +140,7 @@ module Vectra
           handle_error(response)
         end
       end
+      # rubocop:enable Metrics/PerceivedComplexity
 
       def update(index:, id:, metadata:, namespace: nil)
         body = {
@@ -164,6 +166,7 @@ module Vectra
         end
       end
 
+      # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
       def delete(index:, ids: nil, namespace: nil, filter: nil, delete_all: false)
         if ids
           # Delete individual objects by ID
@@ -203,6 +206,7 @@ module Vectra
           end
         end
       end
+      # rubocop:enable Metrics/MethodLength, Metrics/PerceivedComplexity
 
       def list_indexes
         response = with_error_handling do
@@ -245,6 +249,7 @@ module Vectra
         end
       end
 
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def stats(index:, namespace: nil)
         where_filter = namespace ? build_where({}, namespace) : nil
 
@@ -285,6 +290,7 @@ module Vectra
           handle_error(response)
         end
       end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       private
 
@@ -372,6 +378,7 @@ module Vectra
         end
       end
 
+      # rubocop:disable Metrics/MethodLength
       def build_operator_operand(key, operator_hash)
         op, val = operator_hash.first
 
@@ -414,6 +421,7 @@ module Vectra
           }
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
       # Choose the appropriate GraphQL value key based on Ruby type
       def infer_value_key(value)
@@ -430,6 +438,7 @@ module Vectra
       end
 
       # Extract matches from GraphQL response
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def extract_query_matches(body, index, include_values, include_metadata)
         data = body["data"] || {}
         get_block = data["Get"] || {}
@@ -444,8 +453,6 @@ module Vectra
                     certainty.to_f
                   elsif distance
                     1.0 - distance.to_f
-                  else
-                    nil
                   end
 
           metadata = if include_metadata
@@ -464,6 +471,7 @@ module Vectra
           }
         end
       end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       # Convert Weaviate distance name to Vectra metric
       def distance_to_metric(distance)

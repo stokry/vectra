@@ -56,8 +56,8 @@ RSpec.describe Vectra::Providers::Weaviate do
     it "sends correct request body structure including namespace" do
       provider.upsert(index: "Document", vectors: vectors, namespace: "production")
 
-      expect(WebMock).to have_requested(:post, "#{base_url}/v1/batch/objects")
-        .with { |req|
+      expect(WebMock).to(have_requested(:post, "#{base_url}/v1/batch/objects")
+        .with do |req|
           body = JSON.parse(req.body)
           objs = body["objects"]
           objs.length == 2 &&
@@ -66,7 +66,7 @@ RSpec.describe Vectra::Providers::Weaviate do
             objs[0]["vector"] == [0.1, 0.2, 0.3] &&
             objs[0]["properties"]["category"] == "news" &&
             objs[0]["properties"]["_namespace"] == "production"
-        }
+        end)
     end
   end
 
@@ -129,8 +129,8 @@ RSpec.describe Vectra::Providers::Weaviate do
         namespace: "prod"
       )
 
-      expect(WebMock).to have_requested(:post, "#{base_url}/v1/graphql")
-        .with { |req|
+      expect(WebMock).to(have_requested(:post, "#{base_url}/v1/graphql")
+        .with do |req|
           body = JSON.parse(req.body)
           q = body["query"]
           q.include?("Get") &&
@@ -138,7 +138,7 @@ RSpec.describe Vectra::Providers::Weaviate do
             q.include?("nearVector") &&
             q.include?("\"_namespace\"") &&
             q.include?("\"category\"")
-        }
+        end)
     end
   end
 
@@ -210,12 +210,12 @@ RSpec.describe Vectra::Providers::Weaviate do
       )
 
       expect(result[:updated]).to be true
-      expect(WebMock).to have_requested(:patch, "#{base_url}/v1/objects/doc-1")
-        .with { |req|
+      expect(WebMock).to(have_requested(:patch, "#{base_url}/v1/objects/doc-1")
+        .with do |req|
           body = JSON.parse(req.body)
           body["class"] == "Document" &&
             body["properties"]["category"] == "updated"
-        }
+        end)
     end
 
     it "includes namespace in properties when provided" do
@@ -226,17 +226,18 @@ RSpec.describe Vectra::Providers::Weaviate do
         namespace: "prod"
       )
 
-      expect(WebMock).to have_requested(:patch, "#{base_url}/v1/objects/doc-1")
-        .with { |req|
+      expect(WebMock).to(have_requested(:patch, "#{base_url}/v1/objects/doc-1")
+        .with do |req|
           body = JSON.parse(req.body)
           body["properties"]["_namespace"] == "prod"
-        }
+        end)
     end
   end
 
   describe "#delete" do
     before do
       stub_request(:delete, "#{base_url}/v1/objects/doc-1")
+        .with(query: hash_including("class" => "Document"))
         .to_return(status: 200, body: {}.to_json, headers: { "Content-Type" => "application/json" })
 
       stub_request(:post, "#{base_url}/v1/objects/delete")
@@ -255,11 +256,11 @@ RSpec.describe Vectra::Providers::Weaviate do
       result = provider.delete(index: "Document", delete_all: true)
 
       expect(result[:deleted]).to be true
-      expect(WebMock).to have_requested(:post, "#{base_url}/v1/objects/delete")
-        .with { |req|
+      expect(WebMock).to(have_requested(:post, "#{base_url}/v1/objects/delete")
+        .with do |req|
           body = JSON.parse(req.body)
           body["class"] == "Document" && !body.key?("where")
-        }
+        end)
     end
 
     it "deletes by filter and namespace" do
@@ -269,15 +270,15 @@ RSpec.describe Vectra::Providers::Weaviate do
         namespace: "prod"
       )
 
-      expect(WebMock).to have_requested(:post, "#{base_url}/v1/objects/delete")
-        .with { |req|
+      expect(WebMock).to(have_requested(:post, "#{base_url}/v1/objects/delete")
+        .with do |req|
           body = JSON.parse(req.body)
           where = body["where"]
           where &&
             where["operator"] == "And" &&
             where["operands"].any? { |op| op["path"] == ["_namespace"] } &&
             where["operands"].any? { |op| op["path"] == ["category"] }
-        }
+        end)
     end
   end
 
@@ -395,4 +396,3 @@ RSpec.describe Vectra::Providers::Weaviate do
     end
   end
 end
-
