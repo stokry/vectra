@@ -110,6 +110,391 @@
     </div>
   </section>
 
+  <!-- Comparison Section -->
+  <section class="tma-comparison">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Comprehensive Feature Comparison</h2>
+      <p class="tma-section-header__subtitle">See how Vectra compares to other Ruby vector database clients</p>
+    </div>
+    
+    <div style="overflow-x: auto;">
+      <table class="tma-comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Vectra</th>
+            <th>Langchain.rb</th>
+            <th>pgvector-ruby</th>
+            <th>qdrant-ruby</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Multi-Provider Support</strong></td>
+            <td class="tma-check">✅ 5 providers</td>
+            <td class="tma-partial">⚠️ 6+ (fragmented)</td>
+            <td class="tma-cross">❌ PostgreSQL only</td>
+            <td class="tma-cross">❌ Qdrant only</td>
+          </tr>
+          <tr>
+            <td><strong>Unified API</strong></td>
+            <td class="tma-check">✅ Single interface</td>
+            <td class="tma-cross">❌ Provider-specific</td>
+            <td class="tma-cross">❌ N/A</td>
+            <td class="tma-cross">❌ N/A</td>
+          </tr>
+          <tr>
+            <td><strong>Circuit Breaker</strong></td>
+            <td class="tma-check">✅ Built-in</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Rate Limiting</strong></td>
+            <td class="tma-check">✅ Token bucket</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Retry Logic</strong></td>
+            <td class="tma-check">✅ Exponential backoff</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-partial">⚠️ Basic</td>
+          </tr>
+          <tr>
+            <td><strong>Instrumentation</strong></td>
+            <td class="tma-check">✅ 4 backends</td>
+            <td class="tma-cross">❌ None</td>
+            <td class="tma-cross">❌ None</td>
+            <td class="tma-cross">❌ None</td>
+          </tr>
+          <tr>
+            <td><strong>Connection Pooling</strong></td>
+            <td class="tma-check">✅ Built-in</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-partial">⚠️ Via pg gem</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Caching Layer</strong></td>
+            <td class="tma-check">✅ TTL + LRU</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Health Checks</strong></td>
+            <td class="tma-check">✅ 3 methods</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Rails Integration</strong></td>
+            <td class="tma-check">✅ has_vector DSL</td>
+            <td class="tma-check">✅ Via langchainrb_rails</td>
+            <td class="tma-partial">⚠️ Manual setup</td>
+            <td class="tma-partial">⚠️ Manual setup</td>
+          </tr>
+          <tr>
+            <td><strong>Query Builder</strong></td>
+            <td class="tma-check">✅ Chainable API</td>
+            <td class="tma-cross">❌ None</td>
+            <td class="tma-cross">❌ None</td>
+            <td class="tma-cross">❌ None</td>
+          </tr>
+          <tr>
+            <td><strong>Batch Operations</strong></td>
+            <td class="tma-check">✅ With progress</td>
+            <td class="tma-partial">⚠️ Basic</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-partial">⚠️ Basic</td>
+          </tr>
+          <tr>
+            <td><strong>Hybrid Search</strong></td>
+            <td class="tma-check">✅ 4 providers</td>
+            <td class="tma-cross">❌ Not documented</td>
+            <td class="tma-cross">❌ Manual SQL</td>
+            <td class="tma-partial">⚠️ Via API</td>
+          </tr>
+          <tr>
+            <td><strong>Vector Normalization</strong></td>
+            <td class="tma-check">✅ L2/L1 helpers</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Testing Support</strong></td>
+            <td class="tma-check">✅ Mock provider</td>
+            <td class="tma-cross">❌ Manual mocking</td>
+            <td class="tma-cross">❌ Test DB</td>
+            <td class="tma-cross">❌ Test server</td>
+          </tr>
+          <tr>
+            <td><strong>Dimension Validation</strong></td>
+            <td class="tma-check">✅ Automatic</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Error Handling</strong></td>
+            <td class="tma-check">✅ 10 error types</td>
+            <td class="tma-partial">⚠️ Basic</td>
+            <td class="tma-partial">⚠️ Basic</td>
+            <td class="tma-partial">⚠️ Basic</td>
+          </tr>
+          <tr>
+            <td><strong>Audit Logging</strong></td>
+            <td class="tma-check">✅ Built-in</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Credential Rotation</strong></td>
+            <td class="tma-check">✅ Zero-downtime</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+            <td class="tma-cross">❌ Manual</td>
+          </tr>
+          <tr>
+            <td><strong>Test Coverage</strong></td>
+            <td class="tma-check">✅ 95%+</td>
+            <td class="tma-partial">⚠️ Not disclosed</td>
+            <td class="tma-partial">⚠️ Not disclosed</td>
+            <td class="tma-partial">⚠️ Not disclosed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <p style="text-align: center; margin-top: var(--tma-spacing-lg); color: var(--tma-color-text-muted); font-size: 0.85rem;">
+      <strong>Legend:</strong> ✅ Full Support | ⚠️ Partial/Limited | ❌ Not Available
+    </p>
+  </section>
+
+  <!-- Visual Charts Section -->
+  <section class="tma-charts">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Visual Comparison</h2>
+      <p class="tma-section-header__subtitle">See the difference at a glance</p>
+    </div>
+    
+    <div class="tma-charts__grid">
+      <!-- Feature Count Bar Chart -->
+      <div class="tma-chart-card">
+        <h3 class="tma-chart-card__title">Feature Count Comparison</h3>
+        <div class="tma-bar-chart">
+          <div class="tma-bar-chart__item">
+            <div class="tma-bar-chart__label">
+              <span class="tma-bar-chart__name">Vectra</span>
+              <span class="tma-bar-chart__value">22 features</span>
+            </div>
+            <div class="tma-bar-chart__bar-container">
+              <div class="tma-bar-chart__bar tma-bar-chart__bar--vectra" style="width: 100%;">22</div>
+            </div>
+          </div>
+          
+          <div class="tma-bar-chart__item">
+            <div class="tma-bar-chart__label">
+              <span class="tma-bar-chart__name">Langchain.rb</span>
+              <span class="tma-bar-chart__value">10 features</span>
+            </div>
+            <div class="tma-bar-chart__bar-container">
+              <div class="tma-bar-chart__bar tma-bar-chart__bar--langchain" style="width: 45.5%;">10</div>
+            </div>
+          </div>
+          
+          <div class="tma-bar-chart__item">
+            <div class="tma-bar-chart__label">
+              <span class="tma-bar-chart__name">qdrant-ruby</span>
+              <span class="tma-bar-chart__value">7 features</span>
+            </div>
+            <div class="tma-bar-chart__bar-container">
+              <div class="tma-bar-chart__bar tma-bar-chart__bar--qdrant" style="width: 31.8%;">7</div>
+            </div>
+          </div>
+          
+          <div class="tma-bar-chart__item">
+            <div class="tma-bar-chart__label">
+              <span class="tma-bar-chart__name">pgvector-ruby</span>
+              <span class="tma-bar-chart__value">6 features</span>
+            </div>
+            <div class="tma-bar-chart__bar-container">
+              <div class="tma-bar-chart__bar tma-bar-chart__bar--pgvector" style="width: 27.3%;">6</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Production Readiness Radar Chart -->
+      <div class="tma-chart-card">
+        <h3 class="tma-chart-card__title">Production Readiness</h3>
+        <div class="tma-radar-chart">
+          <div class="tma-radar-chart__container">
+            <svg class="tma-radar-chart__svg" viewBox="0 0 200 200">
+              <!-- Grid circles -->
+              <circle cx="100" cy="100" r="80" class="tma-radar-chart__grid" />
+              <circle cx="100" cy="100" r="60" class="tma-radar-chart__grid" />
+              <circle cx="100" cy="100" r="40" class="tma-radar-chart__grid" />
+              <circle cx="100" cy="100" r="20" class="tma-radar-chart__grid" />
+              
+              <!-- Axes (6 dimensions) -->
+              <line x1="100" y1="100" x2="100" y2="20" class="tma-radar-chart__axis" />
+              <line x1="100" y1="100" x2="173.2" y2="60" class="tma-radar-chart__axis" />
+              <line x1="100" y1="100" x2="173.2" y2="140" class="tma-radar-chart__axis" />
+              <line x1="100" y1="100" x2="100" y2="180" class="tma-radar-chart__axis" />
+              <line x1="100" y1="100" x2="26.8" y2="140" class="tma-radar-chart__axis" />
+              <line x1="100" y1="100" x2="26.8" y2="60" class="tma-radar-chart__axis" />
+              
+              <!-- Vectra area (all 100%) -->
+              <polygon points="100,20 173.2,60 173.2,140 100,180 26.8,140 26.8,60" class="tma-radar-chart__area" />
+              
+              <!-- Points -->
+              <circle cx="100" cy="20" class="tma-radar-chart__point" />
+              <circle cx="173.2" cy="60" class="tma-radar-chart__point" />
+              <circle cx="173.2" cy="140" class="tma-radar-chart__point" />
+              <circle cx="100" cy="180" class="tma-radar-chart__point" />
+              <circle cx="26.8" cy="140" class="tma-radar-chart__point" />
+              <circle cx="26.8" cy="60" class="tma-radar-chart__point" />
+            </svg>
+            
+            <!-- Labels -->
+            <div class="tma-radar-chart__labels">
+              <div class="tma-radar-chart__label-item" style="text-align: center;">Multi-Provider</div>
+              <div class="tma-radar-chart__label-item" style="text-align: right; padding-right: 20px;">Production Patterns</div>
+              <div class="tma-radar-chart__label-item" style="text-align: right; padding-right: 20px;">Developer Experience</div>
+              <div class="tma-radar-chart__label-item" style="text-align: center;">Testing Support</div>
+              <div class="tma-radar-chart__label-item" style="text-align: left; padding-left: 20px;">Observability</div>
+              <div class="tma-radar-chart__label-item" style="text-align: left; padding-left: 20px;">Documentation</div>
+            </div>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: var(--tma-spacing-md); color: var(--tma-color-text-muted); font-size: 0.85rem;">
+          Vectra scores 100% across all production readiness dimensions
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Advantages Section -->
+  <section class="tma-advantages">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Vectra Unique Advantages</h2>
+      <p class="tma-section-header__subtitle">What makes Vectra the best choice for Ruby developers</p>
+    </div>
+    
+    <div class="tma-advantages__grid">
+      <div class="tma-advantage-card">
+        <h3 class="tma-advantage-card__title">1. Only Unified Ruby Client</h3>
+        <ul class="tma-advantage-card__list">
+          <li>Single API za 5 različitih providera</li>
+          <li>Switch provider s 1 line of code</li>
+          <li>No Python envy needed</li>
+        </ul>
+      </div>
+      
+      <div class="tma-advantage-card">
+        <h3 class="tma-advantage-card__title">2. Enterprise Production Patterns</h3>
+        <ul class="tma-advantage-card__list">
+          <li>Circuit Breaker ✅</li>
+          <li>Rate Limiter ✅</li>
+          <li>Retry Logic ✅</li>
+          <li>Connection Pooling ✅</li>
+          <li>Caching ✅</li>
+          <li>Health Checks ✅</li>
+          <li>Audit Logging ✅</li>
+        </ul>
+      </div>
+      
+      <div class="tma-advantage-card">
+        <h3 class="tma-advantage-card__title">3. Developer Experience</h3>
+        <ul class="tma-advantage-card__list">
+          <li>Query Builder (chainable API)</li>
+          <li>Mock Provider (testing)</li>
+          <li>Dimension Validation</li>
+          <li>Enhanced Error Messages</li>
+          <li>Progress Callbacks</li>
+        </ul>
+      </div>
+      
+      <div class="tma-advantage-card">
+        <h3 class="tma-advantage-card__title">4. Rails-First Design</h3>
+        <ul class="tma-advantage-card__list">
+          <li>has_vector DSL</li>
+          <li>Automatic migrations</li>
+          <li>Seamless ActiveRecord integration</li>
+        </ul>
+      </div>
+      
+      <div class="tma-advantage-card">
+        <h3 class="tma-advantage-card__title">5. Observability Built-In</h3>
+        <ul class="tma-advantage-card__list">
+          <li>Datadog</li>
+          <li>New Relic</li>
+          <li>Sentry</li>
+          <li>Honeybadger</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Choose Section -->
+  <section class="tma-choose">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Which Solution Should You Choose?</h2>
+      <p class="tma-section-header__subtitle">Find the right tool for your needs</p>
+    </div>
+    
+    <div class="tma-choose__grid">
+      <div class="tma-choose-card">
+        <h3 class="tma-choose-card__title">✅ Choose Vectra if you need:</h3>
+        <ul class="tma-choose-card__list">
+          <li>Multi-provider support with single API</li>
+          <li>Production-grade resilience patterns</li>
+          <li>Rails integration with minimal setup</li>
+          <li>Enterprise observability</li>
+          <li>Easy testing without external dependencies</li>
+        </ul>
+      </div>
+      
+      <div class="tma-choose-card">
+        <h3 class="tma-choose-card__title">Choose Langchain.rb if you need:</h3>
+        <ul class="tma-choose-card__list">
+          <li>LLM orchestration framework</li>
+          <li>RAG pipeline tools</li>
+          <li>Multi-modal AI workflows</li>
+          <li>Broader AI ecosystem integration</li>
+        </ul>
+      </div>
+      
+      <div class="tma-choose-card">
+        <h3 class="tma-choose-card__title">Choose pgvector-ruby if you:</h3>
+        <ul class="tma-choose-card__list">
+          <li>Only use PostgreSQL</li>
+          <li>Need direct SQL control</li>
+          <li>Want minimal dependencies</li>
+          <li>Have existing Postgres infrastructure</li>
+        </ul>
+      </div>
+      
+      <div class="tma-choose-card">
+        <h3 class="tma-choose-card__title">Choose qdrant-ruby if you:</h3>
+        <ul class="tma-choose-card__list">
+          <li>Only use Qdrant</li>
+          <li>Need Qdrant-specific features</li>
+          <li>Want direct API access</li>
+          <li>Self-host Qdrant</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <!-- Providers Section -->
   <section class="tma-providers">
     <div class="tma-section-header">

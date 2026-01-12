@@ -696,6 +696,370 @@ code {
   color: var(--tma-color-text-secondary);
 }
 
+/* Comparison Table Styles */
+.tma-comparison {
+  padding: var(--tma-spacing-3xl) var(--tma-spacing-xl);
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
+}
+
+.tma-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--tma-spacing-xl) 0;
+  background: var(--tma-color-bg-secondary);
+  border-radius: var(--tma-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--tma-color-border);
+}
+
+.tma-comparison-table thead {
+  background: var(--tma-color-bg-tertiary);
+}
+
+.tma-comparison-table th {
+  padding: var(--tma-spacing-md) var(--tma-spacing-lg);
+  text-align: left;
+  font-weight: 600;
+  color: var(--tma-color-text-primary);
+  font-size: 0.9rem;
+  border-bottom: 2px solid var(--tma-color-border);
+}
+
+.tma-comparison-table th:first-child {
+  font-weight: 700;
+  color: var(--tma-color-accent-primary);
+}
+
+.tma-comparison-table td {
+  padding: var(--tma-spacing-md) var(--tma-spacing-lg);
+  border-bottom: 1px solid var(--tma-color-border);
+  color: var(--tma-color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.tma-comparison-table tbody tr:hover {
+  background: var(--tma-color-bg-hover);
+}
+
+.tma-comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tma-comparison-table .tma-check {
+  color: var(--tma-color-accent-primary);
+  font-weight: 600;
+}
+
+.tma-comparison-table .tma-partial {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.tma-comparison-table .tma-cross {
+  color: var(--tma-color-text-muted);
+}
+
+/* Advantages Section */
+.tma-advantages {
+  padding: var(--tma-spacing-3xl) var(--tma-spacing-xl);
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
+  background: var(--tma-color-bg-secondary);
+}
+
+.tma-advantages__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--tma-spacing-lg);
+  margin-top: var(--tma-spacing-xl);
+}
+
+.tma-advantage-card {
+  padding: var(--tma-spacing-xl);
+  background: var(--tma-color-bg-tertiary);
+  border: 1px solid var(--tma-color-border);
+  border-radius: var(--tma-radius-lg);
+  border-left: 3px solid var(--tma-color-accent-primary);
+}
+
+.tma-advantage-card__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: var(--tma-spacing-md);
+  color: var(--tma-color-text-primary);
+}
+
+.tma-advantage-card__list {
+  list-style: none;
+  padding: 0;
+}
+
+.tma-advantage-card__list li {
+  padding: var(--tma-spacing-xs) 0;
+  color: var(--tma-color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.tma-advantage-card__list li::before {
+  content: '✓';
+  color: var(--tma-color-accent-primary);
+  font-weight: 700;
+  margin-right: var(--tma-spacing-sm);
+}
+
+/* Choose Section */
+.tma-choose {
+  padding: var(--tma-spacing-3xl) var(--tma-spacing-xl);
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
+}
+
+.tma-choose__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--tma-spacing-lg);
+  margin-top: var(--tma-spacing-xl);
+}
+
+.tma-choose-card {
+  padding: var(--tma-spacing-xl);
+  background: var(--tma-color-bg-secondary);
+  border: 1px solid var(--tma-color-border);
+  border-radius: var(--tma-radius-lg);
+}
+
+.tma-choose-card__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: var(--tma-spacing-md);
+  color: var(--tma-color-accent-primary);
+}
+
+.tma-choose-card__list {
+  list-style: none;
+  padding: 0;
+}
+
+.tma-choose-card__list li {
+  padding: var(--tma-spacing-xs) 0;
+  color: var(--tma-color-text-secondary);
+  font-size: 0.9rem;
+  padding-left: var(--tma-spacing-md);
+  position: relative;
+}
+
+.tma-choose-card__list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--tma-color-accent-primary);
+}
+
+/* Visual Charts Section */
+.tma-charts {
+  padding: var(--tma-spacing-3xl) var(--tma-spacing-xl);
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
+  background: var(--tma-color-bg-secondary);
+}
+
+.tma-charts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--tma-spacing-2xl);
+  margin-top: var(--tma-spacing-xl);
+}
+
+.tma-chart-card {
+  padding: var(--tma-spacing-xl);
+  background: var(--tma-color-bg-tertiary);
+  border: 1px solid var(--tma-color-border);
+  border-radius: var(--tma-radius-lg);
+}
+
+.tma-chart-card__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: var(--tma-spacing-lg);
+  color: var(--tma-color-text-primary);
+  text-align: center;
+}
+
+/* Bar Chart Styles */
+.tma-bar-chart {
+  margin-top: var(--tma-spacing-lg);
+}
+
+.tma-bar-chart__item {
+  margin-bottom: var(--tma-spacing-md);
+}
+
+.tma-bar-chart__label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--tma-spacing-xs);
+  font-size: 0.9rem;
+  color: var(--tma-color-text-secondary);
+}
+
+.tma-bar-chart__name {
+  font-weight: 600;
+  color: var(--tma-color-text-primary);
+}
+
+.tma-bar-chart__value {
+  color: var(--tma-color-text-secondary);
+}
+
+.tma-bar-chart__bar-container {
+  height: 28px;
+  background: var(--tma-color-bg-primary);
+  border-radius: var(--tma-radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--tma-color-border);
+}
+
+.tma-bar-chart__bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--tma-color-accent-primary), var(--tma-color-accent-light));
+  border-radius: var(--tma-radius-sm);
+  transition: width var(--tma-transition-slow);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--tma-spacing-sm);
+  color: #0a0a0f;
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-width: fit-content;
+}
+
+.tma-bar-chart__bar--vectra {
+  background: linear-gradient(90deg, var(--tma-color-accent-primary), var(--tma-color-accent-light));
+}
+
+.tma-bar-chart__bar--langchain {
+  background: linear-gradient(90deg, #fbbf24, #fcd34d);
+}
+
+.tma-bar-chart__bar--pgvector {
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+}
+
+.tma-bar-chart__bar--qdrant {
+  background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+}
+
+/* Radar Chart Styles */
+.tma-radar-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: var(--tma-spacing-xl) 0;
+}
+
+.tma-radar-chart__container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+.tma-radar-chart__svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.tma-radar-chart__axis {
+  stroke: var(--tma-color-border);
+  stroke-width: 1;
+}
+
+.tma-radar-chart__grid {
+  stroke: var(--tma-color-border);
+  stroke-width: 0.5;
+  fill: none;
+}
+
+.tma-radar-chart__area {
+  fill: var(--tma-color-accent-muted);
+  stroke: var(--tma-color-accent-primary);
+  stroke-width: 2;
+  opacity: 0.6;
+}
+
+.tma-radar-chart__point {
+  fill: var(--tma-color-accent-primary);
+  r: 4;
+}
+
+.tma-radar-chart__label {
+  font-size: 0.75rem;
+  fill: var(--tma-color-text-secondary);
+  text-anchor: middle;
+  transform: rotate(90deg);
+}
+
+.tma-radar-chart__labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: var(--tma-spacing-md);
+  pointer-events: none;
+}
+
+.tma-radar-chart__label-item {
+  font-size: 0.8rem;
+  color: var(--tma-color-text-secondary);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Responsive Charts */
+@media (max-width: 768px) {
+  .tma-charts__grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tma-radar-chart__container {
+    width: 250px;
+    height: 250px;
+  }
+}
+
+/* Responsive Comparison Table */
+@media (max-width: 1024px) {
+  .tma-comparison-table {
+    font-size: 0.85rem;
+  }
+  
+  .tma-comparison-table th,
+  .tma-comparison-table td {
+    padding: var(--tma-spacing-sm) var(--tma-spacing-md);
+  }
+}
+
+@media (max-width: 768px) {
+  .tma-comparison-table {
+    font-size: 0.75rem;
+  }
+  
+  .tma-comparison-table th,
+  .tma-comparison-table td {
+    padding: var(--tma-spacing-xs) var(--tma-spacing-sm);
+  }
+  
+  .tma-advantages__grid,
+  .tma-choose__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ============================================
    Footer
    ============================================ */
