@@ -332,7 +332,7 @@ module Vectra
       private
 
       def build_hybrid_search_graphql(index:, vector:, text:, alpha:, top_k:,
-                                       where_filter:, include_values:, include_metadata:)
+                                      where_filter:, include_values:, include_metadata:)
         selection_block = build_selection_fields(include_values, include_metadata).join(" ")
         build_graphql_query(index, top_k, text, alpha, vector, where_filter, selection_block)
       end
