@@ -294,6 +294,58 @@ module Vectra
       provider.provider_name
     end
 
+    # Quick health check - tests if provider connection is healthy
+    #
+    # @param timeout [Float] timeout in seconds (default: 5)
+    # @return [Boolean] true if connection is healthy
+    #
+    # @example
+    #   if client.healthy?
+    #     client.upsert(...)
+    #   else
+    #     handle_unhealthy_connection
+    #   end
+    def healthy?(timeout: 5)
+      start = Time.now
+      provider.list_indexes
+      true
+    rescue StandardError => e
+      log_error("Health check failed", e)
+      false
+    ensure
+      duration = ((Time.now - start) * 1000).round(2) if defined?(start)
+      log_debug("Health check completed in #{duration}ms") if duration
+    end
+
+    # Ping provider and get connection health status with latency
+    #
+    # @param timeout [Float] timeout in seconds (default: 5)
+    # @return [Hash] health status with :healthy, :provider, :latency_ms
+    #
+    # @example
+    #   status = client.ping
+    #   puts "Provider: #{status[:provider]}, Healthy: #{status[:healthy]}, Latency: #{status[:latency_ms]}ms"
+    def ping(timeout: 5)
+      start = Time.now
+      healthy = healthy?(timeout: timeout)
+      duration = ((Time.now - start) * 1000).round(2)
+
+      {
+        healthy: healthy,
+        provider: provider_name,
+        latency_ms: duration
+      }
+    rescue StandardError => e
+      duration = ((Time.now - start) * 1000).round(2) if defined?(start)
+      {
+        healthy: false,
+        provider: provider_name,
+        latency_ms: duration || 0,
+        error: e.class.name,
+        error_message: e.message
+      }
+    end
+
     # Chainable query builder
     #
     # @api public
@@ -416,6 +468,25 @@ module Vectra
       raise ValidationError, "Vectors cannot be nil" if vectors.nil?
       raise ValidationError, "Vectors must be an array" unless vectors.is_a?(Array)
       raise ValidationError, "Vectors cannot be empty" if vectors.empty?
+
+      # Check dimension consistency
+      first_vector = vectors.first
+      first_values = first_vector.is_a?(Vector) ? first_vector.values : first_vector[:values]
+      first_dim = first_values&.size
+
+      return unless first_dim
+
+      vectors.each_with_index do |vec, index|
+        values = vec.is_a?(Vector) ? vec.values : vec[:values]
+        dim = values&.size
+
+        next unless dim && dim != first_dim
+
+        raise ValidationError,
+              "Inconsistent vector dimensions at index #{index}: " \
+              "expected #{first_dim}, got #{dim}. " \
+              "All vectors in a batch must have the same dimension."
+      end
     end
 
     def validate_query_vector!(vector)
@@ -434,6 +505,21 @@ module Vectra
       raise ValidationError, "ID cannot be nil" if id.nil?
       raise ValidationError, "ID must be a string" unless id.is_a?(String)
       raise ValidationError, "ID cannot be empty" if id.empty?
+    end
+
+    def log_error(message, error = nil)
+      return unless config.logger
+
+      config.logger.error("[Vectra] #{message}")
+      config.logger.error("[Vectra] #{error.class}: #{error.message}") if error
+      config.logger.error("[Vectra] #{error.backtrace&.first(3)&.join("\n")}") if error&.backtrace
+    end
+
+    def log_debug(message, data = nil)
+      return unless config.logger
+
+      config.logger.debug("[Vectra] #{message}")
+      config.logger.debug("[Vectra] #{data.inspect}") if data
     end
   end
 end

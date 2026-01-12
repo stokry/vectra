@@ -235,7 +235,23 @@ module Vectra
       def extract_error_message(body)
         case body
         when Hash
-          body["message"] || body["error"] || body.to_s
+          # Primary error message
+          msg = body["message"] || body["error"] || body["error_message"] || body.to_s
+
+          # Add context from details
+          details = body["details"] || body["error_details"] || body["detail"]
+          if details
+            details_str = details.is_a?(Hash) ? details.to_json : details.to_s
+            msg += " (#{details_str})" unless msg.include?(details_str)
+          end
+
+          # Add field-specific errors if available
+          if body["errors"] && body["errors"].is_a?(Array)
+            field_errors = body["errors"].map { |e| e.is_a?(Hash) ? e["field"] || e["message"] : e }.join(", ")
+            msg += " [Fields: #{field_errors}]" if field_errors && !msg.include?(field_errors)
+          end
+
+          msg
         when String
           body
         else

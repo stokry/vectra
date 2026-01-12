@@ -72,6 +72,15 @@ client.upsert(vectors: [{ id: 'doc-1', values: normalized }])
 
 # Delete
 client.delete(ids: ['doc-1', 'doc-2'])
+
+# Health check
+if client.healthy?
+  puts "Connection is healthy"
+end
+
+# Ping with latency
+status = client.ping
+puts "Provider: #{status[:provider]}, Latency: #{status[:latency_ms]}ms"
 ```
 
 ## Provider Examples

@@ -586,6 +586,39 @@ RSpec.describe Vectra::Providers::Qdrant do
         end.to raise_error(Vectra::ServerError)
       end
     end
+
+    context "with detailed error messages" do
+      before do
+        stub_request(:post, "#{base_url}/collections/test/points/upsert")
+          .to_return(
+            status: 400,
+            body: {
+              status: {
+                error: "Validation failed",
+                details: "Vector dimension mismatch",
+                errors: [
+                  { field: "vectors", message: "Dimension must be 128" },
+                  { field: "ids", message: "IDs must be unique" }
+                ]
+              }
+            }.to_json,
+            headers: { "Content-Type" => "application/json" }
+          )
+      end
+
+      it "includes error details in message" do
+        expect do
+          provider.upsert(
+            index: "test",
+            vectors: [{ id: "v1", values: [0.1] * 128 }]
+          )
+        end.to raise_error(Vectra::ValidationError) do |error|
+          expect(error.message).to include("Validation failed")
+          expect(error.message).to include("Vector dimension mismatch")
+          expect(error.message).to include("Fields:")
+        end
+      end
+    end
   end
 
   describe "configuration validation" do

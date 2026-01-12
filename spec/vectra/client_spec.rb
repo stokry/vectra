@@ -99,6 +99,35 @@ RSpec.describe Vectra::Client do
         expect { client.upsert(index: index_name, vectors: []) }
           .to raise_error(Vectra::ValidationError, /Vectors cannot be empty/)
       end
+
+      it "validates dimension consistency across vectors" do
+        vectors = [
+          { id: "vec1", values: [0.1, 0.2, 0.3] }, # 3 dimensions
+          { id: "vec2", values: [0.4, 0.5] }        # 2 dimensions - inconsistent!
+        ]
+
+        expect { client.upsert(index: index_name, vectors: vectors) }
+          .to raise_error(Vectra::ValidationError, /Inconsistent vector dimensions/)
+      end
+
+      it "validates dimension consistency with Vector objects" do
+        vectors = [
+          Vectra::Vector.new(id: "vec1", values: [0.1, 0.2, 0.3]),
+          Vectra::Vector.new(id: "vec2", values: [0.4, 0.5]) # Different dimension
+        ]
+
+        expect { client.upsert(index: index_name, vectors: vectors) }
+          .to raise_error(Vectra::ValidationError, /Inconsistent vector dimensions/)
+      end
+
+      it "allows vectors with same dimensions" do
+        vectors = [
+          { id: "vec1", values: [0.1, 0.2, 0.3] },
+          { id: "vec2", values: [0.4, 0.5, 0.6] } # Same dimension - OK
+        ]
+
+        expect { client.upsert(index: index_name, vectors: vectors) }.not_to raise_error
+      end
     end
   end
 
@@ -405,6 +434,69 @@ RSpec.describe Vectra::Client do
   describe "#provider_name" do
     it "returns provider name" do
       expect(client.provider_name).to eq(:pinecone)
+    end
+  end
+
+  describe "#healthy?" do
+    before do
+      allow(provider).to receive(:list_indexes).and_return([])
+    end
+
+    it "returns true when provider is healthy" do
+      expect(client.healthy?).to be true
+    end
+
+    it "returns false when provider raises error" do
+      allow(provider).to receive(:list_indexes).and_raise(StandardError.new("Connection failed"))
+
+      expect(client.healthy?).to be false
+    end
+
+    it "logs errors when health check fails" do
+      allow(provider).to receive(:list_indexes).and_raise(StandardError.new("Connection failed"))
+      allow(client.config).to receive(:logger).and_return(double(debug: nil, error: nil))
+
+      client.healthy?
+
+      expect(client.config.logger).to have_received(:error).at_least(:once)
+    end
+  end
+
+  describe "#ping" do
+    before do
+      allow(provider).to receive(:list_indexes).and_return([])
+    end
+
+    it "returns health status with latency" do
+      result = client.ping
+
+      expect(result).to include(:healthy, :provider, :latency_ms)
+      expect(result[:healthy]).to be true
+      expect(result[:provider]).to eq(:pinecone)
+      expect(result[:latency_ms]).to be_a(Numeric)
+      expect(result[:latency_ms]).to be >= 0
+    end
+
+    it "includes error info when unhealthy" do
+      allow(provider).to receive(:list_indexes).and_raise(StandardError.new("Connection failed"))
+
+      result = client.ping
+
+      expect(result[:healthy]).to be false
+      expect(result).to include(:error, :error_message)
+      expect(result[:error]).to eq("StandardError")
+    end
+
+    it "measures latency correctly" do
+      allow(provider).to receive(:list_indexes) do
+        sleep(0.01) # 10ms delay
+        []
+      end
+
+      result = client.ping
+
+      expect(result[:latency_ms]).to be >= 10
+      expect(result[:latency_ms]).to be < 100 # Should be fast
     end
   end
 

@@ -100,6 +100,42 @@ puts "Index dimension: #{stats['dimension']}"
 puts "Vector count: #{stats['vector_count']}"
 ```
 
+### Health Check & Ping
+
+```ruby
+# Quick health check
+if client.healthy?
+  client.upsert(...)
+else
+  handle_unhealthy_connection
+end
+
+# Ping with latency measurement
+status = client.ping
+puts "Provider: #{status[:provider]}"
+puts "Healthy: #{status[:healthy]}"
+puts "Latency: #{status[:latency_ms]}ms"
+
+if status[:error]
+  puts "Error: #{status[:error_message]}"
+end
+```
+
+### Dimension Validation
+
+Vectra automatically validates that all vectors in a batch have the same dimension:
+
+```ruby
+# This will raise ValidationError
+vectors = [
+  { id: "vec1", values: [0.1, 0.2, 0.3] }, # 3 dimensions
+  { id: "vec2", values: [0.4, 0.5] }        # 2 dimensions - ERROR!
+]
+
+client.upsert(vectors: vectors)
+# => ValidationError: Inconsistent vector dimensions at index 1: expected 3, got 2
+```
+
 ## Configuration
 
 Create a configuration file (Rails: `config/initializers/vectra.rb`):
