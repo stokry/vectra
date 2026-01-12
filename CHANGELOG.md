@@ -4,10 +4,6 @@
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.3.3...v0.3.4)
 
-### Fixed
-- Fixed Weaviate provider DELETE request WebMock stub to include query parameters
-- Fixed RuboCop offenses: empty string interpolation, redundant else, ambiguous block associations, and style issues
-
 ## [v0.3.3](https://github.com/stokry/vectra/tree/v0.3.3) (2026-01-09)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.3.2...v0.3.3)
