@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.0.0](https://github.com/stokry/vectra/tree/v1.0.0) (2026-01-12)
+
+### Added
+- Hybrid search functionality for Qdrant and Weaviate providers
+- Enhanced provider capabilities and error handling
+- Support for advanced filtering and namespace operations
+- Improved vector search performance
+
+### Changed
+- Major API refinements and provider implementations
+- Enhanced test coverage and documentation
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v0.4.0...v1.0.0)
+
 ## [v0.4.0](https://github.com/stokry/vectra/tree/v0.4.0) (2026-01-12)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.3.4...v0.4.0)
