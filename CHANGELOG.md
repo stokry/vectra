@@ -2,57 +2,11 @@
 
 ## [v1.0.0](https://github.com/stokry/vectra/tree/v1.0.0) (2026-01-12)
 
-### Added
-- Hybrid search functionality for Qdrant and Weaviate providers
-- Enhanced provider capabilities and error handling
-- Support for advanced filtering and namespace operations
-- Improved vector search performance
-
-### Changed
-- Major API refinements and provider implementations
-- Enhanced test coverage and documentation
-
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.4.0...v1.0.0)
 
 ## [v0.4.0](https://github.com/stokry/vectra/tree/v0.4.0) (2026-01-12)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.3.4...v0.4.0)
-
-### Added
-- **Hybrid Search** - Combine semantic (vector) and keyword (text) search across all providers
-  - Full support for Qdrant (prefetch + rescore API)
-  - Full support for Weaviate (hybrid GraphQL with BM25)
-  - Full support for pgvector (vector similarity + PostgreSQL full-text search)
-  - Partial support for Pinecone (requires sparse vectors for true hybrid search)
-  - Alpha parameter (0.0 = pure keyword, 1.0 = pure semantic) for fine-tuning balance
-- **Batch Progress Callbacks** - Real-time visibility into batch operations
-  - `on_progress` callback with detailed statistics (processed, total, percentage, chunk info)
-  - Thread-safe progress tracking with `Concurrent::AtomicFixnum`
-  - Support for `upsert_async`, `delete_async`, and `fetch_async` methods
-- **Vector Normalization Helper** - Improve cosine similarity results
-  - `Vector.normalize!` instance method (L2 and L1 normalization)
-  - `Vector.normalize` class method for non-mutating normalization
-  - Automatic handling of zero vectors
-- **Dimension Validation** - Automatic validation of vector dimension consistency
-  - Validates all vectors in a batch have the same dimension
-  - Detailed error messages with index and expected/actual dimensions
-  - Works with both Vector objects and hash vectors
-- **Better Error Messages** - Enhanced error context and debugging
-  - Includes error details, field-specific errors, and context
-  - Improved error message format: "Main message (details) [Fields: field1, field2]"
-- **Connection Health Check** - Simple health monitoring methods
-  - `healthy?` method for quick boolean health check
-  - `ping` method with latency measurement and detailed status
-  - Automatic error logging when logger is configured
-
-### Changed
-- Improved error handling with more context in error messages
-- Enhanced batch operations with progress tracking capabilities
-
-### Documentation
-- Added comprehensive hybrid search examples and provider support matrix
-- Updated getting started guide with normalization, health checks, and dimension validation
-- Added real-world examples demonstrating new features
 
 ## [v0.3.4](https://github.com/stokry/vectra/tree/v0.3.4) (2026-01-12)
 
