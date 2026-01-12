@@ -23,6 +23,7 @@ require_relative "vectra/providers/pinecone"
 require_relative "vectra/providers/qdrant"
 require_relative "vectra/providers/weaviate"
 require_relative "vectra/providers/pgvector"
+require_relative "vectra/providers/memory"
 require_relative "vectra/client"
 
 # Vectra - Unified Ruby client for vector databases
@@ -154,6 +155,25 @@ module Vectra
         provider: :pgvector,
         api_key: password,
         host: connection_url || host,
+        **options
+      )
+    end
+
+    # Shortcut to create a Memory client (for testing)
+    #
+    # @param options [Hash] additional options
+    # @return [Client]
+    #
+    # @example In test environment
+    #   Vectra.configure do |config|
+    #     config.provider = :memory if Rails.env.test?
+    #   end
+    #
+    #   client = Vectra::Client.new
+    #
+    def memory(**options)
+      Client.new(
+        provider: :memory,
         **options
       )
     end

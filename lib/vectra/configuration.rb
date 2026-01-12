@@ -11,7 +11,7 @@ module Vectra
   #   end
   #
   class Configuration
-    SUPPORTED_PROVIDERS = %i[pinecone qdrant weaviate pgvector].freeze
+    SUPPORTED_PROVIDERS = %i[pinecone qdrant weaviate pgvector memory].freeze
 
     attr_accessor :api_key, :environment, :host, :timeout, :open_timeout,
                   :max_retries, :retry_delay, :logger, :pool_size, :pool_timeout,
@@ -117,7 +117,7 @@ module Vectra
 
     # Providers that don't require API key (local instances)
     def api_key_optional_provider?
-      %i[qdrant pgvector].include?(provider)
+      %i[qdrant pgvector memory].include?(provider)
     end
 
     def validate_provider_specific!
@@ -130,6 +130,8 @@ module Vectra
         validate_weaviate!
       when :pgvector
         validate_pgvector!
+      when :memory
+        # Memory provider has no special requirements
       end
     end
 
