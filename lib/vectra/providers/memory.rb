@@ -194,15 +194,13 @@ module Vectra
         metric = config[:metric] || "cosine"
 
         case metric.to_s.downcase
-        when "cosine"
-          cosine_similarity(query_vector, candidate_vector)
         when "euclidean", "l2"
           # Convert distance to similarity (1 / (1 + distance))
           distance = euclidean_distance(query_vector, candidate_vector)
           1.0 / (1.0 + distance)
         when "dot_product", "inner_product", "dot"
           dot_product(query_vector, candidate_vector)
-        else
+        else # cosine (default)
           cosine_similarity(query_vector, candidate_vector)
         end
       end
@@ -243,6 +241,7 @@ module Vectra
       end
 
       # Check if a value matches filter criteria
+      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def matches_filter_value?(actual, expected)
         case expected
         when Hash
@@ -273,6 +272,7 @@ module Vectra
           actual == expected
         end
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       # Build match hash from vector
       def build_match(vector, score, include_values, include_metadata)
@@ -287,10 +287,12 @@ module Vectra
       end
 
       # Override validate_config! - Memory provider doesn't need host or API key
+      # rubocop:disable Naming/PredicateMethod
       def validate_config!
         # Memory provider has no special requirements
         true
       end
+      # rubocop:enable Naming/PredicateMethod
     end
   end
 end

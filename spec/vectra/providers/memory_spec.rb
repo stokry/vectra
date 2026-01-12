@@ -330,13 +330,13 @@ RSpec.describe Vectra::Providers::Memory do
   describe "#stats" do
     before do
       provider.upsert(index: "test_index", vectors: [
-        { id: "v1", values: [0.1, 0.2] },
-        { id: "v2", values: [0.3, 0.4] }
-      ], namespace: "prod")
+                        { id: "v1", values: [0.1, 0.2] },
+                        { id: "v2", values: [0.3, 0.4] }
+                      ], namespace: "prod")
 
       provider.upsert(index: "test_index", vectors: [
-        { id: "v3", values: [0.5, 0.6] }
-      ], namespace: "staging")
+                        { id: "v3", values: [0.5, 0.6] }
+                      ], namespace: "staging")
     end
 
     it "returns statistics for all namespaces" do
@@ -377,10 +377,10 @@ RSpec.describe Vectra::Providers::Memory do
   describe "filter operators" do
     before do
       provider.upsert(index: "test_index", vectors: [
-        { id: "v1", values: [0.1, 0.2], metadata: { price: 10, status: "active" } },
-        { id: "v2", values: [0.3, 0.4], metadata: { price: 20, status: "inactive" } },
-        { id: "v3", values: [0.5, 0.6], metadata: { price: 30, status: "active" } }
-      ])
+                        { id: "v1", values: [0.1, 0.2], metadata: { price: 10, status: "active" } },
+                        { id: "v2", values: [0.3, 0.4], metadata: { price: 20, status: "inactive" } },
+                        { id: "v3", values: [0.5, 0.6], metadata: { price: 30, status: "active" } }
+                      ])
     end
 
     it "supports $gt operator" do
