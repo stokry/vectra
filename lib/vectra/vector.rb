@@ -127,6 +127,7 @@ module Vectra
           # Zero vector - cannot normalize, return as-is
           return self
         end
+
         @values = values.map { |v| v / magnitude }
       when :l1
         sum = values.sum(&:abs)
@@ -134,6 +135,7 @@ module Vectra
           # Zero vector - cannot normalize, return as-is
           return self
         end
+
         @values = values.map { |v| v / sum }
       else
         raise ArgumentError, "Unknown normalization type: #{type}. Use :l2 or :l1"
