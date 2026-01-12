@@ -34,4 +34,12 @@ results = client.query(
 results.each do |match|
   puts "#{match['id']}: #{match['score']}"
 end
+
+# Hybrid search (semantic + keyword)
+results = client.hybrid_search(
+  index: 'docs',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7  # 70% semantic, 30% keyword
+)
 ```
