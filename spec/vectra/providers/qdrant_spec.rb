@@ -235,6 +235,7 @@ RSpec.describe Vectra::Providers::Qdrant do
         vector: query_vector,
         text: query_text,
         alpha: 0.7,
+        top_k: 5,
         filter: { category: "tech" }
       )
 
@@ -258,6 +259,7 @@ RSpec.describe Vectra::Providers::Qdrant do
         vector: query_vector,
         text: query_text,
         alpha: 0.7,
+        top_k: 5,
         namespace: "prod"
       )
 
@@ -282,6 +284,7 @@ RSpec.describe Vectra::Providers::Qdrant do
         vector: query_vector,
         text: query_text,
         alpha: 0.7,
+        top_k: 5,
         include_values: true
       )
 
