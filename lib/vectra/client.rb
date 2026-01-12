@@ -106,13 +106,16 @@ module Vectra
     #     .with_metadata
     #     .execute
     #
-    def query(index: nil, vector: nil, top_k: 10, namespace: nil, filter: nil,
+    def query(index_arg = nil, index: nil, vector: nil, top_k: 10, namespace: nil, filter: nil,
               include_values: false, include_metadata: true)
-      # If called with an index string only, return a query builder:
+      # If called with a positional index string only, return a query builder:
       #   client.query("docs").vector(vec).top_k(10).filter(...).execute
-      if index.is_a?(String) && vector.nil? && !block_given?
-        return QueryBuilder.new(self, index)
+      if index_arg && index.nil? && vector.nil? && !block_given?
+        return QueryBuilder.new(self, index_arg)
       end
+
+      # Handle positional argument for index in non-builder case
+      index = index_arg if index_arg && index.nil?
 
       # Backwards-compatible path: perform query immediately
       validate_index!(index)
@@ -315,8 +318,7 @@ module Vectra
         @include_metadata = true
       end
 
-      attr_reader :index, :vector, :top_k, :namespace, :filter,
-                  :include_values, :include_metadata
+      attr_reader :index
 
       def vector(value)
         @vector = value
