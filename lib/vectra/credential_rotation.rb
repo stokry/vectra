@@ -37,13 +37,12 @@ module Vectra
 
     # Test if secondary key is valid
     #
-    # @param timeout [Float] Test timeout in seconds
     # @return [Boolean] true if secondary key works
-    def test_secondary(timeout: 5)
+    def test_secondary
       return false if secondary_key.nil? || secondary_key.empty?
 
       client = build_test_client(secondary_key)
-      client.healthy?(timeout: timeout)
+      client.healthy?
     rescue StandardError
       false
     end
