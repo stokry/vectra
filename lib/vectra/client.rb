@@ -98,8 +98,23 @@ module Vectra
     #     filter: { category: 'programming' }
     #   )
     #
-    def query(index:, vector:, top_k: 10, namespace: nil, filter: nil,
+    # @example Chainable query builder
+    #   results = client.query("my-index")
+    #     .vector([0.1, 0.2, 0.3])
+    #     .top_k(10)
+    #     .filter(category: "programming")
+    #     .with_metadata
+    #     .execute
+    #
+    def query(index: nil, vector: nil, top_k: 10, namespace: nil, filter: nil,
               include_values: false, include_metadata: true)
+      # If called with an index string only, return a query builder:
+      #   client.query("docs").vector(vec).top_k(10).filter(...).execute
+      if index.is_a?(String) && vector.nil? && !block_given?
+        return QueryBuilder.new(self, index)
+      end
+
+      # Backwards-compatible path: perform query immediately
       validate_index!(index)
       validate_query_vector!(vector)
 
@@ -274,6 +289,82 @@ module Vectra
     # @return [Symbol]
     def provider_name
       provider.provider_name
+    end
+
+    # Chainable query builder
+    #
+    # @api public
+    # @example
+    #   results = client.query("docs")
+    #     .vector(embedding)
+    #     .top_k(20)
+    #     .namespace("prod")
+    #     .filter(category: "ruby")
+    #     .with_metadata
+    #     .execute
+    #
+    class QueryBuilder
+      def initialize(client, index)
+        @client = client
+        @index = index
+        @vector = nil
+        @top_k = 10
+        @namespace = nil
+        @filter = nil
+        @include_values = false
+        @include_metadata = true
+      end
+
+      attr_reader :index, :vector, :top_k, :namespace, :filter,
+                  :include_values, :include_metadata
+
+      def vector(value)
+        @vector = value
+        self
+      end
+
+      def top_k(value)
+        @top_k = value.to_i
+        self
+      end
+
+      def namespace(value)
+        @namespace = value
+        self
+      end
+
+      def filter(value = nil, **kwargs)
+        @filter = value || kwargs
+        self
+      end
+
+      def with_values
+        @include_values = true
+        self
+      end
+
+      def with_metadata
+        @include_metadata = true
+        self
+      end
+
+      def without_metadata
+        @include_metadata = false
+        self
+      end
+
+      # Execute the built query and return a QueryResult
+      def execute
+        @client.query(
+          index: @index,
+          vector: @vector,
+          top_k: @top_k,
+          namespace: @namespace,
+          filter: @filter,
+          include_values: @include_values,
+          include_metadata: @include_metadata
+        )
+      end
     end
 
     private

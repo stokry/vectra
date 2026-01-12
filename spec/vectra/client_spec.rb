@@ -168,6 +168,55 @@ RSpec.describe Vectra::Client do
           .to raise_error(Vectra::ValidationError, /Query vector cannot be empty/)
       end
     end
+
+    describe "query builder" do
+      it "returns a QueryBuilder when called with index string only" do
+        builder = client.query(index_name)
+
+        expect(builder).to be_a(Vectra::Client::QueryBuilder)
+        expect(builder.index).to eq(index_name)
+      end
+
+      it "builds and executes query via chainable API" do
+        result = client
+          .query(index_name)
+          .vector(query_vector)
+          .top_k(10)
+          .namespace("prod")
+          .filter(category: "ruby")
+          .with_values
+          .without_metadata
+          .execute
+
+        expect(result).to eq(query_result)
+        expect(provider).to have_received(:query).with(
+          index: index_name,
+          vector: query_vector,
+          top_k: 10,
+          namespace: "prod",
+          filter: { category: "ruby" },
+          include_values: true,
+          include_metadata: false
+        )
+      end
+
+      it "supports filter(value) and filter(category: ...)" do
+        client.query(index_name)
+          .vector(query_vector)
+          .filter(category: "ruby")
+          .execute
+
+        expect(provider).to have_received(:query).with(
+          index: index_name,
+          vector: query_vector,
+          top_k: 10,
+          namespace: nil,
+          filter: { category: "ruby" },
+          include_values: false,
+          include_metadata: true
+        )
+      end
+    end
   end
 
   describe "#fetch" do

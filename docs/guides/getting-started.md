@@ -43,14 +43,27 @@ client.upsert(
 ### Query (Search)
 
 ```ruby
+# Classic API
 results = client.query(
   vector: [0.1, 0.2, 0.3],
   top_k: 5,
   include_metadata: true
 )
 
-results.matches.each do |match|
-  puts "ID: #{match['id']}, Score: #{match['score']}"
+results.each do |match|
+  puts "ID: #{match.id}, Score: #{match.score}"
+end
+
+# Chainable Query Builder
+results = client
+  .query("my-index")
+  .vector([0.1, 0.2, 0.3])
+  .top_k(5)
+  .with_metadata
+  .execute
+
+results.each do |match|
+  puts "ID: #{match.id}, Score: #{match.score}"
 end
 ```
 

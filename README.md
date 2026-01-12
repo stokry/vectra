@@ -49,9 +49,21 @@ client.upsert(
   ]
 )
 
-# Search
+# Search (classic API)
 results = client.query(vector: [0.1, 0.2, 0.3], top_k: 5)
 results.each { |match| puts "#{match.id}: #{match.score}" }
+
+# Search (chainable Query Builder)
+results = client
+  .query('docs')
+  .vector([0.1, 0.2, 0.3])
+  .top_k(5)
+  .with_metadata
+  .execute
+
+results.each do |match|
+  puts "#{match.id}: #{match.score}"
+end
 
 # Delete
 client.delete(ids: ['doc-1', 'doc-2'])

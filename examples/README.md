@@ -261,6 +261,18 @@ The comprehensive demo now includes **4 additional sections** demonstrating prod
 - **Error Tracking**: Sentry and Honeybadger integration
 - Production monitoring setup
 
+In addition to the classic API, the demo now also showcases the **chainable Query Builder** style:
+
+```ruby
+results = client
+  .query("documents")
+  .vector(embedding)
+  .top_k(10)
+  .filter(category: "ruby")
+  .with_metadata
+  .execute
+```
+
 ## Tips for Production
 
 ### Performance

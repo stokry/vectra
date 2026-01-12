@@ -257,14 +257,14 @@ class TenantDocumentService
     query_embedding = generate_embedding(query)
     
     # Ensure tenant isolation via namespace
-    results = @client.query(
-      index: "documents",
-      vector: query_embedding,
-      top_k: limit,
-      namespace: "tenant-#{@tenant_id}",
-      filter: { tenant_id: @tenant_id }, # Double protection
-      include_metadata: true
-    )
+    results = @client
+      .query("documents")
+      .vector(query_embedding)
+      .top_k(limit)
+      .namespace("tenant-#{@tenant_id}")
+      .filter(tenant_id: @tenant_id) # Double protection
+      .with_metadata
+      .execute
     
     # Audit log
     @audit.log_access(
