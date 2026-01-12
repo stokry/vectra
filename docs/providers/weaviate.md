@@ -47,6 +47,7 @@ client = Vectra::Client.new(
 - ✅ Delete by IDs or filter
 - ✅ List and describe classes
 - ✅ Basic stats via GraphQL `Aggregate`
+- ✅ Hybrid search (BM25 + vector similarity)
 
 ## Basic Example
 
@@ -89,6 +90,15 @@ results = client.query(
 results.each do |match|
   puts "#{match.id} (score=#{match.score.round(3)}): #{match.metadata["title"]}"
 end
+
+# Hybrid search (BM25 + vector)
+results = client.hybrid_search(
+  index: index,
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7,  # 70% semantic, 30% keyword
+  top_k: 10
+)
 ```
 
 ## Advanced Filtering

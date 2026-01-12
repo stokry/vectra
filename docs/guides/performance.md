@@ -26,11 +26,45 @@ vectors = 10_000.times.map { |i| { id: "vec_#{i}", values: Array.new(384) { rand
 result = batch.upsert_async(
   index: 'my-index',
   vectors: vectors,
-  chunk_size: 100
+  chunk_size: 100,
+  on_progress: proc { |stats|
+    progress = stats[:percentage]
+    processed = stats[:processed]
+    total = stats[:total]
+    chunk = stats[:current_chunk] + 1
+    total_chunks = stats[:total_chunks]
+    
+    puts "Progress: #{progress}% (#{processed}/#{total})"
+    puts "  Chunk #{chunk}/#{total_chunks} | Success: #{stats[:success_count]}, Failed: #{stats[:failed_count]}"
+  }
 )
 
 puts "Upserted: #{result[:upserted_count]} vectors in #{result[:chunks]} chunks"
 puts "Errors: #{result[:errors].size}" if result[:errors].any?
+```
+
+### Progress Tracking
+
+Monitor batch operations in real-time with progress callbacks:
+
+```ruby
+batch.upsert_async(
+  index: 'my-index',
+  vectors: large_vector_array,
+  chunk_size: 100,
+  on_progress: proc { |stats|
+    # stats contains:
+    # - processed: number of processed vectors
+    # - total: total number of vectors
+    # - percentage: progress percentage (0-100)
+    # - current_chunk: current chunk index (0-based)
+    # - total_chunks: total number of chunks
+    # - success_count: number of successful chunks
+    # - failed_count: number of failed chunks
+    
+    puts "Progress: #{stats[:percentage]}% (#{stats[:processed]}/#{stats[:total]})"
+  }
+)
 ```
 
 ### Batch Delete

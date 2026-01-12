@@ -56,6 +56,14 @@ client.upsert(
 
 # Search
 results = client.query(vector: [0.1, 0.2, 0.3], top_k: 10)
+
+# Hybrid search (semantic + keyword)
+results = client.hybrid_search(
+  index: 'my-collection',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7  # 70% semantic, 30% keyword
+)
 ```
 
 ## Configuration Options

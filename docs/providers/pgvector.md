@@ -43,6 +43,7 @@ client = Vectra::Client.new(
 - ✅ ACID transactions
 - ✅ Complex queries
 - ✅ Rails ActiveRecord integration
+- ✅ Hybrid search (vector + full-text search)
 
 ## Example
 
@@ -63,6 +64,17 @@ client.upsert(
 
 # Search using cosine distance
 results = client.query(vector: [0.1, 0.2, 0.3], top_k: 5)
+
+# Hybrid search (requires text column with tsvector index)
+# First, create the index:
+# CREATE INDEX idx_content_fts ON my_index USING gin(to_tsvector('english', content));
+results = client.hybrid_search(
+  index: 'my_index',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7,
+  text_column: 'content'  # default: 'content'
+)
 ```
 
 ## ActiveRecord Integration

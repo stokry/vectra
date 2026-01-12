@@ -32,6 +32,7 @@ client = Vectra::Client.new(
 - ✅ Index statistics
 - ✅ Metadata filtering
 - ✅ Namespace support
+- ⚠️ Hybrid search (partial - requires sparse vectors)
 
 ## Example
 
@@ -56,6 +57,15 @@ results = client.query(vector: [0.1, 0.2, 0.3], top_k: 5)
 results.matches.each do |match|
   puts "#{match['id']}: #{match['score']}"
 end
+
+# Hybrid search (note: requires sparse vectors for true hybrid search)
+# For now, this uses dense vector search only
+results = client.hybrid_search(
+  index: 'my-index',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7
+)
 ```
 
 ## Configuration Options

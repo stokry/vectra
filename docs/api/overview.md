@@ -111,6 +111,98 @@ Get index statistics.
 }
 ```
 
+### `hybrid_search(index:, vector:, text:, alpha:, top_k:)`
+
+Combine semantic (vector) and keyword (text) search.
+
+**Parameters:**
+- `index` (String) - Index/collection name
+- `vector` (Array) - Query vector for semantic search
+- `text` (String) - Text query for keyword search
+- `alpha` (Float) - Balance between semantic and keyword (0.0 = pure keyword, 1.0 = pure semantic)
+- `top_k` (Integer) - Number of results (default: 10)
+- `namespace` (String, optional) - Namespace
+- `filter` (Hash, optional) - Metadata filter
+- `include_values` (Boolean) - Include vector values (default: false)
+- `include_metadata` (Boolean) - Include metadata (default: true)
+
+**Example:**
+```ruby
+results = client.hybrid_search(
+  index: 'docs',
+  vector: embedding,
+  text: 'ruby programming',
+  alpha: 0.7  # 70% semantic, 30% keyword
+)
+```
+
+**Provider Support:** Qdrant ✅, Weaviate ✅, pgvector ✅, Pinecone ⚠️
+
+### `healthy?`
+
+Quick health check - returns true if provider connection is healthy.
+
+**Returns:** Boolean
+
+**Example:**
+```ruby
+if client.healthy?
+  client.upsert(...)
+end
+```
+
+### `ping`
+
+Ping provider and get connection health status with latency.
+
+**Returns:**
+```ruby
+{
+  healthy: true,
+  provider: :pinecone,
+  latency_ms: 45.23
+}
+```
+
+**Example:**
+```ruby
+status = client.ping
+puts "Latency: #{status[:latency_ms]}ms"
+```
+
+### `Vector.normalize(vector, type: :l2)`
+
+Normalize a vector array (non-mutating).
+
+**Parameters:**
+- `vector` (Array) - Vector values to normalize
+- `type` (Symbol) - Normalization type: `:l2` (default) or `:l1`
+
+**Returns:** Array of normalized values
+
+**Example:**
+```ruby
+embedding = openai_response['data'][0]['embedding']
+normalized = Vectra::Vector.normalize(embedding)
+client.upsert(vectors: [{ id: 'doc-1', values: normalized }])
+```
+
+### `vector.normalize!(type: :l2)`
+
+Normalize vector in-place (mutates the vector).
+
+**Parameters:**
+- `type` (Symbol) - Normalization type: `:l2` (default) or `:l1`
+
+**Returns:** Self (for method chaining)
+
+**Example:**
+```ruby
+vector = Vectra::Vector.new(id: 'doc-1', values: embedding)
+vector.normalize!  # L2 normalization
+client.upsert(vectors: [vector])
+```
+
 ## Error Handling
 
 ```ruby
