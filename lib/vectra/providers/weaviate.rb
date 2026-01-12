@@ -119,50 +119,16 @@ module Vectra
       def hybrid_search(index:, vector:, text:, alpha:, top_k:, namespace: nil,
                         filter: nil, include_values: false, include_metadata: true)
         where_filter = build_where(filter, namespace)
-
-        selection_fields = []
-        selection_fields << "_additional { id distance }"
-        selection_fields << "vector" if include_values
-        selection_fields << "metadata" if include_metadata
-
-        selection_block = selection_fields.join(" ")
-
-        # Weaviate hybrid search with bm25 + nearVector
-        graphql = <<~GRAPHQL
-          {
-            Get {
-              #{index}(
-                limit: #{top_k}
-                hybrid: {
-                  query: "#{text.gsub('"', '\\"')}"
-                  alpha: #{alpha}
-                }
-                nearVector: { vector: [#{vector.map { |v| format('%.10f', v.to_f) }.join(', ')}] }
-                #{"where: #{JSON.generate(where_filter)}" if where_filter}
-              ) {
-                #{selection_block}
-              }
-            }
-          }
-        GRAPHQL
-
+        graphql = build_hybrid_search_graphql(index, vector, text, alpha, top_k,
+                                               where_filter, include_values, include_metadata)
         body = { "query" => graphql }
 
         response = with_error_handling do
           connection.post("#{API_BASE_PATH}/graphql", body)
         end
 
-        if response.success?
-          matches = extract_query_matches(response.body, index, include_values, include_metadata)
-          log_debug("Hybrid search returned #{matches.size} results (alpha: #{alpha})")
-
-          QueryResult.from_response(
-            matches: matches,
-            namespace: namespace
-          )
-        else
-          handle_error(response)
-        end
+        handle_hybrid_search_response(response, index, alpha, namespace,
+                                      include_values, include_metadata)
       end
 
       # rubocop:disable Metrics/PerceivedComplexity
@@ -356,6 +322,52 @@ module Vectra
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       private
+
+      def build_hybrid_search_graphql(index, vector, text, alpha, top_k, where_filter,
+                                      include_values, include_metadata)
+        selection_fields = build_selection_fields(include_values, include_metadata)
+        selection_block = selection_fields.join(" ")
+
+        <<~GRAPHQL
+          {
+            Get {
+              #{index}(
+                limit: #{top_k}
+                hybrid: {
+                  query: "#{text.gsub('"', '\\"')}"
+                  alpha: #{alpha}
+                }
+                nearVector: { vector: [#{vector.map { |v| format('%.10f', v.to_f) }.join(', ')}] }
+                #{"where: #{JSON.generate(where_filter)}" if where_filter}
+              ) {
+                #{selection_block}
+              }
+            }
+          }
+        GRAPHQL
+      end
+
+      def build_selection_fields(include_values, include_metadata)
+        fields = ["_additional { id distance }"]
+        fields << "vector" if include_values
+        fields << "metadata" if include_metadata
+        fields
+      end
+
+      def handle_hybrid_search_response(response, index, alpha, namespace,
+                                        include_values, include_metadata)
+        if response.success?
+          matches = extract_query_matches(response.body, index, include_values, include_metadata)
+          log_debug("Hybrid search returned #{matches.size} results (alpha: #{alpha})")
+
+          QueryResult.from_response(
+            matches: matches,
+            namespace: namespace
+          )
+        else
+          handle_error(response)
+        end
+      end
 
       def validate_config!
         super

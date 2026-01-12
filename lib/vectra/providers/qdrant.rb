@@ -100,44 +100,14 @@ module Vectra
       def hybrid_search(index:, vector:, text:, alpha:, top_k:, namespace: nil,
                         filter: nil, include_values: false, include_metadata: true)
         qdrant_filter = build_filter(filter, namespace)
-
-        # Qdrant hybrid search using prefetch (text) + rescore (vector)
-        body = {
-          prefetch: {
-            query: {
-              text: text
-            },
-            limit: top_k * 2 # Fetch more for rescoring
-          },
-          query: {
-            vector: vector.map(&:to_f)
-          },
-          limit: top_k,
-          params: {
-            alpha: alpha
-          },
-          with_vector: include_values,
-          with_payload: include_metadata
-        }
-
-        body[:prefetch][:filter] = qdrant_filter if qdrant_filter
-        body[:query][:filter] = qdrant_filter if qdrant_filter
+        body = build_hybrid_search_body(vector, text, alpha, top_k, qdrant_filter,
+                                        include_values, include_metadata)
 
         response = with_error_handling do
           connection.post("/collections/#{index}/points/query", body)
         end
 
-        if response.success?
-          matches = transform_search_results(response.body["result"] || [])
-          log_debug("Hybrid search returned #{matches.size} results (alpha: #{alpha})")
-
-          QueryResult.from_response(
-            matches: matches,
-            namespace: namespace
-          )
-        else
-          handle_error(response)
-        end
+        handle_hybrid_search_response(response, alpha, namespace)
       end
 
       # @see Base#fetch
@@ -336,6 +306,38 @@ module Vectra
       end
 
       private
+
+      def build_hybrid_search_body(vector, text, alpha, top_k, filter, include_values, include_metadata)
+        body = {
+          prefetch: {
+            query: { text: text },
+            limit: top_k * 2
+          },
+          query: { vector: vector.map(&:to_f) },
+          limit: top_k,
+          params: { alpha: alpha },
+          with_vector: include_values,
+          with_payload: include_metadata
+        }
+
+        body[:prefetch][:filter] = filter if filter
+        body[:query][:filter] = filter if filter
+        body
+      end
+
+      def handle_hybrid_search_response(response, alpha, namespace)
+        if response.success?
+          matches = transform_search_results(response.body["result"] || [])
+          log_debug("Hybrid search returned #{matches.size} results (alpha: #{alpha})")
+
+          QueryResult.from_response(
+            matches: matches,
+            namespace: namespace
+          )
+        else
+          handle_error(response)
+        end
+      end
 
       def validate_config!
         super

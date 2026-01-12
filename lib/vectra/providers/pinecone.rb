@@ -86,13 +86,13 @@ module Vectra
       # @note For proper hybrid search, you should generate sparse vectors
       #   from text using a tokenizer (e.g., BM25). This method accepts text
       #   but requires sparse vector generation externally.
-      def hybrid_search(index:, vector:, text:, alpha:, top_k:, namespace: nil,
+      def hybrid_search(index:, vector:, text: nil, alpha:, top_k:, namespace: nil,
                         filter: nil, include_values: false, include_metadata: true)
         # Pinecone hybrid search requires sparse vectors
         # For now, we'll use dense vector only and log a warning
         # In production, users should generate sparse vectors from text
         log_debug("Pinecone hybrid search: text parameter ignored. " \
-                  "For true hybrid search, provide sparse vectors via sparse_values parameter.")
+                  "For true hybrid search, provide sparse vectors via sparse_values parameter.") if text
 
         # Use dense vector search with alpha weighting
         # Note: Pinecone's actual hybrid search requires sparse vectors
