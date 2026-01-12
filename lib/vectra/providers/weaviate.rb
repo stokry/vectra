@@ -119,8 +119,16 @@ module Vectra
       def hybrid_search(index:, vector:, text:, alpha:, top_k:, namespace: nil,
                         filter: nil, include_values: false, include_metadata: true)
         where_filter = build_where(filter, namespace)
-        graphql = build_hybrid_search_graphql(index, vector, text, alpha, top_k,
-                                               where_filter, include_values, include_metadata)
+        graphql = build_hybrid_search_graphql(
+          index: index,
+          vector: vector,
+          text: text,
+          alpha: alpha,
+          top_k: top_k,
+          where_filter: where_filter,
+          include_values: include_values,
+          include_metadata: include_metadata
+        )
         body = { "query" => graphql }
 
         response = with_error_handling do
@@ -323,11 +331,13 @@ module Vectra
 
       private
 
-      def build_hybrid_search_graphql(index, vector, text, alpha, top_k, where_filter,
-                                      include_values, include_metadata)
-        selection_fields = build_selection_fields(include_values, include_metadata)
-        selection_block = selection_fields.join(" ")
+      def build_hybrid_search_graphql(index:, vector:, text:, alpha:, top_k:,
+                                       where_filter:, include_values:, include_metadata:)
+        selection_block = build_selection_fields(include_values, include_metadata).join(" ")
+        build_graphql_query(index, top_k, text, alpha, vector, where_filter, selection_block)
+      end
 
+      def build_graphql_query(index, top_k, text, alpha, vector, where_filter, selection_block)
         <<~GRAPHQL
           {
             Get {

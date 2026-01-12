@@ -197,13 +197,13 @@ RSpec.describe Vectra::Providers::Weaviate do
       )
 
       expect(WebMock).to(have_requested(:post, "#{base_url}/v1/graphql")
-        .with { |request|
+        .with do |request|
           body = JSON.parse(request.body)
           query = body["query"]
           query.include?("hybrid:") &&
             query.include?("query: \"#{query_text}\"") &&
             query.include?("alpha: 0.5")
-        })
+        end)
     end
 
     it "includes both hybrid and nearVector in query" do
@@ -216,11 +216,11 @@ RSpec.describe Vectra::Providers::Weaviate do
       )
 
       expect(WebMock).to(have_requested(:post, "#{base_url}/v1/graphql")
-        .with { |request|
+        .with do |request|
           body = JSON.parse(request.body)
           query = body["query"]
           query.include?("hybrid:") && query.include?("nearVector:")
-        })
+        end)
     end
   end
 
