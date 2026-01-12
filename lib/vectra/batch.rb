@@ -114,6 +114,7 @@ module Vectra
 
     private
 
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
     def process_chunks_concurrently(chunks, total_items: nil, on_progress: nil)
       pool = Concurrent::FixedThreadPool.new(concurrency)
       futures = []
@@ -134,13 +135,14 @@ module Vectra
           # Call progress callback when chunk completes
           if on_progress
             completed = completed_count.increment
-            processed = [completed * (chunks.first.size), total_items || chunks.size * chunks.first.size].min
+            total_size = chunks.size * chunks.first.size
+            processed = [completed * chunks.first.size, total_items || total_size].min
             percentage = total_items ? (processed.to_f / total_items * 100).round(2) : (completed.to_f / chunks.size * 100).round(2)
 
             progress_mutex.synchronize do
               on_progress.call(
                 processed: processed,
-                total: total_items || chunks.size * chunks.first.size,
+                total: total_items || total_size,
                 percentage: percentage,
                 current_chunk: completed - 1,
                 total_chunks: chunks.size,
@@ -159,6 +161,7 @@ module Vectra
 
       results.sort_by { |r| r[:index] }
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
 
     def aggregate_results(results, total_vectors)
       errors = results.select { |r| r[:error] }.map { |r| r[:error] }
