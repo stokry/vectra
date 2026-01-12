@@ -16,6 +16,7 @@ Vectra supports multiple vector database providers. Choose the one that best fit
 | [**Qdrant**]({{ site.baseurl }}/providers/qdrant) | Open Source | Self-hosted, Performance |
 | [**Weaviate**]({{ site.baseurl }}/providers/weaviate) | Open Source | Semantic search, GraphQL |
 | [**pgvector**]({{ site.baseurl }}/providers/pgvector) | PostgreSQL | SQL integration, ACID |
+| [**Memory**]({{ site.baseurl }}/providers/memory) | In-Memory | Testing, CI, local dev |
 
 ## Quick Comparison
 
@@ -73,6 +74,17 @@ client = Vectra::Client.new(provider: :qdrant, host: 'localhost:6333')
 # All operations work identically
 client.upsert(vectors: [...])
 results = client.query(vector: [...], top_k: 5)
+```
+
+For **tests and CI** you can use the in-memory provider:
+
+```ruby
+# config/initializers/vectra.rb (test environment)
+Vectra.configure do |config|
+  config.provider = :memory if Rails.env.test?
+end
+
+client = Vectra::Client.new
 ```
 
 ## Next Steps

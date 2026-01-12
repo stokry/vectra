@@ -475,6 +475,37 @@ module VectraHelper
 end
 ```
 
+## Testing with the Memory Provider
+
+For fast, deterministic tests you can run Vectra entirely in memory without any external services:
+
+```ruby
+# config/initializers/vectra.rb (test environment)
+Vectra.configure do |config|
+  config.provider = :memory if Rails.env.test?
+end
+
+RSpec.describe ProductSearchService do
+  let(:client) { Vectra::Client.new } # uses memory provider in test
+
+  before do
+    client.provider.clear! if client.provider.respond_to?(:clear!)
+
+    client.upsert(
+      index: "products",
+      vectors: [
+        { id: "p1", values: [0.1, 0.2], metadata: { name: "Test Product" } }
+      ]
+    )
+  end
+
+  it "returns relevant products" do
+    results = client.query(index: "products", vector: [0.1, 0.2], top_k: 5)
+    expect(results.ids).to include("p1")
+  end
+end
+```
+
 ## Best Practices
 
 ### 1. Always Use Caching for Frequent Queries

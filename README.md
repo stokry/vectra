@@ -17,6 +17,7 @@
 | **Qdrant** | Open Source | ✅ Supported |
 | **Weaviate** | Open Source | ✅ Supported |
 | **pgvector** | PostgreSQL | ✅ Supported |
+| **Memory** | In-Memory | ✅ Testing only |
 
 ## Installation
 
@@ -69,10 +70,16 @@ client = Vectra.qdrant(host: 'http://localhost:6333')
 client = Vectra.qdrant(host: 'https://your-cluster.qdrant.io', api_key: ENV['QDRANT_API_KEY'])
 
 # Weaviate
-client = Vectra.weaviate(host: 'http://localhost:8080', api_key: ENV['WEAVIATE_API_KEY'])
+client = Vectra.weaviate(
+  api_key: ENV['WEAVIATE_API_KEY'],
+  host: 'https://your-weaviate-instance'
+)
 
 # pgvector (PostgreSQL)
 client = Vectra.pgvector(connection_url: 'postgres://user:pass@localhost/mydb')
+
+# Memory (in-memory, testing only)
+client = Vectra.memory
 ```
 
 ## Features
