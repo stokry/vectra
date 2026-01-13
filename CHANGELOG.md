@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.0.4](https://github.com/stokry/vectra/tree/v1.0.4) (2026-01-13)
+
+### Added
+- Comprehensive Rails generator test coverage
+- Support for all vector database providers in generator
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.0.3...v1.0.4)
+
 ## [v1.0.3](https://github.com/stokry/vectra/tree/v1.0.3) (2026-01-13)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.2...v1.0.3)
