@@ -517,15 +517,15 @@ module Vectra
     def build_provider
       case config.provider
       when :pinecone
-        Providers::Pinecone.new(config)
+        Vectra::Providers::Pinecone.new(config)
       when :qdrant
-        Providers::Qdrant.new(config)
+        Vectra::Providers::Qdrant.new(config)
       when :weaviate
-        Providers::Weaviate.new(config)
+        Vectra::Providers::Weaviate.new(config)
       when :pgvector
-        Providers::Pgvector.new(config)
+        Vectra::Providers::Pgvector.new(config)
       when :memory
-        Providers::Memory.new(config)
+        Vectra::Providers::Memory.new(config)
       else
         raise UnsupportedProviderError, "Provider '#{config.provider}' is not supported"
       end
