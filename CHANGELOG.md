@@ -4,11 +4,6 @@
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.4...v1.0.5)
 
-### Improvements
-- Enhanced Rails generator test coverage with comprehensive provider testing
-- Improved mock Rails environment for generator specs
-- Added detailed testing for instruction methods
-
 ## [v1.0.4](https://github.com/stokry/vectra/tree/v1.0.4) (2026-01-13)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.3...v1.0.4)
