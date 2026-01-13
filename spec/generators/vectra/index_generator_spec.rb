@@ -18,6 +18,7 @@ module Rails
         @source_root
       end
 
+      def self.argument(*); end
       def self.class_option(*); end
       def self.desc(*); end
 
