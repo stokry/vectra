@@ -25,6 +25,12 @@ module Vectra
       class_option :index, type: :string, default: nil,
                            desc: "Index/collection name (defaults to table name)"
 
+      def initialize(args = [], options = {}, config = {})
+        super
+        @model_name = args[0]&.to_s
+        @column_name = (args[1] || "embedding")&.to_s
+      end
+
       def create_migration_for_pgvector
         return unless provider_name == "pgvector"
 
@@ -116,11 +122,11 @@ module Vectra
       private
 
       def model_name
-        @model_name ||= arguments[0]&.to_s || raise("Model name is required")
+        @model_name || raise("Model name is required")
       end
 
       def column_name
-        @column_name ||= arguments[1]&.to_s || "embedding"
+        @column_name || "embedding"
       end
 
       def table_name
