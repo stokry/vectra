@@ -115,6 +115,14 @@ module Vectra
 
       private
 
+      def model_name
+        @model_name ||= arguments[0]&.to_s || raise("Model name is required")
+      end
+
+      def column_name
+        @column_name ||= arguments[1]&.to_s || "embedding"
+      end
+
       def table_name
         model_name.underscore.pluralize
       end
@@ -129,6 +137,10 @@ module Vectra
 
       def dimension
         options[:dimension].to_i
+      end
+
+      def concern_module_name
+        "#{model_name.camelize}Vector"
       end
 
       def migration_version

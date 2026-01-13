@@ -22,9 +22,10 @@ module Rails
       def self.class_option(*); end
       def self.desc(*); end
 
-      attr_accessor :options, :destination_root
+      attr_accessor :options, :destination_root, :arguments
 
-      def initialize(_args = [], options = {}, config = {})
+      def initialize(args = [], options = {}, config = {})
+        @arguments = args
         @options = options
         @destination_root = config[:destination_root] || Dir.pwd
       end
