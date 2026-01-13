@@ -2,6 +2,9 @@
 
 require "active_support/concern"
 
+# Ensure Client and Providers are loaded (for Rails autoloading compatibility)
+require_relative "client" unless defined?(Vectra::Client)
+
 module Vectra
   # ActiveRecord integration for vector embeddings
   #

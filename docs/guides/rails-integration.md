@@ -42,10 +42,14 @@ This creates:
 
 ## Step 2: Configure Vectra
 
+**Important:** Always add `require 'vectra'` at the top of your initializer to ensure all Providers are loaded in Rails autoloading context.
+
 ### Option A: Using pgvector (PostgreSQL)
 
 ```ruby
 # config/initializers/vectra.rb
+require 'vectra'  # Ensure all Providers are loaded
+
 Vectra.configure do |config|
   config.provider = :pgvector
   config.host = Rails.application.config.database_configuration[Rails.env]['database']
@@ -58,6 +62,8 @@ end
 
 ```ruby
 # config/initializers/vectra.rb
+require 'vectra'  # Ensure all Providers are loaded
+
 Vectra.configure do |config|
   config.provider = :qdrant
   config.host = ENV.fetch('QDRANT_HOST', 'http://localhost:6333')
@@ -69,6 +75,8 @@ end
 
 ```ruby
 # config/initializers/vectra.rb
+require 'vectra'  # Ensure all Providers are loaded
+
 Vectra.configure do |config|
   config.provider = :pinecone
   config.api_key = ENV['PINECONE_API_KEY']
@@ -665,8 +673,18 @@ You now have a complete Rails application with:
 - ✅ Batch processing for 1000+ products
 - ✅ Background jobs for async processing
 
+## Troubleshooting
+
+If you encounter issues like `uninitialized constant Vectra::Providers::Qdrant`, see the [Rails Troubleshooting Guide]({{ site.baseurl }}/guides/rails-troubleshooting/) for solutions.
+
+Common fixes:
+- Add `require 'vectra'` at the top of your initializer
+- Restart Rails server after configuration changes
+- Check that all Providers are loaded: `Vectra::Providers.constants`
+
 ## Next Steps
 
+- [Rails Troubleshooting Guide]({{ site.baseurl }}/guides/rails-troubleshooting/) - Common issues and solutions
 - [API Reference]({{ site.baseurl }}/api/overview)
 - [Provider Guides]({{ site.baseurl }}/providers)
 - [Performance Optimization]({{ site.baseurl }}/guides/performance)

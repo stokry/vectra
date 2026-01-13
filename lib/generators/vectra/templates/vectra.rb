@@ -4,6 +4,9 @@
 #
 # For more information see: https://github.com/stokry/vectra
 
+# Ensure Vectra and all Providers are loaded (important for Rails autoloading)
+require 'vectra'
+
 Vectra.configure do |config|
   # Provider configuration
   config.provider = :<%= options[:provider] %>

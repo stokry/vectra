@@ -4,6 +4,14 @@
 require_relative "health_check" unless defined?(Vectra::HealthCheck)
 require_relative "configuration" unless defined?(Vectra::Configuration)
 
+# Ensure Providers are loaded before Client (for Rails autoloading compatibility)
+require_relative "providers/base" unless defined?(Vectra::Providers::Base)
+require_relative "providers/pinecone" unless defined?(Vectra::Providers::Pinecone)
+require_relative "providers/qdrant" unless defined?(Vectra::Providers::Qdrant)
+require_relative "providers/weaviate" unless defined?(Vectra::Providers::Weaviate)
+require_relative "providers/pgvector" unless defined?(Vectra::Providers::Pgvector)
+require_relative "providers/memory" unless defined?(Vectra::Providers::Memory)
+
 module Vectra
   # Unified client for vector database operations
   #
