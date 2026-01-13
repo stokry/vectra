@@ -97,7 +97,7 @@ module Vectra
       end
 
       def update_vectra_config
-        path = File.join("config", "vectra.yml")
+        path = File.join(destination_root || ".", "config", "vectra.yml")
 
         existing = File.exist?(path) ? File.read(path) : ""
         entry_key = "#{table_name}:"
