@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.0.6](https://github.com/stokry/vectra/tree/v1.0.6) (2026-01-13)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.0.5...v1.0.6)
+
+### Improvements
+- Refined test suite and documentation
+- Performance optimizations
+- Enhanced stability and reliability
+
 ## [v1.0.5](https://github.com/stokry/vectra/tree/v1.0.5) (2026-01-13)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.4...v1.0.5)
