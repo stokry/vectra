@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.0.3](https://github.com/stokry/vectra/tree/v1.0.3) (2026-01-13)
+
+### Fixed
+- Fix HealthCheck module inclusion timing issue
+- Fix Rails generator dependencies loading
+- Simplify pgvector migration generation in install generator
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.0.2...v1.0.3)
+
 ## [v1.0.2](https://github.com/stokry/vectra/tree/v1.0.2) (2026-01-13)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.1...v1.0.2)
