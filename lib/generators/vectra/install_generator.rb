@@ -30,8 +30,6 @@ module Vectra
       def create_migration
         return unless options[:provider] == "pgvector"
 
-        generate :migration, "EnablePgvectorExtension"
-
         migration_template(
           "enable_pgvector_extension.rb",
           "db/migrate/enable_pgvector_extension.rb",

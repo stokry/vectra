@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Ensure HealthCheck is loaded before Client
+require_relative "health_check" unless defined?(Vectra::HealthCheck)
+require_relative "configuration" unless defined?(Vectra::Configuration)
+
 module Vectra
   # Unified client for vector database operations
   #
