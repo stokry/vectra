@@ -182,6 +182,21 @@ client.upsert(vectors: vectors)
 # => ValidationError: Inconsistent vector dimensions at index 1: expected 3, got 2
 ```
 
+## Rails Generator (vectra:index)
+
+For Rails apps, you can generate everything you need for a model with a single command:
+
+```bash
+rails generate vectra:index Product embedding dimension:1536 provider:qdrant
+```
+
+This will:
+
+- Create a **pgvector migration** when `provider=pgvector` (adds `embedding` vector column)
+- Generate a **model concern** (`ProductVector`) with `has_vector :embedding`
+- Update the **model** to include `ProductVector`
+- Append an entry to **`config/vectra.yml`** with index metadata (no API keys)
+
 ## Configuration
 
 Create a configuration file (Rails: `config/initializers/vectra.rb`):

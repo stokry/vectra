@@ -29,6 +29,24 @@ psql vectra_demo -c "CREATE EXTENSION vector;"
 
 ## Examples
 
+### Rails Quickstart (with generator)
+
+```bash
+# Generate Vectra index for Product model
+rails generate vectra:index Product embedding dimension:1536 provider:qdrant
+
+# Run migrations (if pgvector)
+rails db:migrate
+```
+
+Then in `app/models/product.rb`:
+
+```ruby
+class Product < ApplicationRecord
+  include ProductVector  # generated concern with has_vector :embedding
+end
+```
+
 ### 1. **Comprehensive Demo** (`comprehensive_demo.rb`)
 
 **⭐ START HERE** - Complete production-ready demonstration of all Vectra features.

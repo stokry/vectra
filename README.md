@@ -201,6 +201,21 @@ doc = Document.create!(title: 'Hello', embedding: [0.1, 0.2, ...])
 Document.vector_search(embedding: query_vector, limit: 10)
 ```
 
+### Rails Generator: vectra:index
+
+Generate everything you need for a model with a single command:
+
+```bash
+rails generate vectra:index Product embedding dimension:1536 provider:qdrant
+```
+
+This will:
+
+- **Create a pgvector migration** (only when `provider=pgvector`) adding `embedding` column
+- **Generate a model concern** (`ProductVector`) with `has_vector :embedding`
+- **Update the model** to include `ProductVector`
+- **Append to `config/vectra.yml`** with index metadata (no API keys)
+
 ## Production Patterns
 
 Vectra includes 7 production-ready patterns out of the box:
