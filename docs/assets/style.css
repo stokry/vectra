@@ -221,7 +221,7 @@ body {
   gap: var(--tma-spacing-sm);
   padding: var(--tma-spacing-xs) var(--tma-spacing-md);
   background: var(--tma-color-accent-muted);
-  border: 1px solid rgba(5, 223, 114, 0.3);
+  border: 1px solid rgba(225, 158, 150, 0.3);
   border-radius: 100px;
   font-size: 0.85rem;
   font-weight: 500;

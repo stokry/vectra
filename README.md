@@ -1,7 +1,7 @@
 # Vectra client
 
 <p align="center">
-  <img src="docs/assets/radme.png" alt="Vectra – Unified Ruby client for vector databases" width="640">
+  <img src="docs/assets/readme-new.png" alt="Vectra – Unified Ruby client for vector databases" width="640">
 </p>
 
 <p align="center">
