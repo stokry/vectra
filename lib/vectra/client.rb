@@ -25,7 +25,7 @@ module Vectra
   #   )
   #
   class Client
-    include HealthCheck
+    include Vectra::HealthCheck
 
     attr_reader :config, :provider
 
