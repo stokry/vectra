@@ -5,15 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{ page.description | default: site.description }}">
   <title>{{ page.title }} - {{ site.title }}</title>
+
+  <!-- Primary styles -->
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/style.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/assets/favicon.svg">
+
+  <!-- SEO Meta -->
+  <meta property="og:title" content="{{ page.title | default: site.title }}">
+  <meta property="og:description" content="{{ page.description | default: site.description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
+  <meta property="og:image" content="{{ site.url }}{{ site.baseurl }}/assets/seo.png">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.title | default: site.title }}">
+  <meta name="twitter:description" content="{{ page.description | default: site.description }}">
+  <meta name="twitter:image" content="{{ site.url }}{{ site.baseurl }}/assets/seo.png">
+
   <script defer src="https://umami-production-dfb8.up.railway.app/script.js" data-website-id="07e5420c-12d1-4e3c-9dbd-5cecb15a878f"></script>
 </head>
 <body>
   <!-- Header -->
   <header class="tma-header">
     <nav class="tma-nav">
-      <a href="{{ site.baseurl }}/" class="tma-nav__brand">Vectra</a>
+      <a href="{{ site.baseurl }}/" class="tma-nav__brand">
+        <img src="{{ site.baseurl }}/assets/logo.svg" alt="Vectra" class="tma-nav__logo">
+      </a>
       <button class="tma-nav__toggle" aria-label="Toggle menu" aria-expanded="false">
         <span class="tma-nav__toggle-line"></span>
         <span class="tma-nav__toggle-line"></span>
@@ -78,6 +97,23 @@
       {{ content }}
     </main>
   </div>
+
+  <!-- Footer -->
+  <footer class="tma-footer">
+    <div class="tma-footer__container">
+      <div>
+        <span class="tma-footer__brand">◆ Vectra</span>
+        <p class="tma-footer__copy">Built with ❤️ for the Ruby community. Mijo Kristo</p>
+      </div>
+      <ul class="tma-footer__links">
+        <li><a href="https://github.com/stokry/vectra">GitHub</a></li>
+        <li><a href="https://rubygems.org/gems/vectra-client">RubyGems</a></li>
+        <li><a href="{{ site.baseurl }}/community/contributing">Contributing</a></li>
+        <li><a href="https://github.com/stokry/vectra/blob/main/LICENSE">MIT License</a></li>
+      </ul>
+    </div>
+  </footer>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const navToggle = document.querySelector('.tma-nav__toggle');
