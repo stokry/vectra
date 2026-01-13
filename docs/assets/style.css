@@ -4,12 +4,12 @@
 
 /* CSS Custom Properties */
 :root {
-  /* Color Palette - Clean Green Accent */
-  --tma-color-bg-primary: #0a0a0f;
-  --tma-color-bg-secondary: #111118;
-  --tma-color-bg-tertiary: #1a1a22;
-  --tma-color-bg-elevated: #222230;
-  --tma-color-bg-hover: #2a2a3a;
+  /* Color Palette - Deep Navy + Green Accent */
+  --tma-color-bg-primary: #0c1a3f;
+  --tma-color-bg-secondary: #111f4b;
+  --tma-color-bg-tertiary: #17265c;
+  --tma-color-bg-elevated: #1f2f70;
+  --tma-color-bg-hover: #24367d;
   
   /* Accent Colors - Based on #05df72 */
   --tma-color-accent-primary: #05df72;
@@ -98,7 +98,7 @@ body {
   left: 0;
   right: 0;
   height: var(--tma-header-height);
-  background: rgba(10, 10, 15, 0.95);
+  background: rgba(12, 26, 63, 0.96);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--tma-color-border);
   z-index: 1000;
@@ -119,15 +119,23 @@ body {
   align-items: center;
   gap: var(--tma-spacing-sm);
   text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--tma-color-accent-primary);
-  letter-spacing: -0.02em;
+  color: var(--tma-color-text-primary);
 }
 
 .tma-nav__brand::before {
-  content: '◆';
-  font-size: 1.2rem;
+  content: '';
+}
+
+.tma-nav__logo {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+.tma-nav__brand-text {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 .tma-nav__menu {
