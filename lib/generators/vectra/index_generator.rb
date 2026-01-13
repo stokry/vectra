@@ -155,4 +155,3 @@ module Vectra
     end
   end
 end
-

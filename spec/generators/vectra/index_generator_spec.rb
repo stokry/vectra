@@ -159,4 +159,3 @@ RSpec.describe Vectra::Generators::IndexGenerator, type: :generator do
   end
 end
 # rubocop:enable RSpec/FilePath, RSpec/SpecFilePathFormat
-
