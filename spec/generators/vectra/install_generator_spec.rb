@@ -118,11 +118,12 @@ RSpec.describe Vectra::Generators::InstallGenerator, type: :generator do
     it "generates migration for pgvector" do
       generator = run_generator
 
-      expect(generator).to receive(:migration_template).with(
-        "enable_pgvector_extension.rb",
-        "db/migrate/enable_pgvector_extension.rb",
-        migration_version: "[7.0]"
-      )
+      expect(generator).to receive(:create_file) do |path, content|
+        expect(path).to match(%r{db/migrate/\d{14}_enable_pgvector_extension\.rb})
+        expect(content).to include("class EnablePgvectorExtension")
+        expect(content).to include("enable_extension 'vector'")
+        expect(content).to include("ActiveRecord::Migration[7.0]")
+      end
 
       generator.create_migration
     end

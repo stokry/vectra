@@ -30,11 +30,25 @@ module Vectra
       def create_migration
         return unless options[:provider] == "pgvector"
 
-        migration_template(
-          "enable_pgvector_extension.rb",
-          "db/migrate/enable_pgvector_extension.rb",
-          migration_version: migration_version
-        )
+        timestamp = Time.now.utc.strftime("%Y%m%d%H%M%S")
+        file_name = "#{timestamp}_enable_pgvector_extension.rb"
+        path = File.join("db/migrate", file_name)
+
+        migration_body = <<~RUBY
+          # frozen_string_literal: true
+
+          class EnablePgvectorExtension < ActiveRecord::Migration#{migration_version}
+            def up
+              enable_extension 'vector'
+            end
+
+            def down
+              disable_extension 'vector'
+            end
+          end
+        RUBY
+
+        create_file(path, migration_body)
       end
 
       def show_readme
