@@ -184,6 +184,8 @@ graph TB
 
 ## Rails Integration
 
+### Quick Start
+
 ```ruby
 class Document < ApplicationRecord
   include Vectra::ActiveRecord
@@ -215,6 +217,17 @@ This will:
 - **Generate a model concern** (`ProductVector`) with `has_vector :embedding`
 - **Update the model** to include `ProductVector`
 - **Append to `config/vectra.yml`** with index metadata (no API keys)
+
+### Complete Rails Guide
+
+For a complete step-by-step guide including:
+- Setting up embeddings (OpenAI, Cohere)
+- Processing 1000+ products
+- Background jobs
+- Hybrid search
+- Performance optimization
+
+👉 **[Read the complete Rails Integration Guide](https://vectra-docs.netlify.app/guides/rails-integration/)**
 
 ## Production Patterns
 

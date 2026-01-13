@@ -197,6 +197,18 @@ This will:
 - Update the **model** to include `ProductVector`
 - Append an entry to **`config/vectra.yml`** with index metadata (no API keys)
 
+### Complete Rails Integration Guide
+
+For a comprehensive Rails guide including:
+- Step-by-step setup
+- Embedding generation (OpenAI, Cohere)
+- Processing 1000+ products with batch operations
+- Background jobs for async processing
+- Hybrid search examples
+- Performance optimization tips
+
+👉 **[Read the complete Rails Integration Guide]({{ site.baseurl }}/guides/rails-integration/)**
+
 ## Configuration
 
 Create a configuration file (Rails: `config/initializers/vectra.rb`):
@@ -214,6 +226,7 @@ client = Vectra::Client.new
 
 ## Next Steps
 
+- **[Rails Integration Guide]({{ site.baseurl }}/guides/rails-integration/)** - Complete step-by-step guide for Rails apps
 - [API Reference]({{ site.baseurl }}/api/overview)
 - [Provider Guides]({{ site.baseurl }}/providers)
 - [Examples]({{ site.baseurl }}/examples/basic-usage)
