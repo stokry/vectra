@@ -1,13 +1,32 @@
-# Vectra
+# Vectra client
 
-[![Gem Version](https://badge.fury.io/rb/vectra-client.svg)](https://rubygems.org/gems/vectra-client)
-[![CI](https://github.com/stokry/vectra/actions/workflows/ci.yml/badge.svg)](https://github.com/stokry/vectra/actions)
-[![codecov](https://codecov.io/gh/stokry/vectra/branch/main/graph/badge.svg)](https://codecov.io/gh/stokry/vectra)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <img src="docs/assets/radme.png" alt="Vectra – Unified Ruby client for vector databases" width="640">
+</p>
 
-**A unified Ruby client for vector databases.** Write once, switch providers seamlessly.
+<p align="center">
+  <a href="https://rubygems.org/gems/vectra-client">
+    <img src="https://badge.fury.io/rb/vectra-client.svg" alt="Gem Version">
+  </a>
+  <a href="https://github.com/stokry/vectra/actions">
+    <img src="https://github.com/stokry/vectra/actions/workflows/ci.yml/badge.svg" alt="CI">
+  </a>
+  <a href="https://codecov.io/gh/stokry/vectra">
+    <img src="https://codecov.io/gh/stokry/vectra/branch/main/graph/badge.svg" alt="codecov">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+  </a>
+</p>
 
-📖 **Documentation:** [vectra-docs.netlify.app](https://vectra-docs.netlify.app/)
+<p align="center">
+  <strong>A unified Ruby client for vector databases.</strong><br>
+  Write once, switch providers seamlessly.
+</p>
+
+<p align="center">
+  📖 <strong>Documentation:</strong> <a href="https://vectra-docs.netlify.app/">vectra-docs.netlify.app</a>
+</p>
 
 ## Supported Providers
 

@@ -4,34 +4,34 @@
 
 /* CSS Custom Properties */
 :root {
-  /* Color Palette - Deep Navy + Green Accent */
+  /* Color Palette - Deep Navy + Coral Accent */
   --tma-color-bg-primary: #0c1a3f;
   --tma-color-bg-secondary: #111f4b;
   --tma-color-bg-tertiary: #17265c;
   --tma-color-bg-elevated: #1f2f70;
   --tma-color-bg-hover: #24367d;
   
-  /* Accent Colors - Based on #05df72 */
-  --tma-color-accent-primary: #05df72;
-  --tma-color-accent-light: #2ee889;
-  --tma-color-accent-dark: #04b85e;
-  --tma-color-accent-muted: rgba(5, 223, 114, 0.15);
+  /* Accent Colors - Based on logo (#e19e96) */
+  --tma-color-accent-primary: #e19e96;
+  --tma-color-accent-light: #f1b4aa;
+  --tma-color-accent-dark: #c46f63;
+  --tma-color-accent-muted: rgba(225, 158, 150, 0.16);
   
   /* Text Colors */
   --tma-color-text-primary: #f4f4f5;
-  --tma-color-text-secondary: #a1a1aa;
-  --tma-color-text-muted: #71717a;
-  --tma-color-text-accent: #05df72;
+  --tma-color-text-secondary: #c1c2d0;
+  --tma-color-text-muted: #8b8ca0;
+  --tma-color-text-accent: #e19e96;
   
   /* Border Colors */
   --tma-color-border: rgba(255, 255, 255, 0.08);
-  --tma-color-border-hover: rgba(5, 223, 114, 0.4);
+  --tma-color-border-hover: rgba(225, 158, 150, 0.6);
   
   /* Shadows */
   --tma-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --tma-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --tma-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --tma-shadow-glow: 0 0 30px rgba(5, 223, 114, 0.2);
+  --tma-shadow-glow: 0 0 30px rgba(225, 158, 150, 0.35);
   
   /* Typography */
   --tma-font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -127,15 +127,8 @@ body {
 }
 
 .tma-nav__logo {
-  width: 28px;
-  height: 28px;
+  width: 110px;
   display: block;
-}
-
-.tma-nav__brand-text {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
 }
 
 .tma-nav__menu {
