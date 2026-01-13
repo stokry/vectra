@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.0.1](https://github.com/stokry/vectra/tree/v1.0.1) (2026-01-13)
+
+- Add `vectra:index` Rails generator for model/index scaffolding (migration, concern, config)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.0.0...v1.0.1)
+
 ## [v1.0.0](https://github.com/stokry/vectra/tree/v1.0.0) (2026-01-12)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v0.4.0...v1.0.0)
