@@ -154,4 +154,4 @@ module Vectra
       end
     end
   end
-end # Vectra::Generators::IndexGenerator
+end
