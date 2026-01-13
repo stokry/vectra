@@ -1,3 +1,4 @@
+ls
 ---
 layout: page
 title: Examples

@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.0.2](https://github.com/stokry/vectra/tree/v1.0.2) (2026-01-13)
+
+### Fixed
+- Fix HealthCheck module inclusion in Client class
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.0.1...v1.0.2)
+
 ## [v1.0.1](https://github.com/stokry/vectra/tree/v1.0.1) (2026-01-13)
 
 ### Added
