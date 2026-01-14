@@ -226,22 +226,95 @@ client.delete(index: 'documents', delete_all: true)
 
 ---
 
-### `client.stats(index:)`
+### `client.stats(index:, namespace: nil)`
 
 Get index statistics.
 
 **Parameters:**
 - `index` (String) - Index/collection name
+- `namespace` (String, optional) - Namespace
 
 **Returns:** `Hash` with statistics:
 - `dimension` (Integer) - Vector dimension
-- `vector_count` (Integer) - Number of vectors
-- `index_fullness` (Float, optional) - Index fullness (0.0-1.0)
+- `total_vector_count` (Integer) - Total number of vectors
+- `namespaces` (Hash, optional) - Namespace breakdown with vector counts
 
 **Example:**
 ```ruby
 stats = client.stats(index: 'documents')
-# => { dimension: 1536, vector_count: 1000, index_fullness: 0.8 }
+# => { dimension: 1536, total_vector_count: 1000, namespaces: { "default" => { vector_count: 1000 } } }
+```
+
+---
+
+### `client.create_index(name:, dimension:, metric: "cosine", **options)`
+
+Create a new index/collection.
+
+**Parameters:**
+- `name` (String) - Index name
+- `dimension` (Integer) - Vector dimension
+- `metric` (String) - Distance metric: `"cosine"` (default), `"euclidean"`, `"dot_product"`
+- `options` (Hash) - Provider-specific options (e.g., `on_disk: true` for Qdrant)
+
+**Returns:** `Hash` with index information
+
+**Note:** Not all providers support index creation. Raises `NotImplementedError` if provider doesn't support it (e.g., Memory, Weaviate).
+
+**Example:**
+```ruby
+# Create index with default cosine metric
+result = client.create_index(name: 'documents', dimension: 384)
+# => { name: 'documents', dimension: 384, metric: 'cosine', status: 'ready' }
+
+# Create with custom metric (Qdrant)
+result = client.create_index(
+  name: 'products',
+  dimension: 1536,
+  metric: 'euclidean',
+  on_disk: true
+)
+```
+
+---
+
+### `client.delete_index(name:)`
+
+Delete an index/collection.
+
+**Parameters:**
+- `name` (String) - Index name
+
+**Returns:** `Hash` with `:deleted => true`
+
+**Note:** Not all providers support index deletion. Raises `NotImplementedError` if provider doesn't support it (e.g., Memory, Weaviate).
+
+**Example:**
+```ruby
+result = client.delete_index(name: 'old-index')
+# => { deleted: true }
+```
+
+---
+
+### `client.list_namespaces(index:)`
+
+List all namespaces in an index.
+
+**Parameters:**
+- `index` (String) - Index/collection name
+
+**Returns:** `Array<String>` - List of namespace names (excludes empty/default namespace)
+
+**Example:**
+```ruby
+namespaces = client.list_namespaces(index: 'documents')
+# => ["tenant-1", "tenant-2", "tenant-3"]
+
+namespaces.each do |ns|
+  stats = client.stats(index: 'documents', namespace: ns)
+  puts "Namespace #{ns}: #{stats[:total_vector_count]} vectors"
+end
 ```
 
 ---
@@ -364,6 +437,46 @@ Vectra::Batch.upsert(
     puts "Batch #{batch_index + 1}/#{total_batches} (#{batch_count} vectors)"
   end
 )
+```
+
+---
+
+### `batch.query_async(index:, vectors:, top_k: 10, namespace: nil, filter: nil, include_values: false, include_metadata: true, chunk_size: 10, on_progress: nil)`
+
+Query multiple vectors concurrently (useful for recommendation engines).
+
+**Parameters:**
+- `index` (String) - Index/collection name
+- `vectors` (Array<Array<Float>>) - Array of query vectors
+- `top_k` (Integer) - Number of results per query (default: 10)
+- `namespace` (String, optional) - Namespace
+- `filter` (Hash, optional) - Metadata filter
+- `include_values` (Boolean) - Include vector values in results (default: false)
+- `include_metadata` (Boolean) - Include metadata in results (default: true)
+- `chunk_size` (Integer) - Queries per chunk for progress tracking (default: 10)
+- `on_progress` (Proc, optional) - Progress callback: `->(stats) { ... }`
+
+**Returns:** `Array<QueryResult>` - One QueryResult per input vector
+
+**Example:**
+```ruby
+batch = Vectra::Batch.new(client, concurrency: 4)
+
+# Find similar items for multiple products
+product_embeddings = products.map(&:embedding)
+results = batch.query_async(
+  index: 'products',
+  vectors: product_embeddings,
+  top_k: 5,
+  on_progress: ->(stats) do
+    puts "Processed #{stats[:processed]}/#{stats[:total]} queries (#{stats[:percentage]}%)"
+  end
+)
+
+# Each result corresponds to one product
+results.each_with_index do |result, i|
+  puts "Similar to product #{i}: #{result.ids}"
+end
 ```
 
 ---

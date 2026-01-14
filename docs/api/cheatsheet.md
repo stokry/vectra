@@ -119,6 +119,34 @@ client.delete(index: 'documents', filter: { category: 'old' })
 client.delete(index: 'documents', delete_all: true)
 ```
 
+### Index Management
+
+```ruby
+# Create index
+client.create_index(name: 'documents', dimension: 384, metric: 'cosine')
+
+# List indexes
+indexes = client.list_indexes
+# => [{ name: 'documents', dimension: 384, ... }]
+
+# Describe index
+info = client.describe_index(index: 'documents')
+# => { name: 'documents', dimension: 384, metric: 'cosine', status: 'ready' }
+
+# Get stats
+stats = client.stats(index: 'documents')
+# => { total_vector_count: 1000, dimension: 384, namespaces: { ... } }
+
+# List namespaces
+namespaces = client.list_namespaces(index: 'documents')
+# => ['tenant-1', 'tenant-2']
+
+# Delete index
+client.delete_index(name: 'old-index')
+```
+
+**Note:** `create_index` and `delete_index` are supported by Pinecone, Qdrant, and pgvector. Memory and Weaviate providers don't support these operations.
+
 ---
 
 ## Health & Monitoring
@@ -227,6 +255,25 @@ Vectra::Batch.upsert(
     puts "Batch #{batch_index + 1}/#{total_batches} (#{batch_count} vectors)"
   end
 )
+```
+
+### Batch Query (Multiple Vectors)
+
+```ruby
+batch = Vectra::Batch.new(client, concurrency: 4)
+
+# Find similar items for multiple products at once
+product_embeddings = products.map(&:embedding)
+results = batch.query_async(
+  index: 'products',
+  vectors: product_embeddings,
+  top_k: 5
+)
+
+# Each result corresponds to one product
+results.each_with_index do |result, i|
+  puts "Similar to product #{i}: #{result.ids}"
+end
 ```
 
 ---

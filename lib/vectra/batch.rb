@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "concurrent"
+require_relative "query_result" unless defined?(Vectra::QueryResult)
 
 module Vectra
   # Batch operations with concurrent processing
@@ -110,6 +111,74 @@ module Vectra
       end
 
       merge_fetch_results(results)
+    end
+
+    # Perform async batch query with concurrent requests
+    #
+    # Useful for finding similar items for multiple vectors at once (e.g., recommendation engine).
+    #
+    # @param index [String] the index name
+    # @param vectors [Array<Array<Float>>] query vectors
+    # @param top_k [Integer] number of results per query (default: 10)
+    # @param namespace [String, nil] optional namespace
+    # @param filter [Hash, nil] metadata filter
+    # @param include_values [Boolean] include vector values in response
+    # @param include_metadata [Boolean] include metadata in response
+    # @param chunk_size [Integer] queries per chunk for progress tracking (default: 10)
+    # @param on_progress [Proc, nil] optional callback called after each chunk completes
+    #   Callback receives hash with: processed, total, percentage, current_chunk, total_chunks, success_count, failed_count
+    # @return [Array<QueryResult>] array of query results, one per input vector
+    #
+    # @example Find similar items for multiple products
+    #   product_embeddings = products.map(&:embedding)
+    #   results = batch.query_async(
+    #     index: 'products',
+    #     vectors: product_embeddings,
+    #     top_k: 5,
+    #     on_progress: ->(stats) {
+    #       puts "Processed #{stats[:processed]}/#{stats[:total]} queries"
+    #     }
+    #   )
+    #   results.each_with_index do |result, i|
+    #     puts "Similar to product #{i}: #{result.ids}"
+    #   end
+    #
+    def query_async(index:, vectors:, top_k: 10, namespace: nil, filter: nil,
+                    include_values: false, include_metadata: true,
+                    chunk_size: 10, on_progress: nil)
+      return [] if vectors.empty?
+
+      # Process queries in chunks for progress tracking
+      chunks = vectors.each_slice(chunk_size).to_a
+      results = process_chunks_concurrently(chunks, total_items: vectors.size, on_progress: on_progress) do |chunk|
+        # Execute queries sequentially within chunk (each query is already fast)
+        chunk.map do |vector|
+          client.query(
+            index: index,
+            vector: vector,
+            top_k: top_k,
+            namespace: namespace,
+            filter: filter,
+            include_values: include_values,
+            include_metadata: include_metadata
+          )
+        end
+      end
+
+      # Flatten results and handle errors
+      all_results = []
+      results.each_with_index do |chunk_result, chunk_index|
+        if chunk_result[:error]
+          # On error, return empty QueryResult for each vector in chunk
+          # Use actual chunk size (last chunk might be smaller)
+          actual_chunk_size = chunk_index < chunks.size ? chunks[chunk_index].size : chunk_size
+          actual_chunk_size.times { all_results << QueryResult.new(matches: []) }
+        else
+          all_results.concat(chunk_result[:result] || [])
+        end
+      end
+
+      all_results
     end
 
     private

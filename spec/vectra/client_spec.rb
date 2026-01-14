@@ -496,6 +496,99 @@ RSpec.describe Vectra::Client do
     end
   end
 
+  describe "#create_index" do
+    let(:index_info) { { name: "new-index", dimension: 384, metric: "cosine" } }
+
+    before do
+      allow(provider).to receive(:respond_to?).with(:create_index).and_return(true)
+      allow(provider).to receive(:create_index).and_return(index_info)
+    end
+
+    it "creates index through provider" do
+      result = client.create_index(name: "new-index", dimension: 384, metric: "cosine")
+
+      expect(provider).to have_received(:create_index).with(
+        name: "new-index",
+        dimension: 384,
+        metric: "cosine"
+      )
+      expect(result).to eq(index_info)
+    end
+
+    it "raises NotImplementedError if provider doesn't support it" do
+      allow(provider).to receive(:respond_to?).with(:create_index).and_return(false)
+
+      expect do
+        client.create_index(name: "new-index", dimension: 384)
+      end.to raise_error(NotImplementedError, /does not support index creation/)
+    end
+  end
+
+  describe "#delete_index" do
+    before do
+      allow(provider).to receive(:respond_to?).with(:delete_index).and_return(true)
+      allow(provider).to receive(:delete_index).and_return(deleted: true)
+    end
+
+    it "deletes index through provider" do
+      result = client.delete_index(name: "old-index")
+
+      expect(provider).to have_received(:delete_index).with(name: "old-index")
+      expect(result[:deleted]).to be true
+    end
+
+    it "raises NotImplementedError if provider doesn't support it" do
+      allow(provider).to receive(:respond_to?).with(:delete_index).and_return(false)
+
+      expect do
+        client.delete_index(name: "old-index")
+      end.to raise_error(NotImplementedError, /does not support index deletion/)
+    end
+  end
+
+  describe "#list_namespaces" do
+    let(:test_index) { "test-index" }
+    let(:stats_with_namespaces) do
+      {
+        total_vector_count: 100,
+        dimension: 384,
+        namespaces: {
+          "tenant-1" => { vector_count: 50 },
+          "tenant-2" => { vector_count: 30 },
+          "" => { vector_count: 20 }
+        }
+      }
+    end
+
+    before do
+      allow(provider).to receive(:stats).and_return(stats_with_namespaces)
+    end
+
+    it "lists namespaces from stats" do
+      result = client.list_namespaces(index: test_index)
+
+      expect(provider).to have_received(:stats).with(hash_including(index: test_index))
+      expect(result).to contain_exactly("tenant-1", "tenant-2")
+    end
+
+    it "excludes empty namespace" do
+      result = client.list_namespaces(index: test_index)
+
+      expect(result).not_to include("")
+    end
+
+    it "returns empty array when no namespaces" do
+      allow(provider).to receive(:stats).and_return(
+        total_vector_count: 0,
+        dimension: 384,
+        namespaces: {}
+      )
+
+      result = client.list_namespaces(index: test_index)
+      expect(result).to eq([])
+    end
+  end
+
   describe "#provider_name" do
     it "returns provider name" do
       expect(client.provider_name).to eq(:pinecone)

@@ -299,6 +299,72 @@ module Vectra
       provider.stats(index: index, namespace: namespace)
     end
 
+    # Create a new index
+    #
+    # @param name [String] the index name
+    # @param dimension [Integer] vector dimension
+    # @param metric [String] distance metric (default: "cosine")
+    # @param options [Hash] provider-specific options
+    # @return [Hash] index information
+    # @raise [NotImplementedError] if provider doesn't support index creation
+    #
+    # @example
+    #   client.create_index(name: 'documents', dimension: 384, metric: 'cosine')
+    #
+    def create_index(name:, dimension:, metric: "cosine", **options)
+      unless provider.respond_to?(:create_index)
+        raise NotImplementedError, "Provider #{provider_name} does not support index creation"
+      end
+
+      Instrumentation.instrument(
+        operation: :create_index,
+        provider: provider_name,
+        index: name,
+        metadata: { dimension: dimension, metric: metric }
+      ) do
+        provider.create_index(name: name, dimension: dimension, metric: metric, **options)
+      end
+    end
+
+    # Delete an index
+    #
+    # @param name [String] the index name
+    # @return [Hash] delete response
+    # @raise [NotImplementedError] if provider doesn't support index deletion
+    #
+    # @example
+    #   client.delete_index(name: 'documents')
+    #
+    def delete_index(name:)
+      unless provider.respond_to?(:delete_index)
+        raise NotImplementedError, "Provider #{provider_name} does not support index deletion"
+      end
+
+      Instrumentation.instrument(
+        operation: :delete_index,
+        provider: provider_name,
+        index: name
+      ) do
+        provider.delete_index(name: name)
+      end
+    end
+
+    # List all namespaces in an index
+    #
+    # @param index [String] the index name
+    # @return [Array<String>] list of namespace names
+    #
+    # @example
+    #   namespaces = client.list_namespaces(index: 'documents')
+    #   namespaces.each { |ns| puts "Namespace: #{ns}" }
+    #
+    def list_namespaces(index:)
+      validate_index!(index)
+      stats_data = provider.stats(index: index)
+      namespaces = stats_data[:namespaces] || {}
+      namespaces.keys.reject(&:empty?) # Exclude empty/default namespace
+    end
+
     # Hybrid search combining semantic (vector) and keyword (text) search
     #
     # Combines the best of both worlds: semantic understanding from vectors
