@@ -77,10 +77,16 @@ jobs:
         with:
           ruby-version: '3.3'
 
-      - name: Publish to RubyGems
-        uses: rubygems/release-gem@v1
-        with:
-          gemspec-path: ./vectra.gemspec
-          await-release: true
+      - name: Build and Push Gem
+        run: |
+          mkdir -p ~/.gem
+          echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" > ~/.gem/credentials
+          chmod 600 ~/.gem/credentials
+          gem build vectra.gemspec
+          gem push *.gem --host https://rubygems.org/ || {
+            echo "First attempt failed, retrying..."
+            sleep 5
+            gem push *.gem --host https://rubygems.org/
+          }
         env:
           RUBYGEMS_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
