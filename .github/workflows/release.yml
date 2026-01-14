@@ -78,12 +78,9 @@ jobs:
           ruby-version: '3.3'
 
       - name: Publish to RubyGems
-        run: |
-          mkdir -p ~/.gem
-          touch ~/.gem/credentials
-          chmod 0600 ~/.gem/credentials
-          printf -- "---\n:rubygems_api_key: ${RUBYGEMS_API_KEY}\n" > ~/.gem/credentials
-          gem build vectra.gemspec
-          gem push *.gem
+        uses: rubygems/release-gem@v1
+        with:
+          gemspec-path: ./vectra.gemspec
+          await-release: true
         env:
           RUBYGEMS_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
