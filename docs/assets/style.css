@@ -1033,6 +1033,54 @@ code {
   }
 }
 
+/* Recipes Section */
+.tma-recipes {
+  padding: var(--tma-spacing-3xl) var(--tma-spacing-xl);
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
+}
+
+.tma-recipes__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--tma-spacing-lg);
+  margin-top: var(--tma-spacing-xl);
+}
+
+.tma-recipe-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--tma-spacing-xl);
+  background: var(--tma-color-bg-secondary);
+  border: 1px solid var(--tma-color-border);
+  border-radius: var(--tma-radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--tma-transition-normal);
+  border-left: 3px solid var(--tma-color-accent-primary);
+}
+
+.tma-recipe-card:hover {
+  border-color: var(--tma-color-border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--tma-shadow-glow);
+  background: var(--tma-color-bg-tertiary);
+}
+
+.tma-recipe-card__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: var(--tma-spacing-sm);
+  color: var(--tma-color-text-primary);
+}
+
+.tma-recipe-card__description {
+  color: var(--tma-color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
 /* Responsive Comparison Table */
 @media (max-width: 1024px) {
   .tma-comparison-table {
@@ -1056,7 +1104,8 @@ code {
   }
   
   .tma-advantages__grid,
-  .tma-choose__grid {
+  .tma-choose__grid,
+  .tma-recipes__grid {
     grid-template-columns: 1fr;
   }
 }

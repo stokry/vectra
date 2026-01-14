@@ -40,6 +40,7 @@
       </button>
       <ul class="tma-nav__menu" id="nav-menu">
         <li><a href="{{ site.baseurl }}/guides/getting-started" class="tma-nav__link">Getting Started</a></li>
+        <li><a href="{{ site.baseurl }}/guides/recipes" class="tma-nav__link">Recipes</a></li>
         <li><a href="{{ site.baseurl }}/providers" class="tma-nav__link">Providers</a></li>
         <li><a href="{{ site.baseurl }}/api/overview" class="tma-nav__link">API</a></li>
         <li><a href="{{ site.baseurl }}/examples" class="tma-nav__link">Examples</a></li>
@@ -565,6 +566,50 @@
         </p>
         <span class="tma-provider-card__link">View Guide</span>
       </a>
+    </div>
+  </section>
+
+  <!-- Recipes Section -->
+  <section class="tma-recipes">
+    <div class="tma-section-header">
+      <h2 class="tma-section-header__title">Recipes & Patterns</h2>
+      <p class="tma-section-header__subtitle">Real-world patterns for common use cases</p>
+    </div>
+    
+    <div class="tma-recipes__grid">
+      <a href="{{ site.baseurl }}/guides/recipes/#e-commerce-semantic-product-search-with-filters" class="tma-recipe-card">
+        <h3 class="tma-recipe-card__title">🛒 E-Commerce Search</h3>
+        <p class="tma-recipe-card__description">Semantic product search with filters for category, price, and availability</p>
+      </a>
+      
+      <a href="{{ site.baseurl }}/guides/recipes/#blog-hybrid-search-semantic--keyword" class="tma-recipe-card">
+        <h3 class="tma-recipe-card__title">📝 Blog Hybrid Search</h3>
+        <p class="tma-recipe-card__description">Combine semantic understanding with exact keyword matching</p>
+      </a>
+      
+      <a href="{{ site.baseurl }}/guides/recipes/#multi-tenant-saas-namespace-isolation" class="tma-recipe-card">
+        <h3 class="tma-recipe-card__title">🏢 Multi-Tenant SaaS</h3>
+        <p class="tma-recipe-card__description">Namespace isolation per tenant with a single index</p>
+      </a>
+      
+      <a href="{{ site.baseurl }}/guides/recipes/#rag-chatbot-context-retrieval" class="tma-recipe-card">
+        <h3 class="tma-recipe-card__title">🤖 RAG Chatbot</h3>
+        <p class="tma-recipe-card__description">Retrieve relevant context chunks for LLM integration</p>
+      </a>
+      
+      <a href="{{ site.baseurl }}/guides/recipes/#zero-downtime-provider-migration" class="tma-recipe-card">
+        <h3 class="tma-recipe-card__title">🔄 Provider Migration</h3>
+        <p class="tma-recipe-card__description">Zero-downtime migration between providers</p>
+      </a>
+      
+      <a href="{{ site.baseurl }}/guides/recipes/#recommendation-engine-similar-items" class="tma-recipe-card">
+        <h3 class="tma-recipe-card__title">💡 Recommendations</h3>
+        <p class="tma-recipe-card__description">Find similar items based on user behavior</p>
+      </a>
+    </div>
+    
+    <div style="text-align: center; margin-top: var(--tma-spacing-lg);">
+      <a href="{{ site.baseurl }}/guides/recipes" class="tma-btn tma-btn--secondary">View All Recipes →</a>
     </div>
   </section>
 

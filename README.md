@@ -229,6 +229,19 @@ For a complete step-by-step guide including:
 
 👉 **[Read the complete Rails Integration Guide](https://vectra-docs.netlify.app/guides/rails-integration/)**
 
+### Recipes & Patterns
+
+Real-world patterns for common use cases:
+
+- **E-Commerce Search** - Semantic product search with filters
+- **Blog Hybrid Search** - Combine semantic + keyword matching
+- **Multi-Tenant SaaS** - Namespace isolation per tenant
+- **RAG Chatbot** - Context retrieval for LLMs
+- **Zero-Downtime Migration** - Switch providers safely
+- **Recommendation Engine** - Find similar items
+
+👉 **[Browse all Recipes & Patterns](https://vectra-docs.netlify.app/guides/recipes/)**
+
 ## Production Patterns
 
 Vectra includes 7 production-ready patterns out of the box:
