@@ -215,4 +215,4 @@ rescue => e
 end
 ```
 
-See [Detailed API Documentation]({{ site.baseurl }}/api/methods) for more methods.
+See [Complete API Methods Reference]({{ site.baseurl }}/api/methods/) for detailed method documentation.
