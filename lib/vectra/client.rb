@@ -36,6 +36,7 @@ module Vectra
   #     environment: 'us-east-1'
   #   )
   #
+  # rubocop:disable Metrics/ClassLength
   class Client
     include Vectra::HealthCheck
 
@@ -671,4 +672,5 @@ module Vectra
       config.logger.debug("[Vectra] #{data.inspect}") if data
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

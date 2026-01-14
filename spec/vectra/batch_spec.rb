@@ -251,7 +251,7 @@ RSpec.describe Vectra::Batch do
 
       # Should return empty QueryResults for failed queries
       expect(results.size).to eq(5)
-      results.each { |r| expect(r).to be_a(Vectra::QueryResult) }
+      expect(results).to all(be_a(Vectra::QueryResult))
     end
   end
 end
