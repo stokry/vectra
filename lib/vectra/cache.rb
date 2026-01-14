@@ -258,4 +258,53 @@ module Vectra
       "#{index}:f:#{id}:#{namespace || 'default'}"
     end
   end
+
+  # Helper for caching embeddings based on model, record ID and input text.
+  #
+  # @example
+  #   cache = Vectra::Cache.new(ttl: 600, max_size: 1000)
+  #
+  #   embedding = Vectra::Embeddings.fetch(
+  #     cache: cache,
+  #     model_name: "Product",
+  #     id: product.id,
+  #     input: product.description,
+  #     field: :description
+  #   ) do
+  #     EmbeddingService.generate(product.description)
+  #   end
+  #
+  module Embeddings
+    module_function
+
+    # Build a stable cache key for an embedding.
+    #
+    # @param model_name [String] model class name (e.g. "Product")
+    # @param id [Integer, String] record ID
+    # @param input [String] raw input used for embedding
+    # @param field [Symbol, String, nil] optional field name
+    #
+    # @return [String] cache key
+    def cache_key(model_name:, id:, input:, field: nil)
+      field_part = field ? field.to_s : "default"
+      base = "#{model_name}:#{field_part}:#{id}:#{input}"
+      digest = Digest::SHA256.hexdigest(base)[0, 32]
+      "emb:#{model_name}:#{field_part}:#{digest}"
+    end
+
+    # Fetch an embedding from cache or compute and store it.
+    #
+    # @param cache [Vectra::Cache] cache instance
+    # @param model_name [String] model class name
+    # @param id [Integer, String] record ID
+    # @param input [String] input used for embedding
+    # @param field [Symbol, String, nil] optional field name
+    #
+    # @yield block that computes the embedding when not cached
+    # @return [Object] cached or computed embedding
+    def fetch(cache:, model_name:, id:, input:, field: nil)
+      key = cache_key(model_name: model_name, id: id, input: input, field: field)
+      cache.fetch(key) { yield }
+    end
+  end
 end

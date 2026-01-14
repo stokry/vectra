@@ -43,7 +43,7 @@ client = Vectra::Client.new(
 Upsert vectors into an index. If a vector with the same ID exists, it will be updated.
 
 **Parameters:**
-- `index` (String) - Index/collection name
+- `index` (String) - Index/collection name (uses client's default index when omitted)
 - `vectors` (Array<Hash, Vector>) - Array of vector hashes or Vector objects
 - `namespace` (String, optional) - Namespace
 
@@ -77,7 +77,7 @@ result = client.upsert(
 Search for similar vectors using cosine similarity.
 
 **Parameters:**
-- `index` (String) - Index/collection name
+- `index` (String) - Index/collection name (uses client's default index when omitted)
 - `vector` (Array<Float>) - Query vector
 - `top_k` (Integer) - Number of results (default: 10)
 - `namespace` (String, optional) - Namespace
@@ -152,7 +152,7 @@ results = client.hybrid_search(
 Fetch vectors by their IDs.
 
 **Parameters:**
-- `index` (String) - Index/collection name
+- `index` (String) - Index/collection name (uses client's default index when omitted)
 - `ids` (Array<String>) - Array of vector IDs
 - `namespace` (String, optional) - Namespace
 
@@ -176,7 +176,7 @@ vectors['doc-1'].metadata # => { 'title' => 'Hello' }
 Update a vector's metadata or values.
 
 **Parameters:**
-- `index` (String) - Index/collection name
+- `index` (String) - Index/collection name (uses client's default index when omitted)
 - `id` (String) - Vector ID
 - `metadata` (Hash, optional) - New metadata (merged with existing)
 - `values` (Array<Float>, optional) - New vector values
@@ -202,7 +202,7 @@ client.update(
 Delete vectors.
 
 **Parameters:**
-- `index` (String) - Index/collection name
+- `index` (String) - Index/collection name (uses client's default index when omitted)
 - `ids` (Array<String>, optional) - Vector IDs to delete
 - `namespace` (String, optional) - Namespace
 - `filter` (Hash, optional) - Delete by metadata filter
@@ -231,7 +231,7 @@ client.delete(index: 'documents', delete_all: true)
 Get index statistics.
 
 **Parameters:**
-- `index` (String) - Index/collection name
+- `index` (String) - Index/collection name (uses client's default index when omitted)
 - `namespace` (String, optional) - Namespace
 
 **Returns:** `Hash` with statistics:
@@ -567,6 +567,30 @@ results = Document.vector_search(
 results.each do |doc|
   puts doc.title
 end
+```
+
+---
+
+### `Model.reindex_vectors(scope: all, batch_size: 1000, on_progress: nil)`
+
+Reindex all records for a model into the configured vector index.
+
+**Parameters:**
+- `scope` (ActiveRecord::Relation) - Records to reindex (default: `Model.all`)
+- `batch_size` (Integer) - Number of records per batch (default: 1000)
+- `on_progress` (Proc, optional) - Progress callback, receives a hash with `:processed` and `:total`
+
+**Returns:** `Integer` - Number of records processed
+
+**Example:**
+```ruby
+# Reindex all products with embeddings
+processed = Product.reindex_vectors(
+  scope: Product.where.not(embedding: nil),
+  batch_size: 500
+)
+
+puts "Reindexed #{processed} products"
 ```
 
 ---

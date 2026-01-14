@@ -131,6 +131,51 @@ RSpec.describe Vectra::Client do
     end
   end
 
+  describe "default index and namespace" do
+    let(:vectors) { [sample_vector(id: "vec1")] }
+
+    let(:client_with_defaults) do
+      described_class.new(index: "default-index", namespace: "tenant-1")
+    end
+
+    before do
+      allow(provider).to receive(:upsert).and_return(upserted_count: 1)
+    end
+
+    it "uses default index and namespace when not provided" do
+      result = client_with_defaults.upsert(vectors: vectors)
+
+      expect(provider).to have_received(:upsert).with(
+        index: "default-index",
+        vectors: vectors,
+        namespace: "tenant-1"
+      )
+      expect(result[:upserted_count]).to eq(1)
+    end
+
+    it "allows overriding namespace per call" do
+      client_with_defaults.upsert(vectors: vectors, namespace: "tenant-2")
+
+      expect(provider).to have_received(:upsert).with(
+        index: "default-index",
+        vectors: vectors,
+        namespace: "tenant-2"
+      )
+    end
+
+    it "temporarily overrides index inside with_index block" do
+      client_with_defaults.with_index("temp-index") do |c|
+        c.upsert(vectors: vectors)
+      end
+
+      expect(provider).to have_received(:upsert).with(
+        index: "temp-index",
+        vectors: vectors,
+        namespace: "tenant-1"
+      )
+    end
+  end
+
   describe "#query" do
     let(:query_vector) { [0.1, 0.2, 0.3] }
     let(:query_result) { Vectra::QueryResult.new(matches: [sample_match]) }

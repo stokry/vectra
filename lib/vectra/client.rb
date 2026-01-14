@@ -40,7 +40,7 @@ module Vectra
   class Client
     include Vectra::HealthCheck
 
-    attr_reader :config, :provider
+    attr_reader :config, :provider, :default_index, :default_namespace
 
     # Initialize a new Client
     #
@@ -49,10 +49,14 @@ module Vectra
     # @param environment [String, nil] environment/region
     # @param host [String, nil] custom host URL
     # @param options [Hash] additional options
+    # @option options [String] :index default index name
+    # @option options [String] :namespace default namespace
     def initialize(provider: nil, api_key: nil, environment: nil, host: nil, **options)
       @config = build_config(provider, api_key, environment, host, options)
       @config.validate!
       @provider = build_provider
+      @default_index = options[:index]
+      @default_namespace = options[:namespace]
     end
 
     # Upsert vectors into an index
@@ -71,7 +75,9 @@ module Vectra
     #     ]
     #   )
     #
-    def upsert(index:, vectors:, namespace: nil)
+    def upsert(index: nil, vectors:, namespace: nil)
+      index ||= default_index
+      namespace ||= default_namespace
       validate_index!(index)
       validate_vectors!(vectors)
 
@@ -130,6 +136,10 @@ module Vectra
       # Handle positional argument for index in non-builder case
       index = index_arg if index_arg && index.nil?
 
+      # Fall back to default index/namespace when not provided
+      index ||= default_index
+      namespace ||= default_namespace
+
       # Backwards-compatible path: perform query immediately
       validate_index!(index)
       validate_query_vector!(vector)
@@ -166,7 +176,9 @@ module Vectra
     #   vectors = client.fetch(index: 'my-index', ids: ['vec1', 'vec2'])
     #   vectors['vec1'].values # => [0.1, 0.2, 0.3]
     #
-    def fetch(index:, ids:, namespace: nil)
+    def fetch(index: nil, ids:, namespace: nil)
+      index ||= default_index
+      namespace ||= default_namespace
       validate_index!(index)
       validate_ids!(ids)
 
@@ -196,7 +208,9 @@ module Vectra
     #     metadata: { category: 'updated' }
     #   )
     #
-    def update(index:, id:, metadata: nil, values: nil, namespace: nil)
+    def update(index: nil, id:, metadata: nil, values: nil, namespace: nil)
+      index ||= default_index
+      namespace ||= default_namespace
       validate_index!(index)
       validate_id!(id)
 
@@ -236,7 +250,9 @@ module Vectra
     # @example Delete all
     #   client.delete(index: 'my-index', delete_all: true)
     #
-    def delete(index:, ids: nil, namespace: nil, filter: nil, delete_all: false)
+    def delete(index: nil, ids: nil, namespace: nil, filter: nil, delete_all: false)
+      index ||= default_index
+      namespace ||= default_namespace
       validate_index!(index)
 
       if ids.nil? && filter.nil? && !delete_all
@@ -280,7 +296,8 @@ module Vectra
     #   info = client.describe_index(index: 'my-index')
     #   puts info[:dimension]
     #
-    def describe_index(index:)
+    def describe_index(index: nil)
+      index ||= default_index
       validate_index!(index)
       provider.describe_index(index: index)
     end
@@ -295,7 +312,9 @@ module Vectra
     #   stats = client.stats(index: 'my-index')
     #   puts "Total vectors: #{stats[:total_vector_count]}"
     #
-    def stats(index:, namespace: nil)
+    def stats(index: nil, namespace: nil)
+      index ||= default_index
+      namespace ||= default_namespace
       validate_index!(index)
       provider.stats(index: index, namespace: namespace)
     end
@@ -359,7 +378,8 @@ module Vectra
     #   namespaces = client.list_namespaces(index: 'documents')
     #   namespaces.each { |ns| puts "Namespace: #{ns}" }
     #
-    def list_namespaces(index:)
+    def list_namespaces(index: nil)
+      index ||= default_index
       validate_index!(index)
       stats_data = provider.stats(index: index)
       namespaces = stats_data[:namespaces] || {}
@@ -408,6 +428,8 @@ module Vectra
     #
     def hybrid_search(index:, vector:, text:, alpha: 0.5, top_k: 10, namespace: nil,
                       filter: nil, include_values: false, include_metadata: true)
+      index ||= default_index
+      namespace ||= default_namespace
       validate_index!(index)
       validate_query_vector!(vector)
       raise ValidationError, "Text query cannot be nil or empty" if text.nil? || text.empty?
@@ -671,6 +693,48 @@ module Vectra
       config.logger.debug("[Vectra] #{message}")
       config.logger.debug("[Vectra] #{data.inspect}") if data
     end
+
+    # Temporarily override default index within a block.
+    #
+    # @param index [String] temporary index name
+    # @yield [Client] yields self with overridden index
+    # @return [Object] block result
+    def with_index(index)
+      previous = @default_index
+      @default_index = index
+      yield self
+    ensure
+      @default_index = previous
+    end
+
+    # Temporarily override default namespace within a block.
+    #
+    # @param namespace [String] temporary namespace
+    # @yield [Client] yields self with overridden namespace
+    # @return [Object] block result
+    def with_namespace(namespace)
+      previous = @default_namespace
+      @default_namespace = namespace
+      yield self
+    ensure
+      @default_namespace = previous
+    end
+
+    # Temporarily override both index and namespace within a block.
+    #
+    # @param index [String] temporary index name
+    # @param namespace [String] temporary namespace
+    # @yield [Client] yields self with overridden index and namespace
+    # @return [Object] block result
+    def with_index_and_namespace(index, namespace)
+      with_index(index) do
+        with_namespace(namespace) do
+          yield self
+        end
+      end
+    end
+
+    public :with_index, :with_namespace, :with_index_and_namespace
   end
   # rubocop:enable Metrics/ClassLength
 end

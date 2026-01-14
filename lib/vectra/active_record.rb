@@ -2,8 +2,9 @@
 
 require "active_support/concern"
 
-# Ensure Client and Providers are loaded (for Rails autoloading compatibility)
+# Ensure Client and supporting classes are loaded (for Rails autoloading compatibility)
 require_relative "client" unless defined?(Vectra::Client)
+require_relative "batch" unless defined?(Vectra::Batch)
 
 module Vectra
   # ActiveRecord integration for vector embeddings
@@ -84,6 +85,55 @@ module Vectra
 
           _vectra_search(vector, limit: limit, **options)
         end
+      end
+
+      # Reindex all vectors for this model using current configuration.
+      #
+      # @param scope [ActiveRecord::Relation] records to reindex (default: all)
+      # @param batch_size [Integer] number of records per batch
+      # @param on_progress [Proc, nil] optional callback called after each batch
+      #   Receives a hash with :processed and :total keys (and any other stats from Batch)
+      #
+      # @return [Integer] number of records processed
+      def reindex_vectors(scope: all, batch_size: 1_000, on_progress: nil)
+        config = _vectra_config
+        client = vectra_client
+        batch = Vectra::Batch.new(client)
+
+        total = scope.count
+        processed = 0
+
+        scope.in_batches(of: batch_size).each do |relation|
+          records = relation.to_a
+
+          vectors = records.map do |record|
+            vector = record.send(config[:attribute])
+            next if vector.nil?
+
+            metadata = config[:metadata_fields].each_with_object({}) do |field, hash|
+              hash[field.to_s] = record.send(field) if record.respond_to?(field)
+            end
+
+            {
+              id: "#{config[:index]}_#{record.id}",
+              values: vector,
+              metadata: metadata
+            }
+          end.compact
+
+          next if vectors.empty?
+
+          batch.upsert_async(
+            index: config[:index],
+            vectors: vectors,
+            namespace: nil,
+            on_progress: on_progress
+          )
+
+          processed += vectors.size
+        end
+
+        processed
       end
 
       # Search vectors

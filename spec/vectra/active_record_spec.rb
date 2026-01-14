@@ -452,4 +452,34 @@ RSpec.describe Vectra::ActiveRecord do
       expect(record.send(:_vectra_vector_id)).to eq("test_docs_123")
     end
   end
+
+  describe ".reindex_vectors" do
+    it "reindexes all records using batch upsert with metadata" do
+      record1 = test_model_class.create!(title: "Doc 1", category: "tech", embedding: test_vector)
+      record2 = test_model_class.create!(title: "Doc 2", category: "news", embedding: test_vector)
+
+      # Allow batch upserts
+      allow(mock_client).to receive(:upsert).and_return(upserted_count: 2)
+
+      processed = test_model_class.reindex_vectors(scope: test_model_class.all, batch_size: 100)
+
+      expect(processed).to eq(2)
+      expect(mock_client).to have_received(:upsert).with(
+        index: "test_docs",
+        vectors: array_including(
+          hash_including(
+            id: "test_docs_#{record1.id}",
+            values: test_vector,
+            metadata: { "title" => "Doc 1", "category" => "tech" }
+          ),
+          hash_including(
+            id: "test_docs_#{record2.id}",
+            values: test_vector,
+            metadata: { "title" => "Doc 2", "category" => "news" }
+          )
+        ),
+        namespace: nil
+      ).at_least(:once)
+    end
+  end
 end

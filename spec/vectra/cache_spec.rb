@@ -223,3 +223,56 @@ RSpec.describe Vectra::CachedClient do
     end
   end
 end
+
+RSpec.describe "Vectra::Embeddings cache helper" do
+  let(:cache) { Vectra::Cache.new(ttl: 300, max_size: 10) }
+
+  it "caches embeddings per model/id/input" do
+    calls = 0
+
+    value1 = Vectra::Embeddings.fetch(
+      cache: cache,
+      model_name: "Product",
+      id: 1,
+      input: "Vector search",
+      field: :description
+    ) do
+      calls += 1
+      [0.1, 0.2, 0.3]
+    end
+
+    value2 = Vectra::Embeddings.fetch(
+      cache: cache,
+      model_name: "Product",
+      id: 1,
+      input: "Vector search",
+      field: :description
+    ) do
+      calls += 1
+      [0.9, 0.9, 0.9]
+    end
+
+    expect(value1).to eq(value2)
+    expect(calls).to eq(1)
+  end
+
+  it "uses different keys for different inputs" do
+    emb1 = Vectra::Embeddings.fetch(
+      cache: cache,
+      model_name: "Product",
+      id: 1,
+      input: "foo",
+      field: :description
+    ) { [0.1] }
+
+    emb2 = Vectra::Embeddings.fetch(
+      cache: cache,
+      model_name: "Product",
+      id: 1,
+      input: "bar",
+      field: :description
+    ) { [0.2] }
+
+    expect(emb1).not_to eq(emb2)
+  end
+end

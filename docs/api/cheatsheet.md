@@ -34,6 +34,21 @@ client = Vectra.pgvector(connection_url: ENV['DATABASE_URL'])
 client = Vectra.memory # In-memory (testing only)
 ```
 
+You can also set a **default index and namespace**:
+
+```ruby
+client = Vectra::Client.new(
+  provider: :qdrant,
+  host: 'http://localhost:6333',
+  index: 'products',
+  namespace: 'tenant-1'
+)
+
+# Now index and namespace can be omitted
+client.upsert(vectors: [...])
+client.query(vector: query_embedding, top_k: 10)
+```
+
 ### Upsert
 
 ```ruby
@@ -225,6 +240,22 @@ vector.normalize! # Mutates values
 client.upsert(index: 'documents', vectors: [vector])
 ```
 
+### Embedding Cache Helper
+
+```ruby
+cache = Vectra::Cache.new(ttl: 600, max_size: 1000)
+
+embedding = Vectra::Embeddings.fetch(
+  cache: cache,
+  model_name: "Product",
+  id: product.id,
+  input: product.description,
+  field: :description
+) do
+  EmbeddingService.generate(product.description)
+end
+```
+
 ---
 
 ## Batch Operations
@@ -316,6 +347,18 @@ results = Document.vector_search(
 results.each do |doc|
   puts doc.title
 end
+```
+
+### Reindex All Records
+
+```ruby
+# Reindex all documents that already have embeddings
+processed = Document.reindex_vectors(
+  scope: Document.where.not(embedding: nil),
+  batch_size: 500
+)
+
+puts "Reindexed #{processed} documents"
 ```
 
 ---
