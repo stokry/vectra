@@ -27,6 +27,7 @@ module Vectra
   #   # Search similar documents
   #   results = Document.vector_search([0.1, 0.2, ...], limit: 10)
   #
+  # rubocop:disable Metrics/ModuleLength
   module ActiveRecord
     extend ActiveSupport::Concern
 
@@ -100,7 +101,6 @@ module Vectra
         client = vectra_client
         batch = Vectra::Batch.new(client)
 
-        total = scope.count
         processed = 0
 
         scope.in_batches(of: batch_size).each do |relation|
@@ -245,4 +245,5 @@ module Vectra
       "#{self.class._vectra_config[:index]}_#{id}"
     end
   end
+  # rubocop:enable Metrics/ModuleLength
 end

@@ -302,9 +302,9 @@ module Vectra
     #
     # @yield block that computes the embedding when not cached
     # @return [Object] cached or computed embedding
-    def fetch(cache:, model_name:, id:, input:, field: nil)
+    def fetch(cache:, model_name:, id:, input:, field: nil, &block)
       key = cache_key(model_name: model_name, id: id, input: input, field: field)
-      cache.fetch(key) { yield }
+      cache.fetch(key, &block)
     end
   end
 end

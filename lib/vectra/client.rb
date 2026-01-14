@@ -61,9 +61,9 @@ module Vectra
 
     # Upsert vectors into an index
     #
-    # @param index [String] the index/collection name
     # @param vectors [Array<Hash, Vector>] vectors to upsert
-    # @param namespace [String, nil] optional namespace (provider-specific)
+    # @param index [String, nil] the index/collection name (falls back to client's default)
+    # @param namespace [String, nil] optional namespace (provider-specific, falls back to client's default)
     # @return [Hash] upsert response with :upserted_count
     #
     # @example Upsert vectors
@@ -75,7 +75,7 @@ module Vectra
     #     ]
     #   )
     #
-    def upsert(index: nil, vectors:, namespace: nil)
+    def upsert(vectors:, index: nil, namespace: nil)
       index ||= default_index
       namespace ||= default_namespace
       validate_index!(index)
@@ -167,16 +167,16 @@ module Vectra
 
     # Fetch vectors by IDs
     #
-    # @param index [String] the index/collection name
     # @param ids [Array<String>] vector IDs to fetch
-    # @param namespace [String, nil] optional namespace
+    # @param index [String, nil] the index/collection name (falls back to client's default)
+    # @param namespace [String, nil] optional namespace (falls back to client's default)
     # @return [Hash<String, Vector>] hash of ID to Vector
     #
     # @example Fetch vectors
     #   vectors = client.fetch(index: 'my-index', ids: ['vec1', 'vec2'])
     #   vectors['vec1'].values # => [0.1, 0.2, 0.3]
     #
-    def fetch(index: nil, ids:, namespace: nil)
+    def fetch(ids:, index: nil, namespace: nil)
       index ||= default_index
       namespace ||= default_namespace
       validate_index!(index)
@@ -194,8 +194,8 @@ module Vectra
 
     # Update a vector's metadata or values
     #
-    # @param index [String] the index/collection name
     # @param id [String] vector ID
+    # @param index [String, nil] the index/collection name (falls back to client's default)
     # @param metadata [Hash, nil] new metadata (merged with existing)
     # @param values [Array<Float>, nil] new vector values
     # @param namespace [String, nil] optional namespace
@@ -208,7 +208,7 @@ module Vectra
     #     metadata: { category: 'updated' }
     #   )
     #
-    def update(index: nil, id:, metadata: nil, values: nil, namespace: nil)
+    def update(id:, index: nil, metadata: nil, values: nil, namespace: nil)
       index ||= default_index
       namespace ||= default_namespace
       validate_index!(index)
