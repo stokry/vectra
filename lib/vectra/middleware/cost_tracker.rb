@@ -89,18 +89,32 @@ module Vectra
       # @param request [Request] The request object
       # @return [Integer, Float] Multiplier for the base rate
       def operation_multiplier(request)
+        return 100 if delete_all?(request)
+
         case request.operation
         when :upsert
-          request.params[:vectors]&.size || 1
-        when :fetch
-          request.params[:ids]&.size || 1
-        when :delete
-          return 100 if request.params[:delete_all]
-
-          request.params[:ids]&.size || 1
+          collection_size(request.params[:vectors])
+        when :fetch, :delete
+          collection_size(request.params[:ids])
         else
           1 # Includes :query and all other operations
         end
+      end
+
+      # Check if request is a delete_all operation
+      #
+      # @param request [Request] The request object
+      # @return [Boolean]
+      def delete_all?(request)
+        request.operation == :delete && request.params[:delete_all]
+      end
+
+      # Safely compute collection size with a default of 1
+      #
+      # @param collection [Enumerable, nil]
+      # @return [Integer]
+      def collection_size(collection)
+        collection&.size || 1
       end
     end
   end
