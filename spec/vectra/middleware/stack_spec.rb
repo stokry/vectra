@@ -37,12 +37,9 @@ RSpec.describe Vectra::Middleware::Stack do
 
       stack.call(:upsert, index: "test", vectors: [{ id: "1", values: [0.1, 0.2, 0.3] }])
 
-      expect(execution_order).to eq(%i[
-        middleware1_before
-        middleware2_before
-        middleware2_after
-        middleware1_after
-      ])
+      expect(execution_order).to eq(
+        %i[middleware1_before middleware2_before middleware2_after middleware1_after]
+      )
     end
 
     it "raises error from provider" do

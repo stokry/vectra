@@ -92,14 +92,14 @@ module Vectra
         case request.operation
         when :upsert
           request.params[:vectors]&.size || 1
-        when :query
-          1 # Query cost is typically per query, not per result
         when :fetch
           request.params[:ids]&.size || 1
         when :delete
-          request.params[:delete_all] ? 100 : (request.params[:ids]&.size || 1)
+          return 100 if request.params[:delete_all]
+
+          request.params[:ids]&.size || 1
         else
-          1
+          1 # Includes :query and all other operations
         end
       end
     end
