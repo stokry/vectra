@@ -55,7 +55,7 @@ module Vectra
       #
       # @return [Boolean]
       def read_operation?
-        [:query, :fetch, :list_indexes, :describe_index, :stats].include?(operation)
+        [:query, :text_search, :hybrid_search, :fetch, :list_indexes, :describe_index, :stats].include?(operation)
       end
     end
   end

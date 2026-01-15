@@ -141,6 +141,102 @@ RSpec.describe Vectra::Providers::Memory do
     end
   end
 
+  describe "#text_search" do
+    let(:vectors) do
+      [
+        { id: "vec1", values: [1.0, 0.0, 0.0], metadata: { title: "Ruby programming guide", category: "tech" } },
+        { id: "vec2", values: [0.0, 1.0, 0.0], metadata: { title: "Python tutorial", category: "tech" } },
+        { id: "vec3", values: [0.0, 0.0, 1.0], metadata: { title: "JavaScript basics", category: "news" } }
+      ]
+    end
+
+    before do
+      provider.upsert(index: "test_index", vectors: vectors)
+    end
+
+    it "returns QueryResult with correct structure" do
+      result = provider.text_search(index: "test_index", text: "ruby", top_k: 2)
+
+      expect(result).to be_a(Vectra::QueryResult)
+      expect(result.size).to eq(1)
+      expect(result.first.id).to eq("vec1")
+    end
+
+    it "performs case-insensitive keyword matching" do
+      result = provider.text_search(index: "test_index", text: "RUBY", top_k: 10)
+
+      expect(result.size).to eq(1)
+      expect(result.first.id).to eq("vec1")
+    end
+
+    it "matches multiple words" do
+      result = provider.text_search(index: "test_index", text: "programming guide", top_k: 10)
+
+      expect(result.size).to eq(1)
+      expect(result.first.id).to eq("vec1")
+    end
+
+    it "scores based on word matches" do
+      result = provider.text_search(index: "test_index", text: "ruby programming", top_k: 10)
+
+      expect(result.first.id).to eq("vec1")
+      expect(result.first.score).to be > 0.5 # Should match both words
+    end
+
+    it "filters by metadata" do
+      result = provider.text_search(
+        index: "test_index",
+        text: "programming",
+        top_k: 10,
+        filter: { category: "tech" }
+      )
+
+      expect(result.size).to eq(1)
+      expect(result.first.metadata["category"]).to eq("tech")
+    end
+
+    it "supports namespace filtering" do
+      provider.upsert(
+        index: "test_index",
+        vectors: [{ id: "vec4", values: [1.0, 0.0, 0.0], metadata: { title: "Ruby advanced" } }],
+        namespace: "prod"
+      )
+
+      result = provider.text_search(index: "test_index", text: "ruby", top_k: 10, namespace: "prod")
+
+      expect(result.size).to eq(1)
+      expect(result.first.id).to eq("vec4")
+    end
+
+    it "respects top_k limit" do
+      result = provider.text_search(index: "test_index", text: "tech", top_k: 1)
+
+      expect(result.size).to eq(1)
+    end
+
+    it "includes values when requested" do
+      result = provider.text_search(
+        index: "test_index",
+        text: "ruby",
+        top_k: 1,
+        include_values: true
+      )
+
+      expect(result.first.values).to eq([1.0, 0.0, 0.0])
+    end
+
+    it "includes metadata when requested" do
+      result = provider.text_search(
+        index: "test_index",
+        text: "ruby",
+        top_k: 1,
+        include_metadata: true
+      )
+
+      expect(result.first.metadata).to include("title" => "Ruby programming guide")
+    end
+  end
+
   describe "#fetch" do
     let(:vectors) do
       [

@@ -147,6 +147,51 @@ results = client.hybrid_search(
 
 ---
 
+### `client.text_search(index:, text:, top_k: 10, namespace: nil, filter: nil, include_values: false, include_metadata: true)`
+
+Text-only search (keyword search without requiring embeddings).
+
+**Parameters:**
+- `index` (String) - Index/collection name (uses client's default index when omitted)
+- `text` (String) - Text query for keyword search
+- `top_k` (Integer) - Number of results (default: 10)
+- `namespace` (String, optional) - Namespace
+- `filter` (Hash, optional) - Metadata filter
+- `include_values` (Boolean) - Include vector values (default: false)
+- `include_metadata` (Boolean) - Include metadata (default: true)
+
+**Returns:** `Vectra::QueryResult`
+
+**Provider Support:**
+- ✅ Qdrant (BM25)
+- ✅ Weaviate (BM25)
+- ✅ pgvector (PostgreSQL full-text search)
+- ✅ Memory (simple keyword matching - for testing only)
+- ❌ Pinecone (not supported - use sparse vectors instead)
+
+**Example:**
+```ruby
+# Keyword search for exact matches
+results = client.text_search(
+  index: 'products',
+  text: 'iPhone 15 Pro',
+  top_k: 10,
+  filter: { category: 'electronics' }
+)
+
+results.each do |match|
+  puts "#{match.id}: #{match.score} - #{match.metadata['title']}"
+end
+```
+
+**Use Cases:**
+- Product name search (exact matches)
+- Function/class name search in documentation
+- Keyword-based filtering when semantic search is not needed
+- Faster search when embeddings are not available
+
+---
+
 ### `client.fetch(index:, ids:, namespace: nil)`
 
 Fetch vectors by their IDs.

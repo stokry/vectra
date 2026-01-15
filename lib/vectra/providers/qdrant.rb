@@ -110,6 +110,45 @@ module Vectra
         handle_hybrid_search_response(response, alpha, namespace)
       end
 
+      # Text-only search using Qdrant's BM25 text search
+      #
+      # @param index [String] collection name
+      # @param text [String] text query for keyword search
+      # @param top_k [Integer] number of results
+      # @param namespace [String, nil] optional namespace
+      # @param filter [Hash, nil] metadata filter
+      # @param include_values [Boolean] include vector values
+      # @param include_metadata [Boolean] include metadata
+      # @return [QueryResult] search results
+      def text_search(index:, text:, top_k:, namespace: nil, filter: nil,
+                      include_values: false, include_metadata: true)
+        qdrant_filter = build_filter(filter, namespace)
+        body = {
+          query: { text: text },
+          limit: top_k,
+          with_vector: include_values,
+          with_payload: include_metadata
+        }
+
+        body[:filter] = qdrant_filter if qdrant_filter
+
+        response = with_error_handling do
+          connection.post("/collections/#{index}/points/query", body)
+        end
+
+        if response.success?
+          matches = transform_search_results(response.body["result"] || [])
+          log_debug("Text search returned #{matches.size} results")
+
+          QueryResult.from_response(
+            matches: matches,
+            namespace: namespace
+          )
+        else
+          handle_error(response)
+        end
+      end
+
       # @see Base#fetch
       def fetch(index:, ids:, namespace: nil) # rubocop:disable Lint/UnusedMethodArgument
         point_ids = ids.map { |id| generate_point_id(id) }

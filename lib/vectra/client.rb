@@ -494,6 +494,67 @@ module Vectra
       )
     end
 
+    # Text-only search (keyword search without embeddings)
+    #
+    # Performs keyword/text search without requiring vector embeddings.
+    # Useful for exact matches, product names, function names, etc.
+    #
+    # @param index [String] the index/collection name
+    # @param text [String] text query for keyword search
+    # @param top_k [Integer] number of results to return (default: 10)
+    # @param namespace [String, nil] optional namespace
+    # @param filter [Hash, nil] metadata filter
+    # @param include_values [Boolean] include vector values in results
+    # @param include_metadata [Boolean] include metadata in results
+    # @return [QueryResult] search results
+    #
+    # @example Basic text search
+    #   results = client.text_search(
+    #     index: 'products',
+    #     text: 'iPhone 15 Pro',
+    #     top_k: 10
+    #   )
+    #
+    # @example Text search with filter
+    #   results = client.text_search(
+    #     index: 'products',
+    #     text: 'laptop',
+    #     filter: { category: 'electronics', in_stock: true }
+    #   )
+    #
+    # @raise [UnsupportedFeatureError] if provider doesn't support text search
+    def text_search(index:, text:, top_k: 10, namespace: nil, filter: nil,
+                    include_values: false, include_metadata: true)
+      index ||= default_index
+      namespace ||= default_namespace
+      validate_index!(index)
+      raise ValidationError, "Text query cannot be nil or empty" if text.nil? || text.empty?
+
+      unless provider.respond_to?(:text_search)
+        raise UnsupportedFeatureError,
+              "Text search is not supported by #{provider_name} provider"
+      end
+
+      Instrumentation.instrument(
+        operation: :text_search,
+        provider: provider_name,
+        index: index,
+        metadata: { top_k: top_k }
+      ) do
+        @middleware.call(
+          :text_search,
+          index: index,
+          text: text,
+          top_k: top_k,
+          namespace: namespace,
+          filter: filter,
+          include_values: include_values,
+          include_metadata: include_metadata,
+          provider: provider_name
+        )
+      end
+    end
+
     # Get the provider name
     #
     # @return [Symbol]

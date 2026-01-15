@@ -98,6 +98,23 @@ results = client.hybrid_search(
 
 Supported providers: Qdrant ✅, Weaviate ✅, pgvector ✅, Pinecone ⚠️
 
+### Text Search (keyword-only, no embeddings)
+
+```ruby
+results = client.text_search(
+  index: 'products',
+  text: 'iPhone 15 Pro',
+  top_k: 10,
+  filter: { category: 'electronics' }
+)
+
+results.each do |match|
+  puts "#{match.id} (score=#{match.score.round(3)}): #{match.metadata['title']}"
+end
+```
+
+Supported providers: Qdrant ✅ (BM25), Weaviate ✅ (BM25), pgvector ✅ (PostgreSQL full-text)
+
 ### Fetch
 
 ```ruby

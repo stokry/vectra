@@ -139,6 +139,36 @@ module Vectra
                                       include_values, include_metadata)
       end
 
+      # Text-only search using Weaviate's BM25 text search
+      #
+      # @param index [String] class name
+      # @param text [String] text query for BM25 search
+      # @param top_k [Integer] number of results
+      # @param namespace [String, nil] optional namespace (not used in Weaviate)
+      # @param filter [Hash, nil] metadata filter
+      # @param include_values [Boolean] include vector values
+      # @param include_metadata [Boolean] include metadata
+      # @return [QueryResult] search results
+      def text_search(index:, text:, top_k:, namespace: nil, filter: nil,
+                      include_values: false, include_metadata: true)
+        where_filter = build_where(filter, namespace)
+        graphql = build_text_search_graphql(
+          index: index,
+          text: text,
+          top_k: top_k,
+          where_filter: where_filter,
+          include_values: include_values,
+          include_metadata: include_metadata
+        )
+        body = { "query" => graphql }
+
+        response = with_error_handling do
+          connection.post("#{API_BASE_PATH}/graphql", body)
+        end
+
+        handle_text_search_response(response, index, namespace, include_values, include_metadata)
+      end
+
       # rubocop:disable Metrics/PerceivedComplexity
       def fetch(index:, ids:, namespace: nil)
         body = {
@@ -337,6 +367,26 @@ module Vectra
         build_graphql_query(index, top_k, text, alpha, vector, where_filter, selection_block)
       end
 
+      def build_text_search_graphql(index:, text:, top_k:, where_filter:,
+                                     include_values:, include_metadata:)
+        selection_block = build_selection_fields(include_values, include_metadata).join(" ")
+        <<~GRAPHQL
+          {
+            Get {
+              #{index}(
+                limit: #{top_k}
+                bm25: {
+                  query: "#{text.gsub('"', '\\"')}"
+                }
+                #{"where: #{JSON.generate(where_filter)}" if where_filter}
+              ) {
+                #{selection_block}
+              }
+            }
+          }
+        GRAPHQL
+      end
+
       def build_graphql_query(index, top_k, text, alpha, vector, where_filter, selection_block)
         <<~GRAPHQL
           {
@@ -369,6 +419,20 @@ module Vectra
         if response.success?
           matches = extract_query_matches(response.body, index, include_values, include_metadata)
           log_debug("Hybrid search returned #{matches.size} results (alpha: #{alpha})")
+
+          QueryResult.from_response(
+            matches: matches,
+            namespace: namespace
+          )
+        else
+          handle_error(response)
+        end
+      end
+
+      def handle_text_search_response(response, index, namespace, include_values, include_metadata)
+        if response.success?
+          matches = extract_query_matches(response.body, index, include_values, include_metadata)
+          log_debug("Text search returned #{matches.size} results")
 
           QueryResult.from_response(
             matches: matches,

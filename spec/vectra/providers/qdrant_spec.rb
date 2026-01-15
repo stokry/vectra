@@ -296,6 +296,72 @@ RSpec.describe Vectra::Providers::Qdrant do
     end
   end
 
+  describe "#text_search" do
+    let(:query_text) { "ruby programming" }
+    let(:text_results) do
+      [
+        { "id" => 123_456, "score" => 0.95, "payload" => { "text" => "Ruby guide" }, "vector" => [0.1, 0.2, 0.3] },
+        { "id" => 789_012, "score" => 0.90, "payload" => { "text" => "Programming tips" }, "vector" => [0.4, 0.5, 0.6] }
+      ]
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/collections/test_collection/points/query")
+        .to_return(
+          status: 200,
+          body: { result: text_results }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+    end
+
+    it "performs text search using BM25" do
+      result = provider.text_search(
+        index: "test_collection",
+        text: query_text,
+        top_k: 5
+      )
+
+      expect(result).to be_a(Vectra::QueryResult)
+      expect(result.size).to eq(2)
+      expect(result.first.score).to eq(0.95)
+    end
+
+    it "includes text query in request" do
+      provider.text_search(
+        index: "test_collection",
+        text: query_text,
+        top_k: 10
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
+        .with(body: hash_including(
+          "query" => hash_including("text" => query_text)
+        ))
+    end
+
+    it "includes filter in text search" do
+      stub_request(:post, "#{base_url}/collections/test_collection/points/query")
+        .to_return(
+          status: 200,
+          body: { result: text_results }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+
+      provider.text_search(
+        index: "test_collection",
+        text: query_text,
+        top_k: 5,
+        filter: { category: "tech" }
+      )
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/collections/test_collection/points/query")
+        .with { |req|
+          body = JSON.parse(req.body)
+          !body["filter"].nil? && !body["filter"].empty?
+        }
+    end
+  end
+
   describe "#fetch" do
     let(:fetch_results) do
       [

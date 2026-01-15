@@ -308,6 +308,74 @@ RSpec.describe Vectra::Client do
       end
     end
 
+    describe "#text_search" do
+      let(:query_text) { "ruby programming" }
+      let(:text_result) { Vectra::QueryResult.new(matches: [sample_match]) }
+
+      before do
+        allow(provider).to receive(:text_search).and_return(text_result)
+      end
+
+      it "performs text search through provider" do
+        result = client.text_search(
+          index: index_name,
+          text: query_text,
+          top_k: 10
+        )
+
+        expect(result).to eq(text_result)
+        expect(provider).to have_received(:text_search).with(
+          index: index_name,
+          text: query_text,
+          top_k: 10,
+          namespace: nil,
+          filter: nil,
+          include_values: false,
+          include_metadata: true
+        )
+      end
+
+      it "validates text query is not empty" do
+        expect do
+          client.text_search(
+            index: index_name,
+            text: ""
+          )
+        end.to raise_error(Vectra::ValidationError, /Text query cannot be nil or empty/)
+      end
+
+      it "validates text query is not nil" do
+        expect do
+          client.text_search(
+            index: index_name,
+            text: nil
+          )
+        end.to raise_error(Vectra::ValidationError, /Text query cannot be nil or empty/)
+      end
+
+      it "raises UnsupportedFeatureError when provider doesn't support it" do
+        allow(provider).to receive(:respond_to?).with(:text_search).and_return(false)
+
+        expect do
+          client.text_search(
+            index: index_name,
+            text: query_text
+          )
+        end.to raise_error(Vectra::UnsupportedFeatureError, /not supported by/)
+      end
+
+      it "uses default index when not provided" do
+        client = Vectra::Client.new(provider: :memory, index: "default-index")
+        allow(client.instance_variable_get(:@provider)).to receive(:text_search).and_return(text_result)
+
+        client.text_search(text: query_text)
+
+        expect(client.instance_variable_get(:@provider)).to have_received(:text_search).with(
+          hash_including(index: "default-index")
+        )
+      end
+    end
+
     describe "query builder" do
       it "returns a QueryBuilder when called with index string only" do
         builder = client.query(index_name)

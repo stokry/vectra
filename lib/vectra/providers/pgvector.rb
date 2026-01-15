@@ -162,6 +162,54 @@ module Vectra
         )
       end
 
+      # Text-only search using PostgreSQL full-text search
+      #
+      # @param index [String] table name
+      # @param text [String] text query for full-text search
+      # @param top_k [Integer] number of results
+      # @param namespace [String, nil] optional namespace
+      # @param filter [Hash, nil] metadata filter
+      # @param include_values [Boolean] include vector values
+      # @param include_metadata [Boolean] include metadata
+      # @param text_column [String] column name for full-text search (default: 'content')
+      # @return [QueryResult] search results
+      #
+      # @note Your table should have a text column with a tsvector index:
+      #   CREATE INDEX idx_content_fts ON my_index USING gin(to_tsvector('english', content));
+      def text_search(index:, text:, top_k:, namespace: nil, filter: nil,
+                      include_values: false, include_metadata: true,
+                      text_column: "content")
+        ensure_table_exists!(index)
+
+        select_cols = ["id"]
+        select_cols << "embedding" if include_values
+        select_cols << "metadata" if include_metadata
+
+        # Use ts_rank for scoring
+        text_score = "ts_rank(to_tsvector('english', COALESCE(#{quote_ident(text_column)}, '')), " \
+                     "plainto_tsquery('english', #{escape_literal(text)}))"
+        select_cols << "#{text_score} AS score"
+
+        where_clauses = build_where_clauses(namespace, filter)
+        where_clauses << "to_tsvector('english', COALESCE(#{quote_ident(text_column)}, '')) @@ " \
+                         "plainto_tsquery('english', #{escape_literal(text)})"
+
+        sql = "SELECT #{select_cols.join(', ')} FROM #{quote_ident(index)}"
+        sql += " WHERE #{where_clauses.join(' AND ')}" if where_clauses.any?
+        sql += " ORDER BY score DESC"
+        sql += " LIMIT #{top_k.to_i}"
+
+        result = execute(sql)
+        matches = result.map { |row| build_match_from_row(row, include_values, include_metadata) }
+
+        log_debug("Text search returned #{matches.size} results")
+
+        QueryResult.from_response(
+          matches: matches,
+          namespace: namespace
+        )
+      end
+
       # @see Base#fetch
       def fetch(index:, ids:, namespace: nil)
         ensure_table_exists!(index)

@@ -109,6 +109,14 @@ results = client.hybrid_search(
   text: 'ruby programming',
   alpha: 0.7  # 70% semantic, 30% keyword
 )
+
+# Text-only search (keyword search without embeddings)
+# Supported by: Qdrant, Weaviate, pgvector
+results = client.text_search(
+  index: 'products',
+  text: 'iPhone 15 Pro',
+  top_k: 10
+)
 ```
 
 ## Provider Examples

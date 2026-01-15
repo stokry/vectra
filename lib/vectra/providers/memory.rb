@@ -80,6 +80,54 @@ module Vectra
         QueryResult.from_response(matches: matches, namespace: namespace)
       end
 
+      # Text-only search using simple keyword matching in metadata
+      #
+      # For testing purposes only. Performs case-insensitive keyword matching
+      # in metadata values. Not a real BM25/full-text search implementation.
+      #
+      # @param index [String] index name
+      # @param text [String] text query for keyword search
+      # @param top_k [Integer] number of results
+      # @param namespace [String, nil] optional namespace
+      # @param filter [Hash, nil] metadata filter
+      # @param include_values [Boolean] include vector values
+      # @param include_metadata [Boolean] include metadata
+      # @return [QueryResult] search results
+      def text_search(index:, text:, top_k:, namespace: nil, filter: nil,
+                      include_values: false, include_metadata: true)
+        ns = namespace || ""
+        candidates = @storage[index][ns].values
+
+        # Apply metadata filter first
+        if filter
+          candidates = candidates.select { |v| matches_filter?(v, filter) }
+        end
+
+        # Simple keyword matching in metadata values (case-insensitive)
+        text_lower = text.to_s.downcase
+        matches = candidates.map do |vec|
+          # Search in all metadata values
+          metadata_text = (vec.metadata || {}).values.map(&:to_s).join(" ").downcase
+          matches_text = metadata_text.include?(text_lower)
+
+          next unless matches_text
+
+          # Simple scoring: count how many words match
+          query_words = text_lower.split(/\s+/)
+          matched_words = query_words.count { |word| metadata_text.include?(word) }
+          score = matched_words.to_f / query_words.size
+
+          build_match(vec, score, include_values, include_metadata)
+        end.compact
+
+        # Sort by score (descending) and take top_k
+        matches.sort_by! { |m| -m[:score] }
+        matches = matches.first(top_k)
+
+        log_debug("Text search returned #{matches.size} results")
+        QueryResult.from_response(matches: matches, namespace: namespace)
+      end
+
       # @see Base#fetch
       def fetch(index:, ids:, namespace: nil)
         ns = namespace || ""

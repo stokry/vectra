@@ -224,6 +224,65 @@ RSpec.describe Vectra::Providers::Weaviate do
     end
   end
 
+  describe "#text_search" do
+    let(:query_text) { "ruby programming" }
+    let(:response_body) do
+      {
+        "data" => {
+          "Get" => {
+            "Document" => [
+              {
+                "_additional" => { "id" => "doc-1", "distance" => 0.1 },
+                "title" => "Ruby guide",
+                "content" => "Learn Ruby programming"
+              },
+              {
+                "_additional" => { "id" => "doc-2", "distance" => 0.2 },
+                "title" => "Programming tips",
+                "content" => "Ruby best practices"
+              }
+            ]
+          }
+        }
+      }
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/v1/graphql")
+        .to_return(
+          status: 200,
+          body: response_body.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+    end
+
+    it "performs text search using BM25" do
+      result = provider.text_search(
+        index: "Document",
+        text: query_text,
+        top_k: 5
+      )
+
+      expect(result).to be_a(Vectra::QueryResult)
+      expect(result.size).to eq(2)
+    end
+
+    it "includes bm25 query in GraphQL" do
+      provider.text_search(
+        index: "Document",
+        text: query_text,
+        top_k: 10
+      )
+
+      expect(WebMock).to(have_requested(:post, "#{base_url}/v1/graphql")
+        .with do |request|
+          body = JSON.parse(request.body)
+          query = body["query"]
+          query.include?("bm25:") && query.include?("query: \"#{query_text}\"")
+        end)
+    end
+  end
+
   describe "#fetch" do
     let(:response_body) do
       {

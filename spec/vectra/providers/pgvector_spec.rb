@@ -540,4 +540,62 @@ RSpec.describe Vectra::Providers::Pgvector do
       expect(query[:sql]).to include('"table"; DROP TABLE users; --"')
     end
   end
+
+  describe "#text_search" do
+    let(:query_text) { "ruby programming" }
+    let(:mock_results) do
+      [
+        { "id" => "vec1", "score" => 0.95, "metadata" => '{"text": "Ruby guide"}' },
+        { "id" => "vec2", "score" => 0.90, "metadata" => '{"text": "Programming tips"}' }
+      ]
+    end
+
+    before do
+      allow(provider).to receive(:execute).and_return(mock_results)
+    end
+
+    it "performs text search using PostgreSQL full-text search" do
+      result = provider.text_search(
+        index: "test_index",
+        text: query_text,
+        top_k: 5
+      )
+
+      expect(result).to be_a(Vectra::QueryResult)
+      expect(result.size).to eq(2)
+      expect(result.first.score).to eq(0.95)
+    end
+
+    it "generates SQL with to_tsvector and plainto_tsquery" do
+      provider.text_search(index: "test_index", text: query_text, top_k: 5)
+
+      query = expect_sql_matching(/SELECT.*FROM "test_index"/)
+      expect(query[:sql]).to include("to_tsvector")
+      expect(query[:sql]).to include("plainto_tsquery")
+      expect(query[:sql]).to include("ts_rank")
+    end
+
+    it "includes text column parameter" do
+      provider.text_search(
+        index: "test_index",
+        text: query_text,
+        top_k: 5,
+        text_column: "description"
+      )
+
+      query = expect_sql_matching(/SELECT.*FROM "test_index"/)
+      expect(query[:sql]).to include('"description"')
+    end
+
+    it "includes namespace in WHERE clause when provided" do
+      provider.text_search(
+        index: "test_index",
+        text: query_text,
+        namespace: "prod"
+      )
+
+      query = expect_sql_matching(/SELECT id,.*score.*FROM/)
+      expect(query[:sql]).to include("namespace = 'prod'")
+    end
+  end
 end
