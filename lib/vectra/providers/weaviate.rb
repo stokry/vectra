@@ -368,7 +368,7 @@ module Vectra
       end
 
       def build_text_search_graphql(index:, text:, top_k:, where_filter:,
-                                     include_values:, include_metadata:)
+                                    include_values:, include_metadata:)
         selection_block = build_selection_fields(include_values, include_metadata).join(" ")
         <<~GRAPHQL
           {

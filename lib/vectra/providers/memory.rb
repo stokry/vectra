@@ -96,33 +96,11 @@ module Vectra
       def text_search(index:, text:, top_k:, namespace: nil, filter: nil,
                       include_values: false, include_metadata: true)
         ns = namespace || ""
-        candidates = @storage[index][ns].values
-
-        # Apply metadata filter first
-        if filter
-          candidates = candidates.select { |v| matches_filter?(v, filter) }
-        end
-
-        # Simple keyword matching in metadata values (case-insensitive)
+        candidates = filter_candidates(@storage[index][ns].values, filter)
         text_lower = text.to_s.downcase
-        matches = candidates.map do |vec|
-          # Search in all metadata values
-          metadata_text = (vec.metadata || {}).values.map(&:to_s).join(" ").downcase
-          matches_text = metadata_text.include?(text_lower)
 
-          next unless matches_text
-
-          # Simple scoring: count how many words match
-          query_words = text_lower.split(/\s+/)
-          matched_words = query_words.count { |word| metadata_text.include?(word) }
-          score = matched_words.to_f / query_words.size
-
-          build_match(vec, score, include_values, include_metadata)
-        end.compact
-
-        # Sort by score (descending) and take top_k
-        matches.sort_by! { |m| -m[:score] }
-        matches = matches.first(top_k)
+        matches = find_text_matches(candidates, text_lower, include_values, include_metadata)
+        matches = matches.sort_by { |m| -m[:score] }.first(top_k)
 
         log_debug("Text search returned #{matches.size} results")
         QueryResult.from_response(matches: matches, namespace: namespace)
@@ -341,6 +319,36 @@ module Vectra
         true
       end
       # rubocop:enable Naming/PredicateMethod
+
+      # Filter candidates by metadata filter
+      def filter_candidates(candidates, filter)
+        return candidates unless filter
+
+        candidates.select { |v| matches_filter?(v, filter) }
+      end
+
+      # Find text matches in candidates
+      def find_text_matches(candidates, text_lower, include_values, include_metadata)
+        candidates.map do |vec|
+          metadata_text = build_metadata_text(vec)
+          next unless metadata_text.include?(text_lower)
+
+          score = calculate_text_score(text_lower, metadata_text)
+          build_match(vec, score, include_values, include_metadata)
+        end.compact
+      end
+
+      # Build metadata text string for searching
+      def build_metadata_text(vector)
+        (vector.metadata || {}).values.map(&:to_s).join(" ").downcase
+      end
+
+      # Calculate text match score based on word matches
+      def calculate_text_score(query_text, metadata_text)
+        query_words = query_text.split(/\s+/)
+        matched_words = query_words.count { |word| metadata_text.include?(word) }
+        matched_words.to_f / query_words.size
+      end
     end
   end
 end

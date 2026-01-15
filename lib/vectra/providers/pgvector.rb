@@ -28,6 +28,7 @@ module Vectra
     #   )
     #   client.upsert(index: 'documents', vectors: [...])
     #
+    # rubocop:disable Metrics/ClassLength
     class Pgvector < Base
       include Connection
       include SqlHelpers
@@ -409,5 +410,6 @@ module Vectra
         raise ConfigurationError, "Host (connection URL or hostname) must be configured for pgvector"
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
