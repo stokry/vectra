@@ -311,20 +311,26 @@ RSpec.describe Vectra::Client do
     describe "#text_search" do
       let(:query_text) { "ruby programming" }
       let(:text_result) { Vectra::QueryResult.new(matches: [sample_match]) }
+      # Use a regular double instead of instance_double for text_search tests
+      # since Pinecone doesn't have this method
+      let(:text_search_provider) { double("Provider", provider_name: :memory) }
 
       before do
-        allow(provider).to receive(:text_search).and_return(text_result)
+        allow(text_search_provider).to receive(:text_search).and_return(text_result)
+        allow(text_search_provider).to receive(:respond_to?).with(:text_search).and_return(true)
+        allow(Vectra::Providers::Memory).to receive(:new).and_return(text_search_provider)
       end
 
       it "performs text search through provider" do
-        result = client.text_search(
+        text_client = Vectra::Client.new(provider: :memory)
+        result = text_client.text_search(
           index: index_name,
           text: query_text,
           top_k: 10
         )
 
         expect(result).to eq(text_result)
-        expect(provider).to have_received(:text_search).with(
+        expect(text_search_provider).to have_received(:text_search).with(
           index: index_name,
           text: query_text,
           top_k: 10,
@@ -336,8 +342,9 @@ RSpec.describe Vectra::Client do
       end
 
       it "validates text query is not empty" do
+        text_client = Vectra::Client.new(provider: :memory)
         expect do
-          client.text_search(
+          text_client.text_search(
             index: index_name,
             text: ""
           )
@@ -345,8 +352,9 @@ RSpec.describe Vectra::Client do
       end
 
       it "validates text query is not nil" do
+        text_client = Vectra::Client.new(provider: :memory)
         expect do
-          client.text_search(
+          text_client.text_search(
             index: index_name,
             text: nil
           )
@@ -354,10 +362,13 @@ RSpec.describe Vectra::Client do
       end
 
       it "raises UnsupportedFeatureError when provider doesn't support it" do
-        allow(provider).to receive(:respond_to?).with(:text_search).and_return(false)
+        unsupported_provider = instance_double(Vectra::Providers::Pinecone, provider_name: :pinecone)
+        allow(Vectra::Providers::Pinecone).to receive(:new).and_return(unsupported_provider)
+        allow(unsupported_provider).to receive(:respond_to?).with(:text_search).and_return(false)
 
+        unsupported_client = Vectra::Client.new(provider: :pinecone)
         expect do
-          client.text_search(
+          unsupported_client.text_search(
             index: index_name,
             text: query_text
           )
@@ -365,12 +376,15 @@ RSpec.describe Vectra::Client do
       end
 
       it "uses default index when not provided" do
-        client = Vectra::Client.new(provider: :memory, index: "default-index")
-        allow(client.instance_variable_get(:@provider)).to receive(:text_search).and_return(text_result)
+        default_index_provider = double("Provider", provider_name: :memory)
+        allow(default_index_provider).to receive(:text_search).and_return(text_result)
+        allow(default_index_provider).to receive(:respond_to?).with(:text_search).and_return(true)
+        allow(Vectra::Providers::Memory).to receive(:new).and_return(default_index_provider)
 
-        client.text_search(text: query_text)
+        default_client = Vectra::Client.new(provider: :memory, index: "default-index")
+        default_client.text_search(index: nil, text: query_text)
 
-        expect(client.instance_variable_get(:@provider)).to have_received(:text_search).with(
+        expect(default_index_provider).to have_received(:text_search).with(
           hash_including(index: "default-index")
         )
       end

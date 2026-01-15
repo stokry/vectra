@@ -545,13 +545,16 @@ RSpec.describe Vectra::Providers::Pgvector do
     let(:query_text) { "ruby programming" }
     let(:mock_results) do
       [
-        { "id" => "vec1", "score" => 0.95, "metadata" => '{"text": "Ruby guide"}' },
-        { "id" => "vec2", "score" => 0.90, "metadata" => '{"text": "Programming tips"}' }
+        { "id" => "vec1", "score" => "0.95", "metadata" => '{"text": "Ruby guide"}' },
+        { "id" => "vec2", "score" => "0.90", "metadata" => '{"text": "Programming tips"}' }
       ]
     end
 
-    before do
-      allow(provider).to receive(:execute).and_return(mock_results)
+    let(:mock_result_handlers) do
+      {
+        /SELECT EXISTS/ => ->(_sql, _params) { [{ "exists" => true }] },
+        /SELECT.*FROM "test_index"/ => ->(_sql, _params) { mock_results }
+      }
     end
 
     it "performs text search using PostgreSQL full-text search" do
@@ -564,6 +567,7 @@ RSpec.describe Vectra::Providers::Pgvector do
       expect(result).to be_a(Vectra::QueryResult)
       expect(result.size).to eq(2)
       expect(result.first.score).to eq(0.95)
+      expect(result.first.id).to eq("vec1")
     end
 
     it "generates SQL with to_tsvector and plainto_tsquery" do
@@ -591,6 +595,7 @@ RSpec.describe Vectra::Providers::Pgvector do
       provider.text_search(
         index: "test_index",
         text: query_text,
+        top_k: 10,
         namespace: "prod"
       )
 
