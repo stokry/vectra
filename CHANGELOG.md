@@ -4,6 +4,39 @@
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.8...v1.1.0)
 
+### 🎉 Major Feature: Middleware System
+
+This release introduces a **Rack-style middleware system** for all vector database operations.
+
+#### Added
+
+- **Middleware Stack** - All client operations now route through a composable middleware pipeline
+- **5 Built-in Middleware**:
+  - `Vectra::Middleware::Logging` - Structured logs with timing for all operations
+  - `Vectra::Middleware::Retry` - Automatic retry with exponential/linear backoff for transient errors
+  - `Vectra::Middleware::Instrumentation` - Hooks for metrics and APM integration
+  - `Vectra::Middleware::PIIRedaction` - Automatic PII redaction (email, phone, SSN, credit cards)
+  - `Vectra::Middleware::CostTracker` - Track API costs per operation with callbacks
+- **Request/Response Objects** - Type-safe objects with metadata attachment
+- **Extensible Framework** - Create custom middleware by extending `Vectra::Middleware::Base`
+- **Global & Per-Client Middleware** - Apply middleware globally (`Client.use`) or per-instance (`new(middleware: [...])`)
+
+#### Changed
+
+- All client operations (`upsert`, `query`, `fetch`, `update`, `delete`, `stats`, `list_indexes`, etc.) now route through middleware stack for consistency
+- Middleware has complete visibility into all client operations
+
+#### Documentation
+
+- Added comprehensive middleware section to README
+- Created `examples/middleware_demo.rb` demonstrating all 5 built-in middleware
+- Full YARD documentation for all middleware classes
+- Published [middleware guide](https://dev.to/stokry/rack-style-middleware-for-vector-databases-in-ruby-vectra-client-110-2jh3) on Dev.to
+
+#### Migration Notes
+
+No breaking changes. Middleware is opt-in - existing code works without modification.
+
 ## [v1.0.8](https://github.com/stokry/vectra/tree/v1.0.8) (2026-01-14)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.0.7...v1.0.8)
