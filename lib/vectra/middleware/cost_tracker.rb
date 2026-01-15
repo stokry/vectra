@@ -51,15 +51,15 @@ module Vectra
         response.metadata[:cost_usd] = cost
 
         # Invoke callback if provided
-        if @on_cost
-          @on_cost.call(
-            operation: request.operation,
-            provider: provider,
-            index: request.index,
-            cost_usd: cost,
-            timestamp: Time.now
-          )
-        end
+        return unless @on_cost
+
+        @on_cost.call(
+          operation: request.operation,
+          provider: provider,
+          index: request.index,
+          cost_usd: cost,
+          timestamp: Time.now
+        )
       end
 
       private
@@ -80,28 +80,26 @@ module Vectra
       # @return [Float] Cost in USD
       def calculate_cost(provider, operation_type, request)
         rate = @pricing.dig(provider, operation_type) || 0.0
+        multiplier = operation_multiplier(request)
+        rate * multiplier
+      end
 
-        # Multiply by vector count for batch operations
+      # Calculate multiplier for operation based on batch size
+      #
+      # @param request [Request] The request object
+      # @return [Integer, Float] Multiplier for the base rate
+      def operation_multiplier(request)
         case request.operation
         when :upsert
-          count = request.params[:vectors]&.size || 1
-          rate * count
+          request.params[:vectors]&.size || 1
         when :query
-          # Query cost is typically per query, not per result
-          rate
+          1 # Query cost is typically per query, not per result
         when :fetch
-          count = request.params[:ids]&.size || 1
-          rate * count
+          request.params[:ids]&.size || 1
         when :delete
-          if request.params[:delete_all]
-            # Flat rate for delete_all
-            rate * 100 # Estimate
-          else
-            count = request.params[:ids]&.size || 1
-            rate * count
-          end
+          request.params[:delete_all] ? 100 : (request.params[:ids]&.size || 1)
         else
-          rate
+          1
         end
       end
     end

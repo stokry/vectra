@@ -22,36 +22,26 @@ RSpec.describe Vectra::Middleware::Stack do
     it "executes middleware in order" do
       execution_order = []
 
-      middleware1 = Class.new(Vectra::Middleware::Base) do
-        define_method(:before) do |_request|
-          execution_order << :middleware1_before
-        end
-
-        define_method(:after) do |_request, _response|
-          execution_order << :middleware1_after
-        end
+      middleware1_class = Class.new(Vectra::Middleware::Base) do
+        define_method(:before) { |_request| execution_order << :middleware1_before }
+        define_method(:after) { |_request, _response| execution_order << :middleware1_after }
       end
 
-      middleware2 = Class.new(Vectra::Middleware::Base) do
-        define_method(:before) do |_request|
-          execution_order << :middleware2_before
-        end
-
-        define_method(:after) do |_request, _response|
-          execution_order << :middleware2_after
-        end
+      middleware2_class = Class.new(Vectra::Middleware::Base) do
+        define_method(:before) { |_request| execution_order << :middleware2_before }
+        define_method(:after) { |_request, _response| execution_order << :middleware2_after }
       end
 
-      middleware_stack << middleware1.new
-      middleware_stack << middleware2.new
+      middleware_stack << middleware1_class.new
+      middleware_stack << middleware2_class.new
 
       stack.call(:upsert, index: "test", vectors: [{ id: "1", values: [0.1, 0.2, 0.3] }])
 
-      expect(execution_order).to eq([
-        :middleware1_before,
-        :middleware2_before,
-        :middleware2_after,
-        :middleware1_after
+      expect(execution_order).to eq(%i[
+        middleware1_before
+        middleware2_before
+        middleware2_after
+        middleware1_after
       ])
     end
 

@@ -53,14 +53,12 @@ module Vectra
       def build_chain(_request)
         # Final app: actual provider call
         final_app = lambda do |req|
-          begin
-            # Remove middleware-specific params before calling provider
-            provider_params = req.to_h.reject { |k, _| k == :provider }
-            result = @provider.public_send(req.operation, **provider_params)
-            Response.new(result: result)
-          rescue StandardError => e
-            Response.new(error: e)
-          end
+          # Remove middleware-specific params before calling provider
+          provider_params = req.to_h.except(:provider)
+          result = @provider.public_send(req.operation, **provider_params)
+          Response.new(result: result)
+        rescue StandardError => e
+          Response.new(error: e)
         end
 
         # Wrap with middlewares in reverse order
