@@ -29,7 +29,9 @@ module Vectra
     def health_check(index: nil, include_stats: false, timeout: 5)
       start_time = Time.now
 
-      indexes = with_timeout(timeout) { list_indexes }
+      # For health checks we bypass client middleware and call the provider
+      # directly to avoid interference from custom stacks.
+      indexes = with_timeout(timeout) { provider.list_indexes }
       index_name = index || indexes.first&.dig(:name)
 
       result = base_result(start_time, indexes)
@@ -70,7 +72,7 @@ module Vectra
     def add_index_stats(result, index_name, include_stats, timeout)
       return unless include_stats && index_name
 
-      stats = with_timeout(timeout) { stats(index: index_name) }
+      stats = with_timeout(timeout) { provider.stats(index: index_name) }
       result[:index] = index_name
       result[:stats] = {
         vector_count: stats[:total_vector_count],
