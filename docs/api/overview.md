@@ -138,6 +138,31 @@ results = client.hybrid_search(
 
 **Provider Support:** Qdrant ✅, Weaviate ✅, pgvector ✅, Pinecone ⚠️
 
+### `text_search(index:, text:, top_k:)`
+
+Text-only search (keyword search without requiring embeddings).
+
+**Parameters:**
+- `index` (String) - Index/collection name (uses client's default index when omitted)
+- `text` (String) - Text query for keyword search
+- `top_k` (Integer) - Number of results (default: 10)
+- `namespace` (String, optional) - Namespace
+- `filter` (Hash, optional) - Metadata filter
+- `include_values` (Boolean) - Include vector values (default: false)
+- `include_metadata` (Boolean) - Include metadata (default: true)
+
+**Example:**
+```ruby
+results = client.text_search(
+  index: 'products',
+  text: 'iPhone 15 Pro',
+  top_k: 10,
+  filter: { category: 'electronics' }
+)
+```
+
+**Provider Support:** Qdrant ✅ (BM25), Weaviate ✅ (BM25), pgvector ✅ (PostgreSQL full-text), Memory ✅, Pinecone ❌
+
 ### `healthy?`
 
 Quick health check - returns true if provider connection is healthy.

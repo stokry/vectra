@@ -39,6 +39,12 @@
         <span class="tma-nav__toggle-line"></span>
       </button>
       <ul class="tma-nav__menu" id="nav-menu">
+        <li class="tma-nav__search-wrapper">
+          <div class="tma-search">
+            <input type="search" id="search-input" class="tma-search__input" placeholder="Search docs..." aria-label="Search documentation">
+            <div id="search-results" class="tma-search__results"></div>
+          </div>
+        </li>
         <li><a href="{{ site.baseurl }}/guides/getting-started" class="tma-nav__link">Getting Started</a></li>
         <li><a href="{{ site.baseurl }}/guides/recipes" class="tma-nav__link">Recipes</a></li>
         <li><a href="{{ site.baseurl }}/providers" class="tma-nav__link">Providers</a></li>
@@ -122,6 +128,9 @@
     </div>
   </footer>
 
+  <!-- Simple Jekyll Search -->
+  <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.10.0/dest/simple-jekyll-search.min.js"></script>
+  
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const navToggle = document.querySelector('.tma-nav__toggle');
@@ -153,6 +162,19 @@
             navToggle.setAttribute('aria-expanded', 'false');
             navMenu.classList.remove('tma-nav__menu--open');
           }
+        });
+      }
+
+      // Initialize search
+      if (typeof SimpleJekyllSearch !== 'undefined') {
+        SimpleJekyllSearch({
+          searchInput: document.getElementById('search-input'),
+          resultsContainer: document.getElementById('search-results'),
+          json: '{{ site.baseurl }}/search.json',
+          searchResultTemplate: '<div class="tma-search__result"><a href="{url}" class="tma-search__result-link"><span class="tma-search__result-title">{title}</span><span class="tma-search__result-excerpt">{excerpt}</span></a></div>',
+          noResultsText: '<div class="tma-search__no-results">No results found</div>',
+          fuzzy: true,
+          limit: 10
         });
       }
     });

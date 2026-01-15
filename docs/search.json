@@ -1,0 +1,26 @@
+---
+layout: null
+---
+[
+  {% assign first = true %}
+  {% for page in site.pages %}
+    {% unless page.url == '/' or page.url == '/search.json' or page.url contains '/assets/' or page.url contains '/404' or page.url contains '/feed' or page.url contains '/sitemap' or page.url contains '/robots' or page.url contains '/index.html' or page.url contains '/index.md' %}
+      {% unless first %},{% endunless %}
+      {
+        "title": {{ page.title | default: page.url | jsonify }},
+        "url": {{ page.url | jsonify }},
+        "excerpt": {{ page.content | strip_html | truncatewords: 30 | default: "" | jsonify }}
+      }
+      {% assign first = false %}
+    {% endunless %}
+  {% endfor %}
+  {% for post in site.posts %}
+    {% unless first %},{% endunless %}
+    {
+      "title": {{ post.title | jsonify }},
+      "url": {{ post.url | jsonify }},
+      "excerpt": {{ post.content | strip_html | truncatewords: 30 | default: "" | jsonify }}
+    }
+    {% assign first = false %}
+  {% endfor %}
+]
