@@ -42,6 +42,37 @@ module Vectra
 
     attr_reader :config, :provider, :default_index, :default_namespace
 
+    class << self
+      # Get the global middleware stack
+      #
+      # @return [Array<Array>] Array of [middleware_class, options] pairs
+      def middleware
+        @middleware ||= []
+      end
+
+      # Add middleware to the global stack
+      #
+      # @param middleware_class [Class] Middleware class
+      # @param options [Hash] Options to pass to middleware constructor
+      #
+      # @example Add global logging middleware
+      #   Vectra::Client.use Vectra::Middleware::Logging
+      #
+      # @example Add middleware with options
+      #   Vectra::Client.use Vectra::Middleware::Retry, max_attempts: 5
+      #
+      def use(middleware_class, **options)
+        middleware << [middleware_class, options]
+      end
+
+      # Clear all global middleware
+      #
+      # @return [void]
+      def clear_middleware!
+        @middleware = []
+      end
+    end
+
     # Initialize a new Client
     #
     # @param provider [Symbol, nil] provider name (:pinecone, :qdrant, :weaviate)
@@ -51,12 +82,14 @@ module Vectra
     # @param options [Hash] additional options
     # @option options [String] :index default index name
     # @option options [String] :namespace default namespace
+    # @option options [Array<Class, Object>] :middleware instance-level middleware
     def initialize(provider: nil, api_key: nil, environment: nil, host: nil, **options)
       @config = build_config(provider, api_key, environment, host, options)
       @config.validate!
       @provider = build_provider
       @default_index = options[:index]
       @default_namespace = options[:namespace]
+      @middleware = build_middleware_stack(options[:middleware])
     end
 
     # Upsert vectors into an index
@@ -87,7 +120,7 @@ module Vectra
         index: index,
         metadata: { vector_count: vectors.size }
       ) do
-        provider.upsert(index: index, vectors: vectors, namespace: namespace)
+        @middleware.call(:upsert, index: index, vectors: vectors, namespace: namespace, provider: provider_name)
       end
     end
 
@@ -151,14 +184,16 @@ module Vectra
         index: index,
         metadata: { top_k: top_k }
       ) do
-        result = provider.query(
+        result = @middleware.call(
+          :query,
           index: index,
           vector: vector,
           top_k: top_k,
           namespace: namespace,
           filter: filter,
           include_values: include_values,
-          include_metadata: include_metadata
+          include_metadata: include_metadata,
+          provider: provider_name
         )
       end
 
@@ -188,7 +223,7 @@ module Vectra
         index: index,
         metadata: { id_count: ids.size }
       ) do
-        provider.fetch(index: index, ids: ids, namespace: namespace)
+        @middleware.call(:fetch, index: index, ids: ids, namespace: namespace, provider: provider_name)
       end
     end
 
@@ -222,12 +257,14 @@ module Vectra
         index: index,
         metadata: { has_metadata: !metadata.nil?, has_values: !values.nil? }
       ) do
-        provider.update(
+        @middleware.call(
+          :update,
           index: index,
           id: id,
           metadata: metadata,
           values: values,
-          namespace: namespace
+          namespace: namespace,
+          provider: provider_name
         )
       end
     end
@@ -265,12 +302,14 @@ module Vectra
         index: index,
         metadata: { id_count: ids&.size, delete_all: delete_all, has_filter: !filter.nil? }
       ) do
-        provider.delete(
+        @middleware.call(
+          :delete,
           index: index,
           ids: ids,
           namespace: namespace,
           filter: filter,
-          delete_all: delete_all
+          delete_all: delete_all,
+          provider: provider_name
         )
       end
     end
@@ -284,7 +323,7 @@ module Vectra
     #   indexes.each { |idx| puts idx[:name] }
     #
     def list_indexes
-      provider.list_indexes
+      @middleware.call(:list_indexes, provider: provider_name)
     end
 
     # Describe an index
@@ -299,7 +338,7 @@ module Vectra
     def describe_index(index: nil)
       index ||= default_index
       validate_index!(index)
-      provider.describe_index(index: index)
+      @middleware.call(:describe_index, index: index, provider: provider_name)
     end
 
     # Get index statistics
@@ -316,7 +355,7 @@ module Vectra
       index ||= default_index
       namespace ||= default_namespace
       validate_index!(index)
-      provider.stats(index: index, namespace: namespace)
+      @middleware.call(:stats, index: index, namespace: namespace, provider: provider_name)
     end
 
     # Create a new index
@@ -342,7 +381,7 @@ module Vectra
         index: name,
         metadata: { dimension: dimension, metric: metric }
       ) do
-        provider.create_index(name: name, dimension: dimension, metric: metric, **options)
+        @middleware.call(:create_index, name: name, dimension: dimension, metric: metric, provider: provider_name, **options)
       end
     end
 
@@ -365,7 +404,7 @@ module Vectra
         provider: provider_name,
         index: name
       ) do
-        provider.delete_index(name: name)
+        @middleware.call(:delete_index, name: name, provider: provider_name)
       end
     end
 
@@ -440,7 +479,8 @@ module Vectra
               "Hybrid search is not supported by #{provider_name} provider"
       end
 
-      provider.hybrid_search(
+      @middleware.call(
+        :hybrid_search,
         index: index,
         vector: vector,
         text: text,
@@ -449,7 +489,8 @@ module Vectra
         namespace: namespace,
         filter: filter,
         include_values: include_values,
-        include_metadata: include_metadata
+        include_metadata: include_metadata,
+        provider: provider_name
       )
     end
 
@@ -626,6 +667,21 @@ module Vectra
       else
         raise UnsupportedProviderError, "Provider '#{config.provider}' is not supported"
       end
+    end
+
+    def build_middleware_stack(instance_middleware = nil)
+      # Combine class-level + instance-level middleware
+      all_middleware = self.class.middleware.map do |klass, opts|
+        klass.new(**opts)
+      end
+
+      if instance_middleware
+        all_middleware += Array(instance_middleware).map do |mw|
+          mw.is_a?(Class) ? mw.new : mw
+        end
+      end
+
+      Middleware::Stack.new(@provider, all_middleware)
     end
 
     def validate_index!(index)

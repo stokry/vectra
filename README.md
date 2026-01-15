@@ -242,6 +242,59 @@ Real-world patterns for common use cases:
 
 👉 **[Browse all Recipes & Patterns](https://vectra-docs.netlify.app/guides/recipes/)**
 
+## Middleware System
+
+Vectra features a powerful **Rack-style middleware system** that allows you to extend functionality without modifying core code.
+
+### Quick Start
+
+```ruby
+# Global middleware (applies to all clients)
+Vectra::Client.use Vectra::Middleware::Logging
+Vectra::Client.use Vectra::Middleware::Retry, max_attempts: 5
+Vectra::Client.use Vectra::Middleware::CostTracker
+
+# Per-client middleware
+client = Vectra::Client.new(
+  provider: :qdrant,
+  middleware: [
+    Vectra::Middleware::PIIRedaction,
+    Vectra::Middleware::Instrumentation
+  ]
+)
+```
+
+### Built-in Middleware
+
+- **Logging** - Request/response logging with timing
+- **Retry** - Automatic retries with exponential backoff
+- **Instrumentation** - Metrics and monitoring integration
+- **PIIRedaction** - Automatic PII (email, phone, SSN) redaction
+- **CostTracker** - Track API usage costs per operation
+
+### Custom Middleware
+
+```ruby
+class MyAuditMiddleware < Vectra::Middleware::Base
+  def before(request)
+    # Called before the operation
+    AuditLog.create!(action: request.operation, user: Current.user)
+  end
+
+  def after(request, response)
+    # Called after successful operation
+    puts "Duration: #{response.metadata[:duration_ms]}ms"
+  end
+
+  def on_error(request, error)
+    # Called when an error occurs
+    ErrorTracker.notify(error, context: { operation: request.operation })
+  end
+end
+
+Vectra::Client.use MyAuditMiddleware
+```
+
 ## Production Patterns
 
 Vectra includes 7 production-ready patterns out of the box:

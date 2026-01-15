@@ -216,3 +216,9 @@ end
 ```
 
 See [Complete API Methods Reference]({{ site.baseurl }}/api/methods/) for detailed method documentation.
+
+## Next Steps
+
+- [Providers Guide]({{ site.baseurl }}/providers/)
+- [Rails Integration Guide]({{ site.baseurl }}/guides/rails-integration/)
+- [Middleware System]({{ site.baseurl }}/guides/middleware/)
