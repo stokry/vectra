@@ -307,6 +307,20 @@ Vectra includes 7 production-ready patterns out of the box:
 - **Health Checks** - `healthy?`, `ping`, and `health_check` methods
 - **Instrumentation** - Datadog, New Relic, Sentry, Honeybadger support
 
+## Roadmap
+
+High-level roadmap for `vectra-client`:
+
+- **1.x (near term)**
+  - Reranking middleware built on top of the existing Rack-style middleware stack.
+  - Additional middleware building blocks (sampling, tracing, score normalization).
+  - Smoother Rails UX for multi-tenant setups and larger demos (e‑commerce, RAG, recommendations).
+- **Mid term**
+  - Additional providers where it makes sense and stays maintainable.
+  - Deeper documentation and recipes around reranking and hybrid search.
+
+For a more detailed, always-up-to-date version, see the online roadmap: https://vectra-docs.netlify.app/guides/roadmap/
+
 ## Development
 
 ```bash
