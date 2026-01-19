@@ -749,24 +749,41 @@ module Vectra
     end
 
     def apply_rails_vectra_defaults!
-      return unless defined?(Rails) && Rails.respond_to?(:root)
+      return unless rails_root_available?
 
-      config_path = File.join(Rails.root.to_s, "config", "vectra.yml")
-      return unless File.exist?(config_path)
+      entry = load_single_vectra_entry
+      return unless entry
 
-      raw = File.read(config_path)
+      apply_vectra_defaults_from(entry)
+    rescue StandardError => e
+      log_error("Failed to infer default index/namespace from config/vectra.yml", e)
+    end
+
+    def rails_root_available?
+      defined?(Rails) && Rails.respond_to?(:root) && Rails.root
+    end
+
+    def vectra_config_path
+      File.join(Rails.root.to_s, "config", "vectra.yml")
+    end
+
+    def load_single_vectra_entry
+      path = vectra_config_path
+      return unless File.exist?(path)
+
+      raw = File.read(path)
       data = YAML.safe_load(raw, permitted_classes: [], aliases: true) || {}
-      return unless data.is_a?(Hash)
-      return unless data.size == 1
+      return unless data.is_a?(Hash) && data.size == 1
 
-      entry = data.values.first || {}
+      data.values.first || {}
+    end
+
+    def apply_vectra_defaults_from(entry)
       index = entry["index"] || entry[:index]
       namespace = entry["namespace"] || entry[:namespace]
 
       @default_index = index if @default_index.nil? && index.is_a?(String) && !index.empty?
       @default_namespace = namespace if @default_namespace.nil? && namespace.is_a?(String) && !namespace.empty?
-    rescue StandardError => e
-      log_error("Failed to infer default index/namespace from config/vectra.yml", e)
     end
 
     def validate_index!(index)
