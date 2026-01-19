@@ -1,24 +1,12 @@
 # Changelog
 
+## [v1.1.2](https://github.com/stokry/vectra/tree/v1.1.2) (2026-01-19)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.1.1...v1.1.2)
+
 ## [v1.1.1](https://github.com/stokry/vectra/tree/v1.1.1) (2026-01-15)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.1.0...v1.1.1)
-
-### Added
-- **Text Search Support** - New `text_search` method for keyword-only search without requiring embeddings
-  - Qdrant: BM25 text search
-  - Weaviate: BM25 text search via GraphQL
-  - pgvector: PostgreSQL full-text search (`to_tsvector`, `plainto_tsquery`, `ts_rank`)
-  - Memory: Simple keyword matching (for testing)
-  - Raises `UnsupportedFeatureError` for Pinecone (use sparse vectors instead)
-- **Documentation Search** - Added search functionality to documentation site with `simple-jekyll-search`
-  - Client-side search with fuzzy matching
-  - Search index auto-generated from all documentation pages
-  - Responsive search UI in navigation
-
-### Changed
-- Updated API documentation to include `text_search` method in overview and cheatsheet
-- Enhanced documentation with text search examples and use cases
 
 ## [v1.1.0](https://github.com/stokry/vectra/tree/v1.1.0) (2026-01-15)
 
