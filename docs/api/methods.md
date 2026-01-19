@@ -36,6 +36,8 @@ client = Vectra::Client.new(
 )
 ```
 
+In a Rails app that uses the `vectra:index` generator, if `config/vectra.yml` contains exactly one entry, `Vectra::Client.new` will automatically use that entry's `index` (and `namespace` if present) as its defaults. This allows you to omit `index:` in most calls (`upsert`, `query`, `text_search`, etc.).
+
 ---
 
 ### `client.upsert(index:, vectors:, namespace: nil)`
@@ -399,6 +401,28 @@ status = client.ping
 
 puts "Latency: #{status[:latency_ms]}ms"
 ```
+
+---
+
+### `client.with_timeout(seconds) { ... }`
+
+Temporarily override the client's request timeout inside a block.
+
+**Parameters:**
+- `seconds` (Float) - Temporary timeout in seconds
+
+**Returns:** Block result
+
+**Example (fast health check in Rails controller):**
+```ruby
+status = client.with_timeout(0.5) do |c|
+  c.ping
+end
+
+render json: status, status: status[:healthy] ? :ok : :service_unavailable
+```
+
+After the block finishes (even if it raises), the previous `config.timeout` value is restored.
 
 ---
 

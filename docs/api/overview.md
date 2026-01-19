@@ -10,14 +10,14 @@ permalink: /api/overview/
 
 ```ruby
 client = Vectra::Client.new(
-  provider: :pinecone,        # Required: :pinecone, :qdrant, :weaviate, :pgvector
+  provider: :pinecone,        # Required: :pinecone, :qdrant, :weaviate, :pgvector, :memory
   api_key: 'your-api-key',    # Required for cloud providers
-  index_name: 'my-index',     # Optional, provider-dependent
-  host: 'localhost',          # For self-hosted providers
-  port: 6333,                 # For self-hosted providers
-  environment: 'us-west-4'    # For Pinecone
+  index: 'my-index',          # Optional default index
+  namespace: 'tenant-1'       # Optional default namespace
 )
 ```
+
+In Rails, if you use the `vectra:index` generator and `config/vectra.yml` contains exactly one entry, a plain `Vectra::Client.new` will automatically pick that entry's `index` (and `namespace` if present) as defaults.
 
 ## Core Methods
 
@@ -174,6 +174,12 @@ Quick health check - returns true if provider connection is healthy.
 if client.healthy?
   client.upsert(...)
 end
+```
+
+You can also run faster checks with a temporary timeout:
+
+```ruby
+fast_ok = client.with_timeout(0.5) { |c| c.healthy? }
 ```
 
 ### `ping`

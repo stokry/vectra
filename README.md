@@ -226,6 +226,8 @@ This will:
 - **Update the model** to include `ProductVector`
 - **Append to `config/vectra.yml`** with index metadata (no API keys)
 
+When `config/vectra.yml` contains exactly one entry, a plain `Vectra::Client.new` in that Rails app will automatically use that entry's `index` (and `namespace` if present) as its defaults, so you can usually omit `index:` when calling `upsert` / `query` / `text_search`.
+
 ### Complete Rails Guide
 
 For a complete step-by-step guide including:

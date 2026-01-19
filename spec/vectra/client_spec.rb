@@ -176,6 +176,60 @@ RSpec.describe Vectra::Client do
     end
   end
 
+  describe "Rails vectra.yml defaults" do
+    let(:tmp_dir) { File.join(Dir.pwd, "tmp", "vectra_spec_rails_root") }
+
+    before do
+      stub_const("Rails", Class.new)
+      allow(Rails).to receive(:root).and_return(tmp_dir)
+
+      config_dir = File.join(tmp_dir, "config")
+      FileUtils.mkdir_p(config_dir)
+
+      File.write(
+        File.join(config_dir, "vectra.yml"),
+        <<~YAML
+          documents:
+            provider: qdrant
+            index: docs-index
+            dimension: 1536
+        YAML
+      )
+    end
+
+    it "infers default index from config/vectra.yml when only one entry exists" do
+      client = described_class.new
+      expect(client.default_index).to eq("docs-index")
+      expect(client.default_namespace).to be_nil
+    end
+  end
+
+  describe "#with_timeout" do
+    it "temporarily overrides config.timeout within a block and restores it" do
+      client = described_class.new
+      original_timeout = client.config.timeout
+      observed_timeout = nil
+
+      client.with_timeout(0.5) do |c|
+        observed_timeout = c.config.timeout
+      end
+
+      expect(observed_timeout).to eq(0.5)
+      expect(client.config.timeout).to eq(original_timeout)
+    end
+
+    it "restores timeout even when block raises" do
+      client = described_class.new
+      original_timeout = client.config.timeout
+
+      expect do
+        client.with_timeout(0.1) { raise "boom" }
+      end.to raise_error("boom")
+
+      expect(client.config.timeout).to eq(original_timeout)
+    end
+  end
+
   describe "#query" do
     let(:query_vector) { [0.1, 0.2, 0.3] }
     let(:query_result) { Vectra::QueryResult.new(matches: [sample_match]) }

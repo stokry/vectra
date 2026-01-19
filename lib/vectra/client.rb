@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "yaml"
+
 # Ensure HealthCheck is loaded before Client
 require_relative "health_check" unless defined?(Vectra::HealthCheck)
 require_relative "configuration" unless defined?(Vectra::Configuration)
@@ -89,6 +91,7 @@ module Vectra
       @provider = build_provider
       @default_index = options[:index]
       @default_namespace = options[:namespace]
+      apply_rails_vectra_defaults! if @default_index.nil? && @default_namespace.nil?
       @middleware = build_middleware_stack(options[:middleware])
     end
 
@@ -745,6 +748,27 @@ module Vectra
       Middleware::Stack.new(@provider, all_middleware)
     end
 
+    def apply_rails_vectra_defaults!
+      return unless defined?(Rails) && Rails.respond_to?(:root)
+
+      config_path = File.join(Rails.root.to_s, "config", "vectra.yml")
+      return unless File.exist?(config_path)
+
+      raw = File.read(config_path)
+      data = YAML.safe_load(raw, permitted_classes: [], aliases: true) || {}
+      return unless data.is_a?(Hash)
+      return unless data.size == 1
+
+      entry = data.values.first || {}
+      index = entry["index"] || entry[:index]
+      namespace = entry["namespace"] || entry[:namespace]
+
+      @default_index = index if @default_index.nil? && index.is_a?(String) && !index.empty?
+      @default_namespace = namespace if @default_namespace.nil? && namespace.is_a?(String) && !namespace.empty?
+    rescue StandardError => e
+      log_error("Failed to infer default index/namespace from config/vectra.yml", e)
+    end
+
     def validate_index!(index)
       raise ValidationError, "Index name cannot be nil" if index.nil?
       raise ValidationError, "Index name must be a string" unless index.is_a?(String)
@@ -811,6 +835,22 @@ module Vectra
       config.logger.debug("[Vectra] #{data.inspect}") if data
     end
 
+    # Temporarily override request timeout within a block.
+    #
+    # This updates the client's configuration timeout for the duration
+    # of the block and then restores the previous value.
+    #
+    # @param seconds [Float] temporary timeout in seconds
+    # @yield [Client] yields self with overridden timeout
+    # @return [Object] block result
+    def with_timeout(seconds)
+      previous = config.timeout
+      config.timeout = seconds
+      yield self
+    ensure
+      config.timeout = previous
+    end
+
     # Temporarily override default index within a block.
     #
     # @param index [String] temporary index name
@@ -851,7 +891,7 @@ module Vectra
       end
     end
 
-    public :with_index, :with_namespace, :with_index_and_namespace
+    public :with_index, :with_namespace, :with_index_and_namespace, :with_timeout
   end
   # rubocop:enable Metrics/ClassLength
 end

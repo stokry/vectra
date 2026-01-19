@@ -99,6 +99,8 @@ This will:
 - Update `app/models/product.rb` to include the concern
 - Add configuration to `config/vectra.yml`
 
+When `config/vectra.yml` contains exactly one entry, a plain `Vectra::Client.new` in this Rails app will automatically use that entry's `index` (and `namespace` if present) as its defaults. That means you can usually omit `index:` when calling `upsert`, `query`, `hybrid_search`, or `text_search`.
+
 ### Run Migrations
 
 ```bash
