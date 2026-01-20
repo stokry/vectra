@@ -426,6 +426,55 @@ After the block finishes (even if it raises), the previous `config.timeout` valu
 
 ---
 
+### `client.validate!(require_default_index: false, require_default_namespace: false, features: [])`
+
+Validate the client configuration and (optionally) your defaults and provider feature support.
+
+This is useful in boot-time checks (Rails initializers), health endpoints, and CI.
+
+**Parameters:**
+- `require_default_index` (Boolean) - Require `client.default_index` to be set
+- `require_default_namespace` (Boolean) - Require `client.default_namespace` to be set
+- `features` (Array<Symbol> or Symbol) - Provider features (methods) that must be supported (e.g. `:text_search`)
+
+**Returns:** `Vectra::Client` (self)
+
+**Raises:** `Vectra::ConfigurationError` when validation fails
+
+**Example:**
+```ruby
+# Ensure client is configured
+client.validate!
+
+# Ensure calls can omit index:
+client.validate!(require_default_index: true)
+
+# Ensure provider supports text_search:
+client.validate!(features: [:text_search])
+```
+
+---
+
+### `client.with_defaults(index: ..., namespace: ...) { ... }`
+
+Temporarily override the client's **default index and/or namespace** inside a block.
+
+Unlike `with_index_and_namespace`, this helper accepts keyword arguments and only overrides what you pass.
+
+**Returns:** Block result
+
+**Example:**
+```ruby
+client.with_defaults(index: "products", namespace: "tenant-2") do |c|
+  c.upsert(vectors: [...]) # uses products/tenant-2
+  c.query(vector: embedding, top_k: 10)
+end
+
+# Previous defaults are restored after the block.
+```
+
+---
+
 ### `client.health_check`
 
 Detailed health check with provider-specific information.

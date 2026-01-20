@@ -230,6 +230,80 @@ RSpec.describe Vectra::Client do
     end
   end
 
+  describe "#with_defaults" do
+    let(:vectors) { [sample_vector(id: "vec1")] }
+
+    let(:client_with_defaults) do
+      described_class.new(index: "default-index", namespace: "tenant-1")
+    end
+
+    before do
+      allow(provider).to receive(:upsert).and_return(upserted_count: 1)
+    end
+
+    it "temporarily overrides both default index and namespace and restores them" do
+      original_index = client_with_defaults.default_index
+      original_namespace = client_with_defaults.default_namespace
+
+      client_with_defaults.with_defaults(index: "temp-index", namespace: "tenant-2") do |c|
+        c.upsert(vectors: vectors)
+      end
+
+      expect(provider).to have_received(:upsert).with(
+        index: "temp-index",
+        vectors: vectors,
+        namespace: "tenant-2"
+      )
+
+      expect(client_with_defaults.default_index).to eq(original_index)
+      expect(client_with_defaults.default_namespace).to eq(original_namespace)
+    end
+
+    it "only overrides values that are provided" do
+      client_with_defaults.with_defaults(namespace: "tenant-2") do |c|
+        c.upsert(vectors: vectors)
+      end
+
+      expect(provider).to have_received(:upsert).with(
+        index: "default-index",
+        vectors: vectors,
+        namespace: "tenant-2"
+      )
+    end
+
+    it "restores defaults even when block raises" do
+      original_index = client_with_defaults.default_index
+      original_namespace = client_with_defaults.default_namespace
+
+      expect do
+        client_with_defaults.with_defaults(index: "temp-index", namespace: "tenant-2") { raise "boom" }
+      end.to raise_error("boom")
+
+      expect(client_with_defaults.default_index).to eq(original_index)
+      expect(client_with_defaults.default_namespace).to eq(original_namespace)
+    end
+  end
+
+  describe "#validate!" do
+    it "returns self when the client is configured correctly" do
+      expect(client.validate!).to be(client)
+    end
+
+    it "raises when default index is required but not set" do
+      expect do
+        client.validate!(require_default_index: true)
+      end.to raise_error(Vectra::ConfigurationError, /Default index is not set/)
+    end
+
+    it "raises when required provider feature is not supported" do
+      allow(provider).to receive(:respond_to?).with(:text_search).and_return(false)
+
+      expect do
+        client.validate!(features: [:text_search])
+      end.to raise_error(Vectra::ConfigurationError, /text_search/)
+    end
+  end
+
   describe "#query" do
     let(:query_vector) { [0.1, 0.2, 0.3] }
     let(:query_result) { Vectra::QueryResult.new(matches: [sample_match]) }

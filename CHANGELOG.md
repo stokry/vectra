@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.1.3](https://github.com/stokry/vectra/tree/v1.1.3) (2026-01-20)
+
+[Full Changelog](https://github.com/stokry/vectra/compare/v1.1.2...v1.1.3)
+
+- Add `Client#validate!` for configuration/capability checks
+- Add `Client#with_defaults` block helper for temporary default index/namespace
+
 ## [v1.1.2](https://github.com/stokry/vectra/tree/v1.1.2) (2026-01-19)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.1.1...v1.1.2)

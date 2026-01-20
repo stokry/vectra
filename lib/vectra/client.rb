@@ -44,6 +44,9 @@ module Vectra
 
     attr_reader :config, :provider, :default_index, :default_namespace
 
+    DEFAULT_UNSET = Object.new.freeze
+    private_constant :DEFAULT_UNSET
+
     class << self
       # Get the global middleware stack
       #
@@ -621,6 +624,43 @@ module Vectra
       result
     end
 
+    # Validate the client configuration and provider capabilities.
+    #
+    # This is a convenience wrapper around `config.validate!` that can also
+    # validate your defaults and provider feature support.
+    #
+    # @param require_default_index [Boolean] require default index to be set
+    # @param require_default_namespace [Boolean] require default namespace to be set
+    # @param features [Array<Symbol>, Symbol] provider features (methods) required, e.g. :text_search
+    # @return [true]
+    # @raise [ConfigurationError] when client is misconfigured
+    #
+    # @example Basic validation
+    #   client.validate! # => client
+    #
+    # @example Ensure you can call methods without passing index:
+    #   client.validate!(require_default_index: true)
+    #
+    # @example Ensure provider supports text search:
+    #   client.validate!(features: [:text_search])
+    #
+    def validate!(require_default_index: false, require_default_namespace: false, features: [])
+      errors = []
+
+      append_client_config_errors(errors)
+      append_client_provider_errors(errors)
+      append_client_default_errors(
+        errors,
+        require_default_index: require_default_index,
+        require_default_namespace: require_default_namespace
+      )
+      append_client_feature_errors(errors, features: features)
+
+      raise ConfigurationError, client_validation_message(errors) if errors.any?
+
+      self
+    end
+
     # Chainable query builder
     #
     # @api public
@@ -786,6 +826,52 @@ module Vectra
       @default_namespace = namespace if @default_namespace.nil? && namespace.is_a?(String) && !namespace.empty?
     end
 
+    def append_client_config_errors(errors)
+      config.validate!
+    rescue ConfigurationError, UnsupportedProviderError => e
+      errors << e.message
+    end
+
+    def append_client_provider_errors(errors)
+      errors << "Provider is not initialized" if provider.nil?
+    end
+
+    def append_client_default_errors(errors, require_default_index:, require_default_namespace:)
+      append_default_index_error(errors) if require_default_index
+      append_default_namespace_error(errors) if require_default_namespace
+    end
+
+    def append_default_index_error(errors)
+      if default_index.nil? || (default_index.respond_to?(:empty?) && default_index.empty?)
+        errors << "Default index is not set (pass `index:` to Vectra::Client.new, or set it via config/vectra.yml in Rails)"
+      elsif !default_index.is_a?(String)
+        errors << "Default index must be a String"
+      end
+    end
+
+    def append_default_namespace_error(errors)
+      if default_namespace.nil? || (default_namespace.respond_to?(:empty?) && default_namespace.empty?)
+        errors << "Default namespace is not set (pass `namespace:` to Vectra::Client.new, or set it via config/vectra.yml in Rails)"
+      elsif !default_namespace.is_a?(String)
+        errors << "Default namespace must be a String"
+      end
+    end
+
+    def append_client_feature_errors(errors, features:)
+      return if provider.nil?
+
+      Array(features).compact.each do |feature|
+        method = feature.to_sym
+        next if provider.respond_to?(method)
+
+        errors << "Provider does not support `#{method}`"
+      end
+    end
+
+    def client_validation_message(errors)
+      "Client validation failed:\n- #{errors.join("\n- ")}"
+    end
+
     def validate_index!(index)
       raise ValidationError, "Index name cannot be nil" if index.nil?
       raise ValidationError, "Index name must be a string" unless index.is_a?(String)
@@ -908,7 +994,29 @@ module Vectra
       end
     end
 
-    public :with_index, :with_namespace, :with_index_and_namespace, :with_timeout
+    # Temporarily override default index and/or namespace within a block.
+    #
+    # Unlike `with_index_and_namespace`, this method accepts keyword arguments
+    # and only overrides the values you pass.
+    #
+    # @param index [String, nil] temporary index name (omit to keep current)
+    # @param namespace [String, nil] temporary namespace (omit to keep current)
+    # @yield [Client] yields self with overridden defaults
+    # @return [Object] block result
+    def with_defaults(index: DEFAULT_UNSET, namespace: DEFAULT_UNSET)
+      previous_index = @default_index
+      previous_namespace = @default_namespace
+
+      @default_index = index unless index.equal?(DEFAULT_UNSET)
+      @default_namespace = namespace unless namespace.equal?(DEFAULT_UNSET)
+
+      yield self
+    ensure
+      @default_index = previous_index
+      @default_namespace = previous_namespace
+    end
+
+    public :with_index, :with_namespace, :with_index_and_namespace, :with_defaults, :with_timeout
   end
   # rubocop:enable Metrics/ClassLength
 end
