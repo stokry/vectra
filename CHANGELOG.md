@@ -1,11 +1,8 @@
 # Changelog
 
-## [v1.1.4](https://github.com/stokry/vectra/tree/v1.1.4) (2026-01-20)
+## [v1.1.4](https://github.com/stokry/vectra/tree/v1.1.4) (2026-01-22)
 
 [Full Changelog](https://github.com/stokry/vectra/compare/v1.1.3...v1.1.4)
-
-- Add `Client#valid?` – non-raising validation (returns true/false)
-- Add `Client#for_tenant` – multi-tenant block helper for namespace isolation
 
 ## [v1.1.3](https://github.com/stokry/vectra/tree/v1.1.3) (2026-01-20)
 
