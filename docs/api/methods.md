@@ -475,6 +475,45 @@ end
 
 ---
 
+### `client.valid?(require_default_index: false, require_default_namespace: false, features: [])`
+
+Non-raising validation. Returns `true` if the client passes `validate!`, `false` otherwise. Accepts the same options as `validate!`.
+
+**Returns:** `Boolean`
+
+**Example:**
+```ruby
+next unless client.valid?
+client.upsert(vectors: [...])
+
+# With same options as validate!
+client.valid?(require_default_index: true)
+client.valid?(features: [:text_search])
+```
+
+---
+
+### `client.for_tenant(tenant_id, namespace_prefix: "tenant_") { ... }`
+
+Multi-tenant block helper. Temporarily sets the default namespace to `"#{namespace_prefix}#{tenant_id}"`, yields the client, then restores the previous namespace. `tenant_id` can be a string, symbol, or anything responding to `to_s`.
+
+**Parameters:**
+- `tenant_id` (String, Symbol, #to_s) - Tenant identifier
+- `namespace_prefix` (String) - Prefix for namespace (default: `"tenant_"`)
+
+**Returns:** Block result
+
+**Example:**
+```ruby
+client.for_tenant("acme", namespace_prefix: "tenant_") do |c|
+  c.upsert(vectors: [...])
+  c.query(vector: embedding, top_k: 10)
+end
+# All operations use namespace "tenant_acme"; previous default restored after block.
+```
+
+---
+
 ### `client.health_check`
 
 Detailed health check with provider-specific information.

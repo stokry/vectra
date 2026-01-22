@@ -304,6 +304,77 @@ RSpec.describe Vectra::Client do
     end
   end
 
+  describe "#valid?" do
+    it "returns true when client passes validation" do
+      expect(client.valid?).to be(true)
+    end
+
+    it "returns false when default index is required but not set" do
+      expect(client.valid?(require_default_index: true)).to be(false)
+    end
+
+    it "returns false when required provider feature is not supported" do
+      allow(provider).to receive(:respond_to?).with(:text_search).and_return(false)
+      expect(client.valid?(features: [:text_search])).to be(false)
+    end
+  end
+
+  describe "#for_tenant" do
+    let(:vectors) { [sample_vector(id: "vec1")] }
+    let(:client_with_defaults) do
+      described_class.new(index: "default-index", namespace: "shared")
+    end
+
+    before do
+      allow(provider).to receive(:upsert).and_return(upserted_count: 1)
+    end
+
+    it "sets default namespace to prefix + tenant_id and restores after block" do
+      client_with_defaults.for_tenant("acme", namespace_prefix: "tenant_") do |c|
+        c.upsert(vectors: vectors)
+      end
+
+      expect(provider).to have_received(:upsert).with(
+        index: "default-index",
+        vectors: vectors,
+        namespace: "tenant_acme"
+      )
+      expect(client_with_defaults.default_namespace).to eq("shared")
+    end
+
+    it "uses default prefix when not given" do
+      client_with_defaults.for_tenant("acme") do |c|
+        c.upsert(vectors: vectors)
+      end
+
+      expect(provider).to have_received(:upsert).with(
+        index: "default-index",
+        vectors: vectors,
+        namespace: "tenant_acme"
+      )
+    end
+
+    it "accepts symbol or numeric tenant_id via to_s" do
+      client_with_defaults.for_tenant(:acme, namespace_prefix: "org_") do |c|
+        c.upsert(vectors: vectors)
+      end
+
+      expect(provider).to have_received(:upsert).with(
+        index: "default-index",
+        vectors: vectors,
+        namespace: "org_acme"
+      )
+    end
+
+    it "restores namespace when block raises" do
+      expect do
+        client_with_defaults.for_tenant("acme") { raise "boom" }
+      end.to raise_error("boom")
+
+      expect(client_with_defaults.default_namespace).to eq("shared")
+    end
+  end
+
   describe "#query" do
     let(:query_vector) { [0.1, 0.2, 0.3] }
     let(:query_result) { Vectra::QueryResult.new(matches: [sample_match]) }

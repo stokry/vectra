@@ -66,6 +66,19 @@ end
 client.validate!
 client.validate!(require_default_index: true)
 client.validate!(features: [:text_search])
+
+# Non-raising: returns true/false
+client.valid?
+client.valid?(require_default_index: true)
+```
+
+### Multi-tenant (for_tenant)
+
+```ruby
+client.for_tenant("acme", namespace_prefix: "tenant_") do |c|
+  c.upsert(vectors: [...])
+  c.query(vector: query_embedding, top_k: 10)
+end
 ```
 
 ### Upsert

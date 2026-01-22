@@ -661,6 +661,30 @@ module Vectra
       self
     end
 
+    # Non-raising validation. Returns true if client passes validate!, false otherwise.
+    #
+    # Accepts the same options as validate!.
+    #
+    # @param require_default_index [Boolean] require default index to be set
+    # @param require_default_namespace [Boolean] require default namespace to be set
+    # @param features [Array<Symbol>, Symbol] provider features required, e.g. :text_search
+    # @return [Boolean]
+    #
+    # @example
+    #   next unless client.valid?
+    #   client.upsert(vectors: [...])
+    #
+    def valid?(require_default_index: false, require_default_namespace: false, features: [])
+      validate!(
+        require_default_index: require_default_index,
+        require_default_namespace: require_default_namespace,
+        features: features
+      )
+      true
+    rescue ConfigurationError
+      false
+    end
+
     # Chainable query builder
     #
     # @api public
@@ -1016,7 +1040,25 @@ module Vectra
       @default_namespace = previous_namespace
     end
 
-    public :with_index, :with_namespace, :with_index_and_namespace, :with_defaults, :with_timeout
+    # Multi-tenant block helper: temporarily sets default namespace to +"#{namespace_prefix}#{tenant_id}"+.
+    #
+    # @param tenant_id [String, Symbol, #to_s] tenant identifier
+    # @param namespace_prefix [String] prefix for namespace (default: "tenant_")
+    # @yield [Client] yields self with overridden namespace
+    # @return [Object] block result
+    #
+    # @example
+    #   client.for_tenant("acme", namespace_prefix: "tenant_") do |c|
+    #     c.upsert(vectors: [...])
+    #     c.query(vector: emb, top_k: 10)
+    #   end
+    #
+    def for_tenant(tenant_id, namespace_prefix: "tenant_")
+      ns = "#{namespace_prefix}#{tenant_id}"
+      with_namespace(ns) { yield self }
+    end
+
+    public :with_index, :with_namespace, :with_index_and_namespace, :with_defaults, :with_timeout, :for_tenant
   end
   # rubocop:enable Metrics/ClassLength
 end
