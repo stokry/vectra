@@ -1,6 +1,7 @@
 [build]
-  command = "cd docs && bundle install && bundle exec jekyll build"
-  publish = "docs/_site"
+  base = "docs"
+  command = "bundle install && bundle exec jekyll build"
+  publish = "_site"
 
 [build.environment]
   JEKYLL_ENV = "production"
