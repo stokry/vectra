@@ -1,14 +1,23 @@
 [build]
-  command = "gem install bundler && cd docs && bundle install && bundle exec jekyll build"
+  command = "cd docs && bundle install && bundle exec jekyll build"
   publish = "docs/_site"
+  
+[build.processing]
+  skip_processing = false
 
 [build.environment]
   JEKYLL_ENV = "production"
   RUBY_VERSION = "3.2.0"
-  NODE_VERSION = "18"
+  AWS_LAMBDA_JS_RUNTIME = "nodejs18.x"
+  # Explicitly set PATH to include Ruby gems
+  GEM_PATH = "/opt/buildhome/.rvm/gems/ruby-3.2.0:/opt/buildhome/.rvm/gems/ruby-3.2.0@global"
+
+[[plugins]]
+  package = "@netlify/plugin-ruby"
   
-[context.production.environment]
-  JEKYLL_ENV = "production"
+# Force Netlify to use an image with Ruby support
+[context.production]
+  environment = { RUBY_VERSION = "3.2.0" }
 
 [[redirects]]
   from = "/*"
