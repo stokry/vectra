@@ -1,5 +1,5 @@
 [build]
-  command = "mise install ruby@3.2.0 && mise use ruby@3.2.0 && eval \"$(mise activate bash)\" && cd docs && bundle install && bundle exec jekyll build"
+  command = "mise install && mise exec -- bash -c 'gem install bundler && cd docs && bundle install && bundle exec jekyll build'"
   publish = "docs/_site"
 
 [build.environment]
