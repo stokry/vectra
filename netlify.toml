@@ -3,6 +3,7 @@
   publish = "docs/_site"
 
 [build.environment]
+  BUNDLE_GEMFILE = "docs/Gemfile"
   JEKYLL_ENV = "production"
   RUBY_VERSION = "3.4.7"
 

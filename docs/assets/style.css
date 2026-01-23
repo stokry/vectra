@@ -415,6 +415,66 @@ body {
 }
 
 /* ============================================
+   Trust Section
+   ============================================ */
+.tma-trust {
+  padding: var(--tma-spacing-2xl) var(--tma-spacing-xl);
+  max-width: var(--tma-max-width);
+  margin: 0 auto;
+  border-top: 1px solid var(--tma-color-border);
+  border-bottom: 1px solid var(--tma-color-border);
+  background: linear-gradient(to bottom, transparent, rgba(225, 158, 150, 0.03), transparent);
+}
+
+.tma-trust__container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.tma-trust__title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--tma-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--tma-spacing-lg);
+}
+
+.tma-trust__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tma-spacing-2xl);
+  align-items: center;
+}
+
+.tma-trust__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tma-spacing-xs);
+  min-width: 120px;
+}
+
+.tma-trust__stat-icon {
+  font-size: 1.5rem;
+  opacity: 0.9;
+}
+
+.tma-trust__stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--tma-color-text-primary);
+}
+
+.tma-trust__stat-label {
+  font-size: 0.85rem;
+  color: var(--tma-color-text-muted);
+  text-transform: lowercase;
+}
+
+/* ============================================
    Feature Cards
    ============================================ */
 .tma-features {
@@ -1390,6 +1450,22 @@ code {
   .tma-search__results {
     max-width: 100%;
     right: 0;
+  }
+  
+  .tma-trust {
+    padding: var(--tma-spacing-xl) var(--tma-spacing-md);
+  }
+  
+  .tma-trust__stats {
+    gap: var(--tma-spacing-lg);
+  }
+  
+  .tma-trust__stat {
+    min-width: 100px;
+  }
+  
+  .tma-trust__stat-value {
+    font-size: 1.1rem;
   }
   
   .tma-features,
