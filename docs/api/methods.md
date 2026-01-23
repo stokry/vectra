@@ -9,11 +9,14 @@ permalink: /api/methods/
 Complete reference for all Vectra API methods.
 
 > For a quick reference, see the [API Cheatsheet](/api/cheatsheet/).  
-> For an overview, see the [API Overview](/api/overview/).
+> For an overview, see the [API Overview](/api/overview/).  
+> All methods link to source code on [GitHub](https://github.com/stokry/vectra/tree/main/lib/vectra).
 
 ## Client Methods
 
 ### `Vectra::Client.new(options)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L88)
 
 Initialize a new Vectra client.
 
@@ -41,6 +44,8 @@ In a Rails app that uses the `vectra:index` generator, if `config/vectra.yml` co
 ---
 
 ### `client.upsert(index:, vectors:, namespace: nil)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L114)
 
 Upsert vectors into an index. If a vector with the same ID exists, it will be updated.
 
@@ -75,6 +80,8 @@ result = client.upsert(
 ---
 
 ### `client.query(index:, vector:, top_k: 10, namespace: nil, filter: nil, include_values: false, include_metadata: true)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L164)
 
 Search for similar vectors using cosine similarity.
 
@@ -150,6 +157,8 @@ results = client.hybrid_search(
 ---
 
 ### `client.text_search(index:, text:, top_k: 10, namespace: nil, filter: nil, include_values: false, include_metadata: true)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L529)
 
 Text-only search (keyword search without requiring embeddings).
 
@@ -428,6 +437,8 @@ After the block finishes (even if it raises), the previous `config.timeout` valu
 
 ### `client.validate!(require_default_index: false, require_default_namespace: false, features: [])`
 
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L647)
+
 Validate the client configuration and (optionally) your defaults and provider feature support.
 
 This is useful in boot-time checks (Rails initializers), health endpoints, and CI.
@@ -456,6 +467,8 @@ client.validate!(features: [:text_search])
 ---
 
 ### `client.with_defaults(index: ..., namespace: ...) { ... }`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L1006)
 
 Temporarily override the client's **default index and/or namespace** inside a block.
 
@@ -494,6 +507,8 @@ client.valid?(features: [:text_search])
 ---
 
 ### `client.for_tenant(tenant_id, namespace_prefix: "tenant_") { ... }`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/client.rb#L1022)
 
 Multi-tenant block helper. Temporarily sets the default namespace to `"#{namespace_prefix}#{tenant_id}"`, yields the client, then restores the previous namespace. `tenant_id` can be a string, symbol, or anything responding to `to_s`.
 

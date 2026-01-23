@@ -99,6 +99,26 @@
       </div>
 
       <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">Migrations</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/guides/migrations/from-pinecone-ruby" class="tma-sidebar__link {% if page.url contains '/migrations/from-pinecone-ruby' %}tma-sidebar__link--active{% endif %}">From pinecone-ruby</a></li>
+          <li><a href="{{ site.baseurl }}/guides/migrations/from-qdrant-ruby" class="tma-sidebar__link {% if page.url contains '/migrations/from-qdrant-ruby' %}tma-sidebar__link--active{% endif %}">From qdrant-ruby</a></li>
+          <li><a href="{{ site.baseurl }}/guides/migrations/switching-providers" class="tma-sidebar__link {% if page.url contains '/migrations/switching-providers' %}tma-sidebar__link--active{% endif %}">Switching Providers</a></li>
+          <li><a href="{{ site.baseurl }}/guides/migrations/upgrading-vectra" class="tma-sidebar__link {% if page.url contains '/migrations/upgrading-vectra' %}tma-sidebar__link--active{% endif %}">Upgrading Vectra</a></li>
+        </ul>
+      </div>
+
+      <div class="tma-sidebar__section">
+        <h3 class="tma-sidebar__title">Troubleshooting</h3>
+        <ul class="tma-sidebar__list">
+          <li><a href="{{ site.baseurl }}/troubleshooting/common-errors" class="tma-sidebar__link {% if page.url contains '/troubleshooting/common-errors' %}tma-sidebar__link--active{% endif %}">Common Errors</a></li>
+          <li><a href="{{ site.baseurl }}/troubleshooting/pinecone-issues" class="tma-sidebar__link {% if page.url contains '/troubleshooting/pinecone-issues' %}tma-sidebar__link--active{% endif %}">Pinecone Issues</a></li>
+          <li><a href="{{ site.baseurl }}/troubleshooting/qdrant-issues" class="tma-sidebar__link {% if page.url contains '/troubleshooting/qdrant-issues' %}tma-sidebar__link--active{% endif %}">Qdrant Issues</a></li>
+          <li><a href="{{ site.baseurl }}/troubleshooting/pgvector-issues" class="tma-sidebar__link {% if page.url contains '/troubleshooting/pgvector-issues' %}tma-sidebar__link--active{% endif %}">pgvector Issues</a></li>
+        </ul>
+      </div>
+
+      <div class="tma-sidebar__section">
         <h3 class="tma-sidebar__title">Resources</h3>
         <ul class="tma-sidebar__list">
           <li><a href="{{ site.baseurl }}/guides/roadmap" class="tma-sidebar__link {% if page.url == '/guides/roadmap/' %}tma-sidebar__link--active{% endif %}">Roadmap</a></li>
