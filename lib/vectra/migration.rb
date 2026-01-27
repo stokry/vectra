@@ -5,6 +5,50 @@ require_relative "streaming"
 require_relative "providers/memory"
 
 module Vectra
+  # Internal helper class for tracking migration statistics
+  # @api private
+  class MigrationStats
+    attr_reader :total_vectors, :migrated_count, :batches_processed, :errors
+
+    def initialize(total_vectors, batch_size)
+      @total_vectors = total_vectors
+      @batch_size = batch_size
+      @migrated_count = 0
+      @batches_processed = 0
+      @errors = []
+    end
+
+    def add_batch(upserted_count, batch_errors)
+      @migrated_count += upserted_count
+      @batches_processed += 1
+      @errors.concat(batch_errors) if batch_errors&.any?
+    end
+
+    def add_error(error)
+      @errors << error
+    end
+
+    def progress_hash
+      percentage = @total_vectors.positive? ? (@migrated_count.to_f / @total_vectors * 100).round(2) : 0
+      {
+        migrated: @migrated_count,
+        total: @total_vectors,
+        percentage: percentage,
+        batches_processed: @batches_processed,
+        total_batches: (@total_vectors.to_f / @batch_size).ceil
+      }
+    end
+
+    def to_result
+      {
+        migrated_count: @migrated_count,
+        total_vectors: @total_vectors,
+        batches: @batches_processed,
+        errors: @errors
+      }
+    end
+  end
+
   # Bulk migration tool for copying vectors between providers
   #
   # Provides utilities for migrating vectors from one provider to another,
@@ -71,10 +115,7 @@ module Vectra
     # @raise [ArgumentError] If source or target client is invalid
     def migrate(source_index:, target_index:, source_namespace: nil, target_namespace: nil,
                 batch_size: DEFAULT_BATCH_SIZE, chunk_size: DEFAULT_CHUNK_SIZE, on_progress: nil)
-      migrated_count = 0
-      batches_processed = 0
-      errors = []
-      total_vectors = estimate_total(source_index, source_namespace)
+      stats = MigrationStats.new(estimate_total(source_index, source_namespace), batch_size)
 
       # Use streaming to fetch all vectors in batches
       fetch_all_vectors(
@@ -82,45 +123,20 @@ module Vectra
         namespace: source_namespace,
         batch_size: batch_size
       ) do |vectors_batch|
-        begin
-          # Upsert batch to target using Batch.upsert_async
-          batch = Batch.new(@target_client)
-          result = batch.upsert_async(
-            index: target_index,
-            vectors: vectors_batch,
-            namespace: target_namespace,
-            chunk_size: chunk_size
-          )
-
-          migrated_count += result[:upserted_count]
-          batches_processed += 1
-
-          # Report progress
-          if on_progress
-            percentage = total_vectors.positive? ? (migrated_count.to_f / total_vectors * 100).round(2) : 0
-            on_progress.call(
-              migrated: migrated_count,
-              total: total_vectors,
-              percentage: percentage,
-              batches_processed: batches_processed,
-              total_batches: (total_vectors.to_f / batch_size).ceil
-            )
-          end
-
-          # Collect errors
-          errors.concat(result[:errors]) if result[:errors]&.any?
-        rescue StandardError => e
-          errors << e
-          # Continue with next batch
-        end
+        process_migration_batch(
+          vectors_batch,
+          target_index,
+          target_namespace,
+          chunk_size,
+          stats,
+          on_progress
+        )
+      rescue StandardError => e
+        stats.add_error(e)
+        # Continue with next batch
       end
 
-      {
-        migrated_count: migrated_count,
-        total_vectors: total_vectors,
-        batches: batches_processed,
-        errors: errors
-      }
+      stats.to_result
     end
 
     # Verify migration by comparing vector counts
@@ -145,6 +161,21 @@ module Vectra
     end
 
     private
+
+    def process_migration_batch(vectors_batch, target_index, target_namespace, chunk_size, stats, on_progress)
+      batch = Batch.new(@target_client)
+      result = batch.upsert_async(
+        index: target_index,
+        vectors: vectors_batch,
+        namespace: target_namespace,
+        chunk_size: chunk_size
+      )
+
+      stats.add_batch(result[:upserted_count], result[:errors])
+
+      # Report progress
+      on_progress&.call(stats.progress_hash)
+    end
 
     def validate_clients!
       raise ArgumentError, "Source client cannot be nil" if @source_client.nil?
@@ -213,26 +244,17 @@ module Vectra
     end
 
     def stream_vectors_via_query(index:, namespace: nil, batch_size: DEFAULT_BATCH_SIZE)
+      # batch_size parameter is kept for API consistency but not used in this implementation
+      _ = batch_size
       # Use query with a dummy vector to get all results
       # This is a workaround for providers that don't support efficient scanning
-      begin
-        stats = @source_client.stats(index: index, namespace: namespace)
-        total = stats[:total_vector_count] || 0
-      rescue Vectra::NotFoundError
-        # Index doesn't exist, return empty
-        return
-      end
-
+      stats = @source_client.stats(index: index, namespace: namespace)
+      total = stats[:total_vector_count] || 0
       return if total.zero?
 
       # Get index dimension for dummy query vector
-      begin
-        index_info = @source_client.describe_index(index: index)
-        dimension = index_info[:dimension] || 1536
-      rescue Vectra::NotFoundError
-        # Index doesn't exist, return empty
-        return
-      end
+      index_info = @source_client.describe_index(index: index)
+      dimension = index_info[:dimension] || 1536
 
       # Create a dummy query vector (all zeros)
       dummy_vector = Array.new(dimension, 0.0)
@@ -259,6 +281,9 @@ module Vectra
       end
 
       yield vectors if vectors.any?
+    rescue Vectra::NotFoundError
+      # Index doesn't exist, return empty
+      nil
     end
   end
 end
