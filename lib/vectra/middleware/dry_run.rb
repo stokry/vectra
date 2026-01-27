@@ -87,7 +87,7 @@ module Vectra
 
       def explain_upsert(request)
         vector_count = request.params[:vectors]&.size || 0
-        "[DRY RUN] UPSERT index=#{request.index} " \
+        "UPSERT index=#{request.index} " \
           "namespace=#{request.namespace || 'default'} " \
           "vectors=#{vector_count}"
       end
@@ -95,18 +95,18 @@ module Vectra
       def explain_delete(request)
         delete_all = request.params[:delete_all] || false
         if delete_all
-          "[DRY RUN] DELETE ALL index=#{request.index} " \
+          "DELETE ALL index=#{request.index} " \
             "namespace=#{request.namespace || 'default'}"
         else
           id_count = request.params[:ids]&.size || 0
-          "[DRY RUN] DELETE index=#{request.index} " \
+          "DELETE index=#{request.index} " \
             "namespace=#{request.namespace || 'default'} " \
             "ids=#{id_count}"
         end
       end
 
       def explain_update(request)
-        "[DRY RUN] UPDATE index=#{request.index} " \
+        "UPDATE index=#{request.index} " \
           "id=#{request.params[:id]} " \
           "namespace=#{request.namespace || 'default'}"
       end
@@ -114,16 +114,16 @@ module Vectra
       def explain_create_index(request)
         dimension = request.params[:dimension]
         metric = request.params[:metric] || "cosine"
-        "[DRY RUN] CREATE INDEX name=#{request.index} " \
+        "CREATE INDEX name=#{request.index} " \
           "dimension=#{dimension} metric=#{metric}"
       end
 
       def explain_delete_index(request)
-        "[DRY RUN] DELETE INDEX name=#{request.index}"
+        "DELETE INDEX name=#{request.index}"
       end
 
       def explain_generic(request)
-        "[DRY RUN] #{request.operation.upcase} index=#{request.index}"
+        "#{request.operation.upcase} index=#{request.index}"
       end
 
       def mock_response(request)
@@ -135,35 +135,7 @@ module Vectra
       end
 
       def build_mock_result(request)
-        operation = request.operation
-
-        # Query operations
-        return build_query_result if query_operation?(operation)
-
-        # Write operations with dry_run flag
-        return build_write_result(request, operation) if write_operation_for_mock?(operation)
-
-        # Read operations
-        return build_read_result(operation) if read_operation_for_mock?(operation)
-
-        # Default
-        { success: true }
-      end
-
-      def query_operation?(operation)
-        %i[query text_search hybrid_search].include?(operation)
-      end
-
-      def write_operation_for_mock?(operation)
-        %i[upsert delete update create_index delete_index list_namespaces].include?(operation)
-      end
-
-      def read_operation_for_mock?(operation)
-        %i[fetch list_indexes describe_index stats].include?(operation)
-      end
-
-      def build_write_result(request, operation)
-        case operation
+        case request.operation
         when :upsert
           build_upsert_result(request)
         when :delete
@@ -172,21 +144,10 @@ module Vectra
           build_update_result
         when :create_index
           build_create_index_result
-        when :delete_index, :list_namespaces
+        when :delete_index
           build_delete_index_result
-        end
-      end
-
-      def build_read_result(operation)
-        case operation
-        when :fetch
-          {}
-        when :list_indexes
-          []
-        when :describe_index
-          { dimension: 1536, metric: "cosine" }
-        when :stats
-          { total_vector_count: 0 }
+        else
+          { dry_run: true }
         end
       end
 
@@ -195,11 +156,6 @@ module Vectra
           dry_run: true,
           upserted_count: request.params[:vectors]&.size || 0
         }
-      end
-
-      def build_query_result
-        require_relative "../query_result"
-        QueryResult.new(matches: [])
       end
 
       def build_delete_result
