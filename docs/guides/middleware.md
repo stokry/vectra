@@ -269,6 +269,112 @@ Vectra::Client.use Vectra::Middleware::CostTracker, pricing: pricing
 
 ---
 
+### Request ID Tracking (`Vectra::Middleware::RequestId`)
+
+**Što radi:**
+- Generira unique request ID za svaku operaciju
+- Propagira ID kroz request/response metadata i logove
+- Standardna praksa u production API-jima za request tracing i debugging
+
+**Primjer:**
+
+```ruby
+# Globalno
+Vectra::Client.use Vectra::Middleware::RequestId
+
+# S custom prefixom
+Vectra::Client.use Vectra::Middleware::RequestId, prefix: "myapp"
+
+# S custom generatorom
+Vectra::Client.use Vectra::Middleware::RequestId,
+  generator: ->(prefix) { "#{prefix}-#{Time.now.to_i}-#{SecureRandom.hex(8)}" }
+
+# S callback-om za tracking
+captured_ids = []
+Vectra::Client.use Vectra::Middleware::RequestId,
+  on_assign: ->(id) { captured_ids << id }
+```
+
+**Pristup request ID-u:**
+
+```ruby
+# Request ID je automatski dostupan u metadata
+client.upsert(index: "test", vectors: [...])
+
+# U custom middleware-u:
+def after(request, response)
+  request_id = request.metadata[:request_id]
+  response.metadata[:request_id] = request_id
+  # Logiraj s request ID-om za tracing
+end
+```
+
+**Tipična upotreba:** distributed tracing, log correlation, debugging production issues.
+
+---
+
+### Dry Run / Explain Mode (`Vectra::Middleware::DryRun`)
+
+**Što radi:**
+- Presreće write operacije i logira što bi se izvršilo umjesto stvarnog izvršavanja
+- Vraća mock response bez side effects
+- Korisno za debugging, testiranje i razumijevanje operacija
+
+**Primjer:**
+
+```ruby
+# Enable dry run mode
+client = Vectra::Client.new(
+  provider: :qdrant,
+  middleware: [Vectra::Middleware::DryRun]
+)
+
+# Operacije će biti logirane ali neće se izvršiti
+client.upsert(
+  index: "products",
+  vectors: [
+    { id: "1", values: [0.1, 0.2, 0.3] },
+    { id: "2", values: [0.4, 0.5, 0.6] }
+  ]
+)
+# => [DRY RUN] Would upsert 2 vector(s) to index 'products'
+
+# Read operacije prolaze normalno
+results = client.query(index: "products", vector: [0.1, 0.2, 0.3], top_k: 10)
+# => Normal query results (dry run ne presreće read operacije)
+```
+
+**S custom loggerom:**
+
+```ruby
+logger = Logger.new($stdout)
+Vectra::Client.use Vectra::Middleware::DryRun, logger: logger
+```
+
+**S custom formatterom:**
+
+```ruby
+formatter = ->(request) {
+  "DRY RUN: #{request.operation} on #{request.index} with #{request.params[:vectors]&.size || 0} vectors"
+}
+Vectra::Client.use Vectra::Middleware::DryRun, formatter: formatter
+```
+
+**S callback-om:**
+
+```ruby
+plans = []
+Vectra::Client.use Vectra::Middleware::DryRun,
+  on_dry_run: ->(plan) {
+    plans << plan
+    # plan[:operation], plan[:index], plan[:vector_count], etc.
+  }
+```
+
+**Tipična upotreba:** testing, debugging, understanding operation behavior, preview changes.
+
+---
+
 ## Custom Middleware
 
 Najjednostavniji način je naslijediti `Vectra::Middleware::Base` i override-ati hookove:

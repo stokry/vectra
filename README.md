@@ -252,6 +252,33 @@ Real-world patterns for common use cases:
 
 👉 **[Browse all Recipes & Patterns](https://vectra-docs.netlify.app/guides/recipes/)**
 
+## Migration Tool
+
+Migrate vectors between providers with zero downtime:
+
+```ruby
+source_client = Vectra::Client.new(provider: :memory)
+target_client = Vectra::Client.new(provider: :qdrant, host: "http://localhost:6333")
+
+migration = Vectra::Migration.new(source_client, target_client)
+
+result = migration.migrate(
+  source_index: "old-index",
+  target_index: "new-index",
+  on_progress: ->(stats) {
+    puts "Progress: #{stats[:percentage]}% (#{stats[:migrated]}/#{stats[:total]})"
+  }
+)
+
+# Verify migration
+verification = migration.verify(
+  source_index: "old-index",
+  target_index: "new-index"
+)
+```
+
+👉 **[Read the Migration Tool Guide](https://vectra-docs.netlify.app/guides/migration-tool/)**
+
 ## Middleware System
 
 Vectra features a powerful **Rack-style middleware system** that allows you to extend functionality without modifying core code.
@@ -281,6 +308,8 @@ client = Vectra::Client.new(
 - **Instrumentation** - Metrics and monitoring integration
 - **PIIRedaction** - Automatic PII (email, phone, SSN) redaction
 - **CostTracker** - Track API usage costs per operation
+- **RequestId** - Generate unique request IDs for distributed tracing
+- **DryRun** - Log operations without executing (for debugging/testing)
 
 ### Custom Middleware
 

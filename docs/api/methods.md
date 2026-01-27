@@ -767,6 +767,164 @@ puts "Reindexed #{processed} products"
 
 ---
 
+## Migration Tool
+
+### `Vectra::Migration.new(source_client, target_client)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/migration.rb)
+
+Initialize a migration tool for copying vectors between providers.
+
+**Parameters:**
+- `source_client` (Vectra::Client) - Source provider client
+- `target_client` (Vectra::Client) - Target provider client
+
+**Returns:** `Vectra::Migration`
+
+**Example:**
+```ruby
+source_client = Vectra::Client.new(provider: :memory)
+target_client = Vectra::Client.new(provider: :qdrant, host: "http://localhost:6333")
+
+migration = Vectra::Migration.new(source_client, target_client)
+```
+
+---
+
+### `migration.migrate(source_index:, target_index:, source_namespace: nil, target_namespace: nil, batch_size: 1000, chunk_size: 100, on_progress: nil)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/migration.rb#L60)
+
+Migrate vectors from source to target index.
+
+**Parameters:**
+- `source_index` (String) - Source index name
+- `target_index` (String) - Target index name
+- `source_namespace` (String, nil) - Source namespace (optional)
+- `target_namespace` (String, nil) - Target namespace (optional)
+- `batch_size` (Integer) - Vectors per batch for fetching (default: 1000)
+- `chunk_size` (Integer) - Vectors per chunk for upsert (default: 100)
+- `on_progress` (Proc, nil) - Progress callback, receives hash with `:migrated`, `:total`, `:percentage`, `:batches_processed`, `:total_batches`
+
+**Returns:** `Hash` - Migration result with `:migrated_count`, `:total_vectors`, `:batches`, `:errors`
+
+**Example:**
+```ruby
+result = migration.migrate(
+  source_index: "old-index",
+  target_index: "new-index",
+  source_namespace: "ns1",
+  target_namespace: "ns2",
+  on_progress: ->(stats) {
+    puts "Progress: #{stats[:percentage]}% (#{stats[:migrated]}/#{stats[:total]})"
+  }
+)
+
+puts "Migrated #{result[:migrated_count]} vectors in #{result[:batches]} batches"
+puts "Errors: #{result[:errors].size}" if result[:errors].any?
+```
+
+---
+
+### `migration.verify(source_index:, target_index:, source_namespace: nil, target_namespace: nil)`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/migration.rb#L165)
+
+Verify migration by comparing vector counts between source and target.
+
+**Parameters:**
+- `source_index` (String) - Source index name
+- `target_index` (String) - Target index name
+- `source_namespace` (String, nil) - Source namespace (optional)
+- `target_namespace` (String, nil) - Target namespace (optional)
+
+**Returns:** `Hash` - Verification result with `:source_count`, `:target_count`, `:match`
+
+**Example:**
+```ruby
+verification = migration.verify(
+  source_index: "old-index",
+  target_index: "new-index"
+)
+
+if verification[:match]
+  puts "✅ Migration verified: #{verification[:source_count]} vectors"
+else
+  puts "❌ Mismatch: source=#{verification[:source_count]}, target=#{verification[:target_count]}"
+end
+```
+
+---
+
+## Middleware
+
+### `Vectra::Middleware::RequestId`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/middleware/request_id.rb)
+
+Request ID tracking middleware. Generates a unique request ID for each operation and propagates it through logs and instrumentation.
+
+**Configuration:**
+```ruby
+# Global
+Vectra::Client.use Vectra::Middleware::RequestId
+
+# With custom prefix
+Vectra::Client.use Vectra::Middleware::RequestId, prefix: "myapp"
+
+# With custom generator
+Vectra::Client.use Vectra::Middleware::RequestId,
+  generator: ->(prefix) { "#{prefix}-#{Time.now.to_i}-#{SecureRandom.hex(8)}" }
+
+# With callback
+Vectra::Client.use Vectra::Middleware::RequestId,
+  on_assign: ->(id) { Rails.logger.info("Request ID: #{id}") }
+```
+
+**Access request ID:**
+```ruby
+# In custom middleware
+def after(request, response)
+  request_id = request.metadata[:request_id]
+  # Use request_id for tracing
+end
+```
+
+---
+
+### `Vectra::Middleware::DryRun`
+
+[Source](https://github.com/stokry/vectra/blob/main/lib/vectra/middleware/dry_run.rb)
+
+Dry run / explain mode middleware. Intercepts write operations and logs what would be executed instead of actually executing them.
+
+**Configuration:**
+```ruby
+# Enable dry run mode
+client = Vectra::Client.new(
+  provider: :qdrant,
+  middleware: [Vectra::Middleware::DryRun]
+)
+
+# Operations will be logged but not executed
+client.upsert(index: "test", vectors: [...])
+
+# With custom logger
+Vectra::Client.use Vectra::Middleware::DryRun, logger: custom_logger
+
+# With custom formatter
+Vectra::Client.use Vectra::Middleware::DryRun,
+  formatter: ->(request) { "Would execute: #{request.operation}" }
+
+# With callback
+Vectra::Client.use Vectra::Middleware::DryRun,
+  on_dry_run: ->(plan) { puts "Plan: #{plan.inspect}" }
+```
+
+**Note:** Read operations (query, fetch, stats) pass through normally and are not intercepted.
+
+---
+
 ## Error Handling
 
 Vectra defines specific error types:

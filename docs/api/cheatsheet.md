@@ -420,6 +420,61 @@ puts "Reindexed #{processed} documents"
 
 ---
 
+## Migration Tool
+
+### Migrate Vectors Between Providers
+
+```ruby
+source_client = Vectra::Client.new(provider: :memory)
+target_client = Vectra::Client.new(provider: :qdrant, host: "http://localhost:6333")
+
+migration = Vectra::Migration.new(source_client, target_client)
+
+# Migrate with progress tracking
+result = migration.migrate(
+  source_index: "old-index",
+  target_index: "new-index",
+  on_progress: ->(stats) {
+    puts "#{stats[:percentage]}% (#{stats[:migrated]}/#{stats[:total]})"
+  }
+)
+
+# Verify migration
+verification = migration.verify(
+  source_index: "old-index",
+  target_index: "new-index"
+)
+puts "Match: #{verification[:match]}" # => true
+```
+
+## Middleware
+
+### Request ID Tracking
+
+```ruby
+Vectra::Client.use Vectra::Middleware::RequestId
+
+# Request ID is automatically added to request.metadata[:request_id]
+# and propagated to response.metadata[:request_id]
+```
+
+### Dry Run Mode
+
+```ruby
+client = Vectra::Client.new(
+  provider: :qdrant,
+  middleware: [Vectra::Middleware::DryRun]
+)
+
+# Write operations are logged but not executed
+client.upsert(index: "test", vectors: [...])
+
+# Read operations pass through normally
+results = client.query(index: "test", vector: [...], top_k: 10)
+```
+
+---
+
 ## Error Handling
 
 ```ruby
@@ -442,3 +497,4 @@ end
 - [Recipes & Patterns](/guides/recipes/)
 - [Rails Integration Guide](/guides/rails-integration/)
 - [Memory Provider (Testing)](/providers/memory/)
+- [Migration Tool Guide](/guides/migration-tool/)
