@@ -293,6 +293,10 @@ Vectra::Client.use Vectra::Middleware::RequestId,
 captured_ids = []
 Vectra::Client.use Vectra::Middleware::RequestId,
   on_assign: ->(id) { captured_ids << id }
+
+# S custom loggerom (request ID se logira u before/after/on_error)
+logger = Logger.new($stdout)
+Vectra::Client.use Vectra::Middleware::RequestId, logger: logger
 ```
 
 **Pristup request ID-u:**
@@ -337,7 +341,7 @@ client.upsert(
     { id: "2", values: [0.4, 0.5, 0.6] }
   ]
 )
-# => [DRY RUN] Would upsert 2 vector(s) to index 'products'
+# => [DRY RUN] UPSERT index=products namespace=default vectors=2
 
 # Read operacije prolaze normalno
 results = client.query(index: "products", vector: [0.1, 0.2, 0.3], top_k: 10)

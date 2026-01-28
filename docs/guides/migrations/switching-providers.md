@@ -112,7 +112,28 @@ rescue StandardError => e
 end
 ```
 
-### Option 3: Background Job Migration
+### Option 3: Use the Migration Tool
+
+For copying vectors between providers, use **Vectra::Migration**:
+
+```ruby
+source = Vectra::Client.new(provider: :pinecone, ...)
+target = Vectra::Client.new(provider: :qdrant, ...)
+migration = Vectra::Migration.new(source, target)
+
+result = migration.migrate(
+  source_index: index_name,
+  target_index: index_name,
+  on_progress: ->(stats) { puts "#{stats[:percentage]}%" }
+)
+verification = migration.verify(source_index: index_name, target_index: index_name)
+```
+
+See the [Migration Tool guide](/guides/migration-tool/) for full documentation.
+
+### Option 4: Background Job Migration (manual)
+
+If you need custom logic, you can migrate manually:
 
 ```ruby
 class MigrateVectorsJob < ApplicationJob
